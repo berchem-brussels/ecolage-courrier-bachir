@@ -1,0 +1,6 @@
+# Fins de ligne LF partout : les scripts .sh tournent sur le serveur, et Git pour Windows n'affiche aucun avertissement de conversion.
+* text=auto eol=lf
+*.png binary
+*.pdf binary
+*.tif binary
+*.woff2 binary

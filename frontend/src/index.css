@@ -1,0 +1,69 @@
+/*
+ * Variables de couleur clair et sombre (patron SAGA index.css, préfixe --app-* dans le gabarit).
+ * Les couleurs de l'institution (--app-primary, --app-menu-bg, --app-selection...) sont posées au démarrage
+ * par main.tsx à partir des paramètres de l'instance : aucune couleur d'institution n'est écrite ici.
+ */
+:root {
+  --app-bg-page: #f6f6f6;
+  --app-bg-container: #ffffff;
+  --app-bg-subtle: #f6f6f6;
+  --app-bg-muted: #f0f0f0;
+  --app-border: #f0f0f0;
+  --app-border-strong: #d9d9d9;
+  --app-text: #444;
+  --app-text-secondary: #666;
+  --app-text-tertiary: #767676;
+}
+
+body.app-dark {
+  --app-primary-text: var(--app-primary-text-dark);
+  --app-selection: var(--app-selection-dark);
+  --app-bg-page: #141414;
+  --app-bg-container: #1f1f1f;
+  --app-bg-subtle: #262626;
+  --app-bg-muted: #2a2a2a;
+  --app-border: #303030;
+  --app-border-strong: #424242;
+  --app-text: rgba(255, 255, 255, 0.85);
+  --app-text-secondary: rgba(255, 255, 255, 0.65);
+  --app-text-tertiary: rgba(255, 255, 255, 0.55);
+  background: var(--app-bg-page);
+  color: var(--app-text);
+  color-scheme: dark;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased; }
+
+/* Menu latéral sombre (patron SAGA main.tsx) */
+.ant-menu-dark { background: transparent !important; }
+.ant-menu-dark .ant-menu-item-selected { background: rgba(173, 212, 204, 0.2) !important; }
+.ant-menu-dark .ant-menu-item-group-title {
+  color: rgba(173, 212, 204, 0.6) !important; font-size: 10px !important; text-transform: uppercase !important;
+  letter-spacing: 1.2px !important; padding: 16px 16px 4px !important; line-height: 1.2 !important; font-weight: 600 !important;
+}
+.ant-menu-dark .ant-menu-item { margin: 1px 8px !important; border-radius: 6px !important; height: 38px !important; line-height: 38px !important; }
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e0; border-radius: 3px; }
+body.app-dark ::-webkit-scrollbar-thumb { background: #424242; }
+
+/* Accessibilité : lien d'évitement et focus visible */
+.skip-link { position: absolute; left: -9999px; top: 0; z-index: 999; }
+.skip-link:focus { left: 8px; top: 8px; background: var(--app-primary); color: #fff; padding: 8px 16px; border-radius: 4px; }
+.ant-btn:focus-visible, .ant-select-selector:focus-visible, .ant-input:focus-visible { outline: 2px solid var(--app-primary) !important; outline-offset: 2px; }
+
+@media (max-width: 768px) {
+  .ant-card { margin-bottom: 8px !important; }
+  .ant-card-body { padding: 12px !important; }
+  .ant-table { font-size: 12px; }
+  .ant-btn { min-height: 40px; min-width: 40px; }
+  .page-header { flex-direction: column !important; align-items: flex-start !important; gap: 8px !important; }
+  .ant-modal { max-width: calc(100vw - 16px) !important; margin: 8px !important; }
+}
+
+@media print {
+  .ant-layout-sider, .ant-layout-header, .chatbot-widget { display: none !important; }
+  .ant-layout-content { margin: 0 !important; padding: 8px !important; }
+}

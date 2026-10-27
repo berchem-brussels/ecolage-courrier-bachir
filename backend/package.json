@@ -1,0 +1,24 @@
+{
+  "name": "courrier-backend",
+  "version": "0.2.2",
+  "description": "Application courrier entrant et sortant : serveur (standard v3.2)",
+  "license": "EUPL-1.2",
+  "main": "src/index.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "test": "APP_TEST_MODE=1 node --test --test-concurrency=1 tests/api.test.js tests/securite.test.js tests/mcp.test.js tests/portabilite.test.js tests/courrier.test.js tests/atelier.test.js tests/pieces.test.js tests/depot.test.js"
+  },
+  "dependencies": {
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1",
+    "bcryptjs": "^3.0.3",
+    "express": "^4.21.0",
+    "express-rate-limit": "^8.3.2",
+    "multer": "^1.4.5-lts.2",
+    "sql.js": "^1.11.0"
+  }
+}

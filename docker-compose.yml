@@ -1,0 +1,40 @@
+# Compose livré tel quel : tout ce qui varie vient de .env (standard v3.2, section 15.3).
+# Une variable absente arrête « docker compose » avec un message : aucun secret ni port par défaut.
+name: ${APP_NAME:?APP_NAME manquant dans .env}
+
+services:
+  backend:
+    build: ./backend
+    container_name: ${APP_NAME}-api
+    expose:
+      - "3001"
+    volumes:
+      - db-data:/app/data
+    environment:
+      NODE_ENV: production
+      PORT: "3001"
+      DB_PATH: /app/data/app.db
+      APP_ENVIRONMENT: ${APP_ENVIRONMENT:?APP_ENVIRONMENT manquant dans .env}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET manquant dans .env}
+      CONFIG_ENC_KEY: ${CONFIG_ENC_KEY:?CONFIG_ENC_KEY manquant dans .env}
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    container_name: ${APP_NAME}-web
+    ports:
+      - "${HTTPS_PORT:?HTTPS_PORT manquant dans .env}:443"
+      - "${HTTP_PORT:?HTTP_PORT manquant dans .env}:80"
+    environment:
+      HTTPS_PORT: ${HTTPS_PORT}
+      PUBLIC_HOST: ${PUBLIC_HOST:?PUBLIC_HOST manquant dans .env}
+    volumes:
+      - ssl-certs:/etc/nginx/ssl
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  db-data:
+  ssl-certs:

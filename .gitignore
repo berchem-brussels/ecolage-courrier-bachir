@@ -1,0 +1,36 @@
+# Ce qui n'entre jamais dans le dépôt public (GITHUB.md, section 6)
+
+# Secrets et configuration d'un serveur
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Bases, sauvegardes et fichiers déposés
+data/
+*.db
+*.sqlite
+backups/
+
+# Reconstruit par npm ci et npm run build
+node_modules/
+dist/
+*.tsbuildinfo
+
+# Archives livrées et certificats générés
+*.tar.gz
+ssl-certs/
+
+# Données propres à une instance (services réels, paramètres) : jamais dans le dépôt public (standard v3.2, section 16.1)
+backend/instance/*
+!backend/instance/atelier.exemple.json
+
+# Documents internes gardés dans les fichiers du projet Claude
+STANDARD.md
+CAHIER-DES-CHARGES*.md
+
+# Journaux et fichiers de poste
+*.log
+.DS_Store
+Thumbs.db

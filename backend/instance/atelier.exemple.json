@@ -1,0 +1,22 @@
+{
+  "_description": "Exemple générique de données d'atelier, entièrement fictif. Une instance réelle place ses services dans instance/atelier.json (non versionné).",
+  "settings": {},
+  "services": [
+    { "name_fr": "Secrétariat", "name_nl": "Secretariaat", "entities": ["AC"] },
+    { "name_fr": "Service social", "name_nl": "Sociale Dienst", "entities": ["CPAS"] },
+    { "name_fr": "Ressources humaines", "name_nl": "Personeelszaken", "entities": ["AC", "CPAS"] }
+  ],
+  "types": {
+    "AC": [
+      { "fr": "Demande d'un citoyen", "nl": "Aanvraag van een burger" },
+      { "fr": "Plainte", "nl": "Klacht" }
+    ],
+    "CPAS": [
+      { "fr": "Demande d'aide sociale", "nl": "Aanvraag tot maatschappelijke hulp" }
+    ]
+  },
+  "contacts": [
+    { "kind": "personne", "name": "Exemple", "first_name": "Marie", "city": "Ville fictive", "lang": "fr" },
+    { "kind": "organisation", "name": "Société Fictive SA", "lang": "fr" }
+  ]
+}

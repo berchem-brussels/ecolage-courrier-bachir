@@ -1,0 +1,23 @@
+{
+  "_description": "Entités et registres chargés une seule fois dans une base vide. Ensuite, ils se modifient dans Administration > Entités et registres.",
+  "entities": [
+    {
+      "code": "AC",
+      "name_fr": "Administration communale",
+      "name_nl": "Gemeentebestuur",
+      "registers": [
+        { "direction": "entree", "prefix": "AC", "digits": 6 },
+        { "direction": "depart", "prefix": "D-AC", "digits": 6 }
+      ]
+    },
+    {
+      "code": "CPAS",
+      "name_fr": "Centre public d'action sociale",
+      "name_nl": "Openbaar centrum voor maatschappelijk welzijn",
+      "registers": [
+        { "direction": "entree", "prefix": "CPAS", "digits": 6 },
+        { "direction": "depart", "prefix": "D-CPAS", "digits": 6 }
+      ]
+    }
+  ]
+}
