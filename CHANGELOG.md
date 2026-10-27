@@ -1,8 +1,33 @@
 # Historique des versions
 
-Application courrier · version 0.2.2 · historique au 27/10/2026
+Application courrier · version 0.2.4 · historique au 27/10/2026
 
-## 0.2.2 du 27/10/2026
+## 0.2.4 du 27/10/2026
+
+Correction d'un défaut de la 0.2.3 relevé à sa recette sur NIXUS. Aucune fonction nouvelle, aucune migration, aucune dépendance changée par rapport à la 0.2.3.
+
+- Sélecteur de date : en 0.2.3 il s'affichait en anglais (« Select date »), au format mois/jour (`10/27/2026`), avec un calendrier en anglais dont la semaine commençait le dimanche. Corrigé : `27/10/2026` en français, `27-10-2026` en néerlandais, calendrier dans la langue de l'utilisateur, semaine commençant le lundi.
+- Cause racine : `antd/locale/fr_FR.js` est un fichier CommonJS qui renvoie vers `lib/`. Avec `vite` 8, `ConfigProvider` n'a pas reçu la langue et est resté en anglais, alors que `vite` 5 lisait ce fichier correctement. Le mécanisme exact (lecture de l'import par défaut) n'est pas vérifié dans le code du moteur ; le correctif est établi par essai : `antd/es/locale/fr_FR` et `nl_NL`. Une première piste, l'import ESM de la langue de `dayjs`, n'avait aucun effet. Les tests passaient parce que vitest lit ces fichiers par Node : ils ne voient pas les défauts du moteur de construction.
+- Nouveau test `imports.test.ts` (2 tests) : interdit les imports `antd/locale` et `antd/lib`. Il contrôle la cause et non le résultat ; il est en échec avec l'import de la 0.2.3.
+- Test du dépôt : ne signale plus `tsconfig.tsbuildinfo`, déjà exclu par `.gitignore`, qui le faisait échouer après un `npm run build`.
+- Contrôle avant livraison : textes de 11 pages et 22 captures comparés à la 0.2.2, en français et en néerlandais, avec le rôle de secrétariat : aucune différence.
+
+Suites : serveur 82 tests, écrans 60 tests, 0 échec ; `npm audit` à 0 vulnérabilité dans les deux parties, production et complet.
+
+## 0.2.3 du 27/10/2026, installée sur NIXUS le 27/10/2026, non publiée sur GitHub, remplacée par la 0.2.4
+
+Mise à jour de dépendances, avec l'accord de Renaud du 27/10/2026 pour `multer` et `vite`. Aucune fonction nouvelle, aucune migration de base, aucun changement dans `src/`.
+
+- `multer` 1.4.5-lts.2 vers 2.5.0 : Dependabot relevait 10 alertes de gravité haute (dénis de service) sur la génération 1.x, que `npm audit` ne signalait pas. 15 paquets de moins.
+- `vite` 5.4.21 vers 8.3.5, `@vitejs/plugin-react` 4.7.0 vers 6.1.2 (imposé par `vite` 8) et `vitest` 4.1.10 vers 4.1.12. Les 15 alertes Dependabot de l'interface et les 4 de `npm audit` disparaissent : audit complet à 0.
+- Cinq dépendances indirectes de l'interface suivent ces montées : `chai`, `tinyrainbow`, `picomatch`, `@types/estree`, `@jridgewell/sourcemap-codec`.
+- Le verrou de l'interface est écrit par npm 11, car npm 10 s'arrête sur son erreur interne à l'installation (E19). `npm ci` sous npm 10 relit ce verrou et reconstruit.
+- Notes de livraison de la 0.2.2 : la commande `ls` du dossier des sauvegardes prend `sudo`.
+- `docs/SECURITE.md` : limite de `npm audit` sur `multer` ; `docs/*/ARCHITECTURE.md` : version de `multer`.
+
+Suites : serveur 82 tests, écrans 58 tests, 0 échec ; `npm audit` à 0 vulnérabilité dans les deux parties, production et complet. Contrôle visuel sur l'interface construite derrière le `nginx.conf` livré : connexion et huit pages d'un administrateur sans erreur ni violation de politique de sécurité ; registre et file « À enregistrer » à contrôler à la recette.
+
+## 0.2.2 du 27/10/2026, installée sur NIXUS le 27/10/2026
 
 Préparation du dépôt public GitHub. Aucune fonction nouvelle, aucune migration de base, aucune dépendance ajoutée.
 

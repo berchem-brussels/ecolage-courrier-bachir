@@ -1,8 +1,8 @@
 # Courrier
 
-Application de gestion du courrier entrant et sortant de l'Administration communale et du CPAS. Elle remplace l'outil du marché utilisé jusqu'ici. Version 0.2.2 du 27/10/2026, au « Standard des applications communales v3.2 » (document interne, absent de ce dépôt), construite sur le gabarit v3 1.1.0. Licence EUPL-1.2.
+Application de gestion du courrier entrant et sortant de l'Administration communale et du CPAS. Elle remplace l'outil du marché utilisé jusqu'ici. Version 0.2.4 du 27/10/2026, au « Standard des applications communales v3.2 » (document interne, absent de ce dépôt), construite sur le gabarit v3 1.1.0. Licence EUPL-1.2.
 
-Les versions 0.1.0 et 0.1.1 forment l'étape 1 du planning : enregistrement et numérotation du courrier entrant, registre, contacts, services, types de courrier, entités et registres, rôles par entité. La version 0.2.0 est l'étape 2, corrigée en 0.2.1 après sa recette. La version 0.2.2 prépare ce dépôt public sans changer le fonctionnement : fichiers du courrier (file « À enregistrer », aperçu, fiche), journal des consultations, paramètres de l'instance. Les étapes suivantes sont décrites dans `ETAT.md`.
+Les versions 0.1.0 et 0.1.1 forment l'étape 1 du planning : enregistrement et numérotation du courrier entrant, registre, contacts, services, types de courrier, entités et registres, rôles par entité. La version 0.2.0 est l'étape 2, corrigée en 0.2.1 après sa recette : fichiers du courrier (file « À enregistrer », aperçu, fiche), journal des consultations, paramètres de l'instance. Les versions 0.2.2 à 0.2.4 ne changent pas le fonctionnement : la 0.2.2 prépare ce dépôt public, la 0.2.3 met à jour des dépendances (`multer`, `vite`, `vitest`) et n'a pas été publiée, la 0.2.4 corrige le sélecteur de date de la 0.2.3. Les étapes suivantes sont décrites dans `ETAT.md`.
 
 ## Structure
 
@@ -45,7 +45,7 @@ Décomptes relevés sous Node 22.22.2 dans le bac à sable de Claude ; les image
 
 ## Installation et mise à jour
 
-La première installation est décrite dans `NOTES_LIVRAISON_v0.1.0.md`, la mise à jour vers la 0.2.0 dans `NOTES_LIVRAISON_v0.2.0.md`, vers la 0.2.1 dans `NOTES_LIVRAISON_v0.2.1.md`, vers la 0.2.2 dans `NOTES_LIVRAISON_v0.2.2.md`, le journal des déploiements dans `docs/APRES-DEPLOIEMENT.md`. Les adresses, ports et dossiers de ces documents sont des valeurs d'exemple ; ceux du serveur d'acceptance ne figurent pas dans ce dépôt. Exemple : dossier `/srv/docker/courrier`, conteneurs `courrier-api` et `courrier-web`, ports 8450 (HTTPS) et 8090 (HTTP redirigé).
+La première installation est décrite dans `NOTES_LIVRAISON_v0.1.0.md`, la mise à jour vers la 0.2.0 dans `NOTES_LIVRAISON_v0.2.0.md`, vers la 0.2.1 dans `NOTES_LIVRAISON_v0.2.1.md`, vers la 0.2.2 dans `NOTES_LIVRAISON_v0.2.2.md`, vers la 0.2.3 dans `NOTES_LIVRAISON_v0.2.3.md` (non publiée), vers la 0.2.4 dans `NOTES_LIVRAISON_v0.2.4.md`, le journal des déploiements dans `docs/APRES-DEPLOIEMENT.md`. Les adresses, ports et dossiers de ces documents sont des valeurs d'exemple ; ceux du serveur d'acceptance ne figurent pas dans ce dépôt. Exemple : dossier `/srv/docker/courrier`, conteneurs `courrier-api` et `courrier-web`, ports 8450 (HTTPS) et 8090 (HTTP redirigé).
 
 ## Variables du fichier .env
 

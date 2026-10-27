@@ -5,8 +5,8 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ConfigProvider, Spin, theme as antTheme } from 'antd';
-import frFR from 'antd/locale/fr_FR';
-import nlNL from 'antd/locale/nl_NL';
+import frFR from 'antd/es/locale/fr_FR';
+import nlNL from 'antd/es/locale/nl_NL';
 import dayjs from 'dayjs';
 import localizedFormat from 'dayjs/plugin/localizedFormat';
 import 'dayjs/locale/fr';

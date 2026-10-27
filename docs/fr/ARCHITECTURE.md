@@ -44,7 +44,7 @@ Migrations : `001_noyau`, `002_entites_registres`, `003_referentiels`, `004_cour
 
 ## Pièces
 
-Le dépôt arrive en `multipart/form-data` (champ `file`) par `multer` 1.4.5-lts.2, un fichier par envoi. La session et le jeton anti-CSRF sont contrôlés avant la réception. Le service contrôle ensuite, dans cet ordre : le droit sur l'entité ou le courrier, le statut du courrier, la taille (paramètre `pieces.max_mb`), le type réel sur les premiers octets (PDF `%PDF-`, JPEG `FF D8 FF`, PNG `89 50 4E 47 0D 0A 1A 0A` ; TIFF refusé avec sa raison propre). Le fichier est ensuite déplacé sous un nom généré, son empreinte est calculée et la ligne est écrite. Le nom d'origine, relu en UTF-8 (`multer` 1.x le lit en latin-1), sert uniquement à l'affichage.
+Le dépôt arrive en `multipart/form-data` (champ `file`) par `multer` 2.5.0, un fichier par envoi. La session et le jeton anti-CSRF sont contrôlés avant la réception. Le service contrôle ensuite, dans cet ordre : le droit sur l'entité ou le courrier, le statut du courrier, la taille (paramètre `pieces.max_mb`), le type réel sur les premiers octets (PDF `%PDF-`, JPEG `FF D8 FF`, PNG `89 50 4E 47 0D 0A 1A 0A` ; TIFF refusé avec sa raison propre). Le fichier est ensuite déplacé sous un nom généré, son empreinte est calculée et la ligne est écrite. Le nom d'origine, relu en UTF-8 (`multer` 1.x le lit en latin-1), sert uniquement à l'affichage.
 
 L'enregistrement d'un courrier reçoit `piece_ids` : dans la même transaction que l'attribution du numéro, chaque pièce passe de `a_enregistrer` à `rattachee`. Une pièce déjà prise, rejetée ou d'une autre entité annule tout l'enregistrement, sans numéro consommé.
 

@@ -54,7 +54,7 @@ test('aucun fichier de secret, de base, de sauvegarde ni de dépendances dans l\
   for (const f of tout) {
     const nom = path.basename(f);
     if (nom === '.env' || /^\.env\./.test(nom) && nom !== '.env.example') pos.push(f);
-    if (/\.(db|sqlite|pem|key|tar\.gz|tsbuildinfo)$/.test(nom)) pos.push(f);
+    if (/\.(db|sqlite|pem|key|tar\.gz)$/.test(nom)) pos.push(f);
     if (/^backend\/instance\//.test(f) && f !== 'backend/instance/atelier.exemple.json') pos.push(f);
   }
   assert.deepEqual(pos, []);

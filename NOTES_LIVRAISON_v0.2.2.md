@@ -105,7 +105,7 @@ sudo bash backup.sh
 Attendu : `sauvegarde terminée, N+1 sauvegardes conservées.` Cette seconde sauvegarde utilise le nouveau script.
 
 ```bash
-ls -t /srv/backups/courrier | head -3
+sudo ls -t /srv/backups/courrier | head -3
 ```
 
 Attendu : deux fichiers `courrier-AAAAMMJJ-HHMM.tar.gz` datés du jour, dans l'ancien dossier des sauvegardes.
