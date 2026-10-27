@@ -39,7 +39,7 @@ Migraties: `001_noyau` tot `005_pieces_consultations`.
 
 ## Stukken
 
-Het neerleggen gebeurt in `multipart/form-data` (veld `file`) via `multer` 1.4.5-lts.2, één bestand per verzending. Sessie en anti-CSRF-token worden vóór de ontvangst gecontroleerd. Daarna controleert de dienst het recht, de status van de brief, de grootte (parameter `pieces.max_mb`) en het werkelijke type op de eerste bytes (PDF, JPEG, PNG; TIFF geweigerd met een eigen reden). Het bestand krijgt een naam die de server aanmaakt; de oorspronkelijke naam dient enkel voor de weergave.
+Het neerleggen gebeurt in `multipart/form-data` (veld `file`) via `multer` 2.5.0, één bestand per verzending. Sessie en anti-CSRF-token worden vóór de ontvangst gecontroleerd. Daarna controleert de dienst het recht, de status van de brief, de grootte (parameter `pieces.max_mb`) en het werkelijke type op de eerste bytes (PDF, JPEG, PNG; TIFF geweigerd met een eigen reden). Het bestand krijgt een naam die de server aanmaakt; de oorspronkelijke naam dient enkel voor de weergave.
 
 Bij de registratie van een brief worden de stukken (`piece_ids`) in dezelfde transactie als de nummertoekenning gekoppeld. Een stuk dat al genomen, geweigerd of van een andere entiteit is, annuleert de hele registratie zonder nummerverbruik.
 

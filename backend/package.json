@@ -1,6 +1,6 @@
 {
   "name": "courrier-backend",
-  "version": "0.2.2",
+  "version": "0.2.4",
   "description": "Application courrier entrant et sortant : serveur (standard v3.2)",
   "license": "EUPL-1.2",
   "main": "src/index.js",
@@ -18,7 +18,7 @@
     "bcryptjs": "^3.0.3",
     "express": "^4.21.0",
     "express-rate-limit": "^8.3.2",
-    "multer": "^1.4.5-lts.2",
+    "multer": "^2.5.0",
     "sql.js": "^1.11.0"
   }
 }

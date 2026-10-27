@@ -39,7 +39,7 @@ Migrations: `001_noyau` to `005_pieces_consultations`.
 
 ## Files
 
-Uploads arrive as `multipart/form-data` (field `file`) through `multer` 1.4.5-lts.2, one file per request. Session and anti-CSRF token are checked before reception. The service then checks the right, the mail status, the size (`pieces.max_mb`) and the real type from the first bytes (PDF, JPEG, PNG; TIFF refused with its own reason). The file is stored under a server-generated name; the original name is only displayed.
+Uploads arrive as `multipart/form-data` (field `file`) through `multer` 2.5.0, one file per request. Session and anti-CSRF token are checked before reception. The service then checks the right, the mail status, the size (`pieces.max_mb`) and the real type from the first bytes (PDF, JPEG, PNG; TIFF refused with its own reason). The file is stored under a server-generated name; the original name is only displayed.
 
 When a mail is registered, its files (`piece_ids`) are attached in the same transaction as the number assignment. A file already taken, rejected or from another entity cancels the whole registration and no number is consumed.
 

@@ -1,6 +1,6 @@
 # Écarts mesurés
 
-Application courrier · version 0.2.2 · écarts au 27/10/2026
+Application courrier · version 0.2.4 · écarts au 27/10/2026
 
 Écarts entre le code livré, le cahier des charges (CDC, version 0.10) et le standard v3.2. Numérotation continue d'une version à l'autre ; un écart clos reste dans la liste avec sa date.
 
@@ -19,14 +19,14 @@ Application courrier · version 0.2.2 · écarts au 27/10/2026
 | E12 | CL-003 | Libellés NL des types de courrier fictifs marqués « à valider » | Types réels à définir avec l'utilisatrice clé de l'AC (I-04) |
 | E13 | CN-007 | Documentation technique NL et EN limitée à `docs/nl/ARCHITECTURE.md` et `docs/en/ARCHITECTURE.md` ; la version NL est une traduction de Claude à faire relire | Complétée à chaque étape, entière avant la 1.0.0 |
 | E16 | Standard 4.3 | `@typescript-eslint/parser` 7, nécessaire à eslint pour lire le TSX, n'est pas listé dans la section 4.3 ; il vient du gabarit | À inscrire au standard ou à remplacer, décision de Renaud |
-| E17 | Standard 4.4 | Vitest 4 installe pour lui-même Vite 8.1.5 (`npm ls`), version que le standard interdit ; l'interface est construite par Vite 5.4.21. Même cas dans SAGA | À inscrire au standard, décision de Renaud |
 | E18 | Standard 13.1, 17.8 | Pas de note de version affichée aux utilisateurs à la première connexion après une mise à jour | À construire dans une étape à fixer |
-| E19 | Standard 10.2 | Audit complet de l'interface : 10 vulnérabilités (3 modérées, 7 hautes) dans les outils de développement, aucune dans l'image servie. Six demandent `@typescript-eslint/parser` 8, deux Vite 8 ; `vitest` 4.1.11, dans la génération, bute sur une erreur interne de npm 10 | Mesure du 27/10/2026 : 4 vulnérabilités (3 modérées, 1 haute : `vite`, `esbuild`, `vitest`, `@vitest/mocker`), dans les outils de développement seulement ; les six liées au parseur `@typescript-eslint` ne sont plus signalées. Nouvel essai de `vitest` à la prochaine version ; montées de génération soumises à Renaud |
-| E20 | Standard 4.2 | `multer` 1.4.5-lts.2 : l'éditeur déclare la génération 1.x dépréciée pour des failles corrigées en 2.x ; `npm audit` n'en signale aucune | Choix du 20/10/2026 ; audit rejoué à chaque version, passage en 2.x sur accord de Renaud |
 | E21 | CA-003 | Dépôt d'un fichier par un assistant IA limité à environ 190 ko, à cause de la limite de 256 ko du corps JSON du MCP | À revoir avec le transport MCP (étapes 8 et 21) |
 | E22 | CE-030 | Un fichier refusé s'affiche avec sa raison à l'écran de dépôt, sans être gardé dans la file ; la file gardera les refus des boîtes partagées et des copieurs | Étape 12 |
 | E23 | Standard 12, accessibilité | Chrome (outils de développement, onglet « Issues ») relève 20 remarques d'information, sans erreur ni avertissement : 10 « No label associated with a form field », conséquence de la correction de la 0.2.1 (titres des groupes de boutons restés en élément `<label>` sans champ associé, le nom accessible venant de `aria-label`) ; 8 « An element doesn't have an autocomplete attribute » ; 2 « A form field element should have an id or name attribute » (champ de fichier caché du cadre de dépôt, probablement) | Début de la 0.3.0, avec un test ; décision du conducteur du projet du 27/10/2026 |
 | E24 | Standard 14.4 et 15.3 (règle 2), GITHUB.md section 6 | Dans l'archive, devenue publique, les documents et notes de livraison portent des valeurs d'exemple au lieu de l'adresse, des ports et des dossiers de NIXUS ; `STANDARD.md`, le cahier des charges et le fichier d'instance en sont retirés. Les commandes des notes ne sont donc plus exécutables telles quelles | Écart voulu par GITHUB.md : les vraies valeurs se donnent dans le message de livraison et les fichiers du projet |
+| E25 | Standard 10.2 | CodeQL (GitHub) signale 10 alertes de gravité haute « Uncontrolled data used in path expression » dans `backend/src/services/pieces.js` et `routes/pieces.js`. Lecture du code le 27/10/2026 : les noms des fichiers temporaires et des fichiers rangés sont générés par le serveur, `absolutePath()` vérifie la racine, le nom d'origine ne sert pas de chemin ; faux positifs probables, non confirmés par une attaque rejouée | Alertes laissées ouvertes ; confirmation et décision de fermeture avec Renaud |
+| E26 | Standard 4.4 | Le 27/10/2026, `npm audit fix --omit=dev` a été lancé sur le serveur pour préparer la 0.2.2, commande que le standard interdit ; deux dépendances indirectes ont monté sans l'accord de Renaud : `body-parser` 1.20.8 vers 1.20.9 et `fast-uri` 3.1.8 vers 3.1.9, même génération, `package.json` inchangé, écart du verrou relevé par comparaison | Signalé à Renaud par courriel ; confirmer le maintien ou retirer ces deux montées dans la version suivante ; règle : paquet par paquet par `npm update <paquet>` |
+| E27 | Standard 4.2, 4.3, 4.4, 18 | `multer` ^2.5.0, `vite` ^8.3.5, `@vitejs/plugin-react` ^6.1.2 et `vitest` ^4.1.12 au lieu de `multer` ^1.4.5-lts.1, Vite 5 et `@vitejs/plugin-react` 4 du standard ; montée de majeure acceptée par Renaud le 27/10/2026 pour `multer` et `vite`, `@vitejs/plugin-react` 6 non nommé ; verrou de l'interface écrit par npm 11 | Standard à mettre à jour par Renaud (4.2, 4.3, 4.4, liste de la section 18) ; accord sur `@vitejs/plugin-react` 6 à confirmer |
 
 ## 2. Écarts clos
 
@@ -37,6 +37,9 @@ Application courrier · version 0.2.2 · écarts au 27/10/2026
 | E11 | CE-020, CE-025, CE-124, CG-003, CG-005 | Aucune pièce, pas de file « À enregistrer », pas de journal des consultations | 20/10/2026 : livrés en 0.2.0 |
 | E14 | Standard 14.5 | `APRES-DEPLOIEMENT.md` absent de `docs/` de l'archive | 20/10/2026 : `docs/APRES-DEPLOIEMENT.md` en 0.2.0 |
 | E15 | Standard 5 et 10.2 | Serveur sous `node` (1000) au lieu d'`appuser` (10001) | 20/10/2026 : `appuser` en 0.2.0 ; `id -u` égal à `10001` relevé sur NIXUS le 20/10/2026 |
+| E17 | Standard 4.4 | `vitest` 4 installait `vite` 8.1.5 pour lui-même à côté de `vite` 5.4.21 | 27/10/2026 : `vite` 8.3.5 partout dans la 0.2.3 (accord de Renaud) ; à confirmer à la recette |
+| E19 | Standard 10.2 | Audit complet de l'interface : vulnérabilités dans les outils de développement ; `npm install` de `vitest` bloqué par l'erreur interne de npm 10 | 27/10/2026 : `vite` 8.3.5, `@vitejs/plugin-react` 6.1.2 et `vitest` 4.1.12 par npm 11, audit complet à 0 dans la 0.2.3 ; la panne de npm 10 subsiste, d'où le verrou écrit par npm 11 ; à confirmer à la recette |
+| E20 | Standard 4.2 | `multer` 1.4.5-lts.2 : génération 1.x dépréciée, 10 alertes hautes de Dependabot que `npm audit` ne signalait pas | 27/10/2026 : `multer` 2.5.0 dans la 0.2.3 (accord de Renaud), 82 tests serveur sur 82 ; à confirmer à la recette |
 
 ## 3. Écarts du gabarit 1.1.0 corrigés
 
@@ -68,3 +71,4 @@ Application courrier · version 0.2.2 · écarts au 27/10/2026
 | Recette de la 0.2.0 sur NIXUS | Huit signalements « Incorrect use of <label for> » dans Chrome : étiquettes des groupes de boutons visant un bloc `div` (présent depuis la 0.1.0) ; axe-core ne contrôle pas ce cas | 0.2.1 (12 étiquettes corrigées dans cinq formulaires ; test sur tous les écrans) |
 | Recette de la 0.2.0 sur NIXUS | Trombone absent du registre après l'ajout d'un fichier depuis la fiche, jusqu'au rechargement | 0.2.1 |
 | Recette de la 0.2.0 sur NIXUS | Mention « Valeur livrée » absente sous les champs des Paramètres sur une capture prise pendant la saisie, présente après F5 | Non reproduit, ni dans le bac à sable ni sur NIXUS le 27/10/2026 (enregistrement sans changement) ; clos |
+| Recette de la 0.2.3 sur NIXUS | Sélecteur de date en anglais : « Select date », format mois/jour (`10/27/2026`), calendrier en anglais commençant le dimanche, en français comme en néerlandais. Cause : import de la langue d'Ant Design par un fichier CommonJS, mal lu sous `vite` 8. Les tests passaient : ils tournent sous Node | 0.2.4 (`antd/es/locale/`, test des imports, comparaison des pages avec la 0.2.2) |
