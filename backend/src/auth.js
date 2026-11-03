@@ -28,6 +28,12 @@ function readCookies(req) {
 
 const isHttps = (req) => req.secure || req.headers['x-forwarded-proto'] === 'https';
 
+/** Ajoute un cookie à la réponse sans écraser ceux déjà posés (session et état OpenID Connect). */
+function appendCookie(res, value) {
+  const prev = res.getHeader('Set-Cookie');
+  res.setHeader('Set-Cookie', prev ? [].concat(prev, value) : value);
+}
+
 function cookie(req, value, maxAge) {
   const parts = [`${COOKIE}=${value}`, 'Path=/', `Max-Age=${maxAge}`, 'SameSite=Strict', 'HttpOnly'];
   if (isHttps(req)) parts.push('Secure');
@@ -40,13 +46,13 @@ function openSession(req, res, user) {
   const csrf = crypto.randomBytes(24).toString('base64url');
   getDb().prepare(`INSERT INTO sessions (id, user_id, csrf_token, expires_at) VALUES (?, ?, ?, datetime('now', ?))`)
     .run(fingerprint(token), user.id, csrf, `+${SESSION_HOURS} hours`);
-  res.setHeader('Set-Cookie', cookie(req, token, SESSION_HOURS * 3600));
+  appendCookie(res, cookie(req, token, SESSION_HOURS * 3600));
   return { token, csrf };
 }
 
 function closeSession(req, res) {
   if (req.user && req.user.sid) getDb().prepare('DELETE FROM sessions WHERE id = ?').run(req.user.sid);
-  res.setHeader('Set-Cookie', cookie(req, '', 0));
+  appendCookie(res, cookie(req, '', 0));
 }
 
 function csrfOf(sid) {
@@ -89,4 +95,4 @@ function requireRole(...roles) {
   };
 }
 
-module.exports = { COOKIE, readCookies, openSession, closeSession, csrfOf, authMiddleware, requireRole, fingerprint };
+module.exports = { COOKIE, readCookies, isHttps, appendCookie, openSession, closeSession, csrfOf, authMiddleware, requireRole, fingerprint };

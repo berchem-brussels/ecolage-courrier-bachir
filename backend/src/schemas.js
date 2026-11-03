@@ -23,6 +23,15 @@ module.exports = {
   changePassword: obj({ current_password: T.reqStr(200), new_password: { type: 'string', minLength: 12, maxLength: 200 } }, ['current_password', 'new_password']),
   preferences: obj({ preferred_lang: T.en('fr', 'nl'), ui_mode: T.en('simple', 'complet'), theme: T.en('clair', 'sombre') }),
 
+  // Connexion Microsoft (standard v3.3, section 8.6) : le secret n'est jamais renvoyé, l'adresse publique est en HTTPS.
+  authSettings: obj({
+    mode: T.en('local', 'sso', 'sso_optional'),
+    tenant: T.str(100), client_id: T.str(100), client_secret: { type: 'string', maxLength: 500 },
+    public_url: { type: 'string', maxLength: 300, pattern: '^(https://[^\\s/]+(/[^\\s]*)?)?$' },
+    domains: T.str(500),
+  }),
+  authTest: obj({ tenant: T.str(100) }),
+
   entityList: listQuery({ is_active: { type: 'integer', enum: [0, 1] } }),
   entityCreate: obj({ code: { type: 'string', pattern: '^[A-Z0-9-]{1,20}$' }, name_fr: T.reqStr(200), name_nl: T.reqStr(200) }, ['code', 'name_fr', 'name_nl']),
   entityUpdate: obj({ name_fr: T.reqStr(200), name_nl: T.reqStr(200), is_active: { type: 'integer', enum: [0, 1] } }),
@@ -96,6 +105,7 @@ module.exports = {
       password_mode: { enum: ['generated', 'manual'], default: 'generated' },
       password: { type: 'string', minLength: 8, maxLength: 200 },
       must_change_password: { type: 'boolean', default: false },
+      is_admin_local: { type: 'boolean', default: false },
       entity_roles: ENTITY_ROLES,
     }, ['email', 'first_name', 'last_name']),
     if: { properties: { password_mode: { const: 'manual' } }, required: ['password_mode'] },
@@ -103,7 +113,7 @@ module.exports = {
   },
   userUpdate: obj({
     first_name: T.reqStr(100), last_name: T.reqStr(100),
-    user_role: T.en('agent', 'admin'), preferred_lang: T.en('fr', 'nl'), is_active: { type: 'integer', enum: [0, 1] },
+    user_role: T.en('agent', 'admin'), preferred_lang: T.en('fr', 'nl'), is_active: { type: 'integer', enum: [0, 1] }, is_admin_local: { type: 'integer', enum: [0, 1] },
     entity_roles: ENTITY_ROLES,
   }),
 };

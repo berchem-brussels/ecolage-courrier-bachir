@@ -333,6 +333,21 @@ const MIGRATIONS = [
     CREATE INDEX idx_consult_piece ON consultations(piece_id);
     CREATE INDEX idx_consult_user ON consultations(user_id);
   `],
+  // Connexion Microsoft compatible avec Portal (standard v3.3, section 8.6) : identifiant Entra du compte, accès de secours,
+  // état des connexions en cours. Les administrateurs existants gardent l'accès par mot de passe (secours).
+  ['006_connexion_microsoft', `
+    ALTER TABLE users ADD COLUMN oid TEXT;
+    ALTER TABLE users ADD COLUMN is_admin_local INTEGER NOT NULL DEFAULT 0;
+    UPDATE users SET is_admin_local = 1 WHERE user_role = 'admin' AND password_hash IS NOT NULL;
+    CREATE UNIQUE INDEX idx_users_oid ON users(oid);
+    CREATE TABLE auth_pending (
+      state TEXT PRIMARY KEY,
+      nonce TEXT NOT NULL,
+      verifier TEXT NOT NULL,
+      next_path TEXT NOT NULL DEFAULT '/',
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    )
+  `],
 ];
 
 function migrate() {

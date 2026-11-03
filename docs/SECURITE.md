@@ -1,4 +1,4 @@
-# Grille de sécurité, version 0.2.4 du 27/10/2026
+# Grille de sécurité, version 0.2.5 du 03/11/2026
 
 Résultat de la grille de la section 10.2 du standard. « Automatisé » : test qui tourne à chaque `npm test`. « Non joué » : contrôle qui n'a pas pu tourner dans le bac à sable ; il se joue à la recette sur NIXUS. Décomptes relevés sous Node 22.22.2 dans le bac à sable de Claude ; les images utilisent Node 20.19.5.
 
@@ -12,9 +12,17 @@ Résultat de la grille de la section 10.2 du standard. « Automatisé » : test 
 | Secrets | Fichier de l'instance (services réels) exclu du dépôt | Conforme | `atelier.test.js` |
 | Secrets | Erreur sans trace technique | Conforme | `securite.test.js` |
 | Secrets | Aucun compte créé par le code ; premier administrateur par l'écran d'installation | Conforme | `api.test.js` |
-| Authentification | Toute route hors liste écrite exige une session (55 routes énumérées, dont les 9 nouvelles des pièces, du journal et des paramètres) | Conforme | `securite.test.js` |
+| Authentification | Toute route hors liste écrite exige une session (61 routes, dont les 6 de la connexion Microsoft de la 0.2.5 ; liste écrite des routes libres : santé, version, paramètres publics, installation, connexion locale, configuration de connexion, départ et retour Microsoft) | Conforme | `securite.test.js` |
 | Authentification | Cookie HttpOnly, SameSite=Strict, Secure ; empreinte seule en base | Conforme | `securite.test.js` |
 | Authentification | Jeton inventé, expiré ou fermé refusé ; déconnexion et désactivation ferment la session | Conforme | `securite.test.js`, `api.test.js` |
+| Authentification | Connexion Microsoft : code d'autorisation avec PKCE S256, `state` et `nonce` aléatoires, aucun `prompt` ni `max_age` | Conforme | `sso.test.js` ; adresse relevée dans Chromium contre un faux Microsoft |
+| Authentification | Jeton d'identité : signature fausse, autre locataire, autre application (audience), expiré ou `nonce` différent refusés, aucune session ouverte | Conforme | `sso.test.js` ; contrôles retirés un à un, voir la section des preuves |
+| Authentification | Cookie d'état `SameSite=Lax`, `Path=/api/auth`, effacé au retour ; cookie de session `SameSite=Strict` ; les deux cookies ne s'écrasent pas | Conforme | `sso.test.js` ; Chromium |
+| Authentification | `next` : adresse complète, `//`, `\` ou caractères douteux ramenés à `/`, côté serveur et côté interface | Conforme | `sso.test.js`, `connexion.test.tsx` ; défaut du gabarit corrigé (E30) |
+| Authentification | État de connexion volé ou inconnu refusé ; compte inconnu, désactivé ou hors domaines refusé ; session coupée à la désactivation | Conforme | `sso.test.js` |
+| Authentification | Mot de passe refusé en mode `sso` hors accès de secours ; mode `sso` et changements de comptes refusés s'ils ne laissent aucun administrateur joignable | Conforme | `sso.test.js` |
+| Authentification | Secret client chiffré, jamais renvoyé, ni dans les paramètres publics, ni dans le journal, ni dans le test | Conforme | `sso.test.js` |
+| Authentification | Aucune redirection automatique après la déconnexion, une erreur ou pour l'accès de secours | Conforme | `connexion.test.tsx` ; Chromium |
 | Authentification | 15 essais de connexion par quart d'heure | Conforme (hérité du gabarit) | Code `routes/auth.js` |
 | Authentification | Contenu d'une pièce ouvert par le seul cookie (cadre, onglet, image), refusé sans session (standard 8.3) | Conforme | `pieces.test.js` |
 | Autorisation | Cloisonnement AC et CPAS sur le courrier | Conforme | `courrier.test.js` |
@@ -40,8 +48,8 @@ Résultat de la grille de la section 10.2 du standard. « Automatisé » : test 
 | API | CSRF : écriture par cookie sans jeton refusée, dépôt de fichier compris | Conforme | `securite.test.js`, `pieces.test.js` |
 | En-têtes | Contenu d'une pièce : `default-src 'none'; frame-ancestors 'self'`, `X-Frame-Options SAMEORIGIN`, `nosniff`, `no-store` | Conforme | `pieces.test.js` ; le test échoue quand on retire `frame-ancestors 'self'` (preuve jouée le 20/10/2026 : 1 test en échec) |
 | En-têtes | nginx : la route du contenu ne reçoit ni `X-Frame-Options DENY` ni `frame-ancestors 'none'` ; les autres routes les gardent | Conforme dans le bac à sable | `nginx.conf` livré, chargé par nginx 1.24 devant le vrai serveur ; aucun refus de cadre dans la console de Chromium. À rejouer sur NIXUS (nginx 1.27.5) |
-| Dépendances | `npm audit --omit=dev` serveur | 0 vulnérabilité | Sortie du 27/10/2026, après `body-parser` 1.20.9, `fast-uri` 3.1.9 et `multer` 2.5.0. Limite : `npm audit` ne signalait rien sur `multer` 1.4.5-lts.2 alors que Dependabot (GitHub) y relevait 10 alertes hautes ; les alertes de GitHub se lisent à chaque version en plus de `npm audit` |
-| Dépendances | `npm audit --omit=dev` interface | 0 vulnérabilité | Sortie du 27/10/2026 (0.2.4) |
+| Dépendances | `npm audit --omit=dev` serveur | 0 vulnérabilité | Sortie du 03/11/2026 après `npm update qs` (6.16.0 vers 6.16.2, alerte parue après le 27/10/2026, E31) ; sortie du 27/10/2026 : après `body-parser` 1.20.9, `fast-uri` 3.1.9 et `multer` 2.5.0. Limite : `npm audit` ne signalait rien sur `multer` 1.4.5-lts.2 alors que Dependabot (GitHub) y relevait 10 alertes hautes ; les alertes de GitHub se lisent à chaque version en plus de `npm audit` |
+| Dépendances | `npm audit --omit=dev` interface | 0 vulnérabilité | Sortie du 03/11/2026 (0.2.5) |
 | Dépendances | Les suites et l'audit des dépendances de production se rejouent à chaque demande de fusion | Conforme | `.github/workflows/ci.yml`, contrôlé par `depot.test.js` ; premier passage sur GitHub à observer |
 | Dépendances | Audit complet de l'interface, outils de développement compris | 0 vulnérabilité (4 en 0.2.2, 10 en 0.2.1) après `vite` 8.3.5, `@vitejs/plugin-react` 6.1.2 et `vitest` 4.1.12 | Sortie du 27/10/2026 ; la section suivante garde l'historique |
 | Dépendances | `multer` 2.5.0 (génération 1.x dépréciée par l'éditeur, 10 alertes hautes relevées par Dependabot sur 1.4.5-lts.2) | Conforme ; accord de Renaud du 27/10/2026 | 82 tests serveur sur 82 avec la 2.5.0, écart E20 clos |
@@ -57,6 +65,8 @@ Résultat de la grille de la section 10.2 du standard. « Automatisé » : test 
 Les trois contrôles qui ne restent jamais « non joués » (secrets commités, contrôle d'accès côté serveur, IDOR) sont conformes.
 
 ## Audit complet de l'interface
+
+Mesure du 03/11/2026 avec la 0.2.5 : 12 vulnérabilités modérées, toutes dans la chaîne `eslint` (`minimatch`, `glob`, `rimraf`, `flat-cache` et leurs dépendants : `eslint`, `eslint-plugin-jsx-a11y`, `@typescript-eslint/parser`), outils de développement, aucune dans l'image servie par nginx ; avis parus après le 27/10/2026. La correction demande une montée majeure d'`eslint` : accord de Renaud avant toute montée (écart E34). La CI ne bloque qu'au niveau « haute ».
 
 Mesure du 27/10/2026 avec la 0.2.3 : 0 vulnérabilité. Avec la 0.2.2 : 4 (3 modérées, 1 haute : `vite`, `esbuild`, `vitest`, `@vitest/mocker`), outils de développement seulement. Le tableau ci-dessous est celui du 20/10/2026.
 
@@ -80,3 +90,18 @@ Chaque contrôle a été retiré du code sur une copie, la suite `pieces.test.js
 | `assertRegister` de la lecture d'une pièce | 4 : cloisonnement ; rejet ; journal des consultations ; MCP |
 | En-tête `frame-ancestors 'self'` de la route du contenu | 1 : en-têtes du contenu |
 | Aucun (fichiers restaurés) | 0 |
+
+## Preuves d'échec des tests de connexion (0.2.5)
+
+Chaque contrôle a été retiré du code sur une copie, la suite concernée rejouée, puis le fichier restauré (`cmp` identique).
+
+| Contrôle retiré | Résultat |
+| --- | --- |
+| Vérification de la signature du jeton d'identité | `sso.test.js` : 1 test en échec (jetons refusés) |
+| Contrôle de `next` (`safeNext`) | 1 échec |
+| Refus du mot de passe en mode `sso` | 1 échec |
+| Garde « aucun administrateur joignable » des comptes | 2 échecs |
+| Contrôle de l'audience du jeton | 0 échec avec les tests du gabarit : test ajouté (jeton d'une autre application), puis 1 échec |
+| `prompt=login` ajouté à l'adresse d'autorisation | 1 échec |
+| Interface : contrôle de `next` du gabarit (`startsWith('/')`) | `connexion.test.tsx` : 1 échec |
+| Interface : redirection automatique après la déconnexion | 2 échecs |

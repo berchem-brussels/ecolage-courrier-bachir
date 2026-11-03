@@ -1,4 +1,4 @@
-# Architecture, version 0.2.0
+# Architecture, version 0.2.5
 
 The French text is authoritative. This translation was made by Claude and still needs review (gap E13).
 
@@ -25,7 +25,7 @@ Two Docker Compose containers: `courrier-web` (nginx, built interface, `/api/` p
 | `pieces` (0.2.0) | Uploaded file: entity, mail (once attached), status `a_enregistrer`, `rattachee` or `rejetee`, storage name, original name, verified type, size, SHA-256 hash, position, rejection reason |
 | `consultations` (0.2.0) | Access log: person, entity, mail, file, action (`fiche` or `piece`), channel (`api` or `mcp`), UTC timestamp |
 
-Migrations: `001_noyau` to `005_pieces_consultations`.
+Migrations: `001_noyau` to `005_pieces_consultations`, `006_connexion_microsoft` (0.2.5: `users.oid`, `users.is_admin_local`, table `auth_pending` for sign-ins in progress, ten minutes).
 
 ## Roles
 
@@ -51,8 +51,13 @@ Content is read through `GET /api/pieces/:id/contenu`, authenticated by the sess
 | --- | --- | --- |
 | `pieces.max_mb` | 50 | `config/instance.defaut.json`; editable in Administration › Settings, from 1 to 50 (nginx limit) |
 | `pieces.mcp_read_max_mb` | 5 | Same; from 1 to 10 |
+| `auth.mode` (0.2.5) | `local` | `app_settings`, editable in Administration › Settings › Sign-in: `local`, `sso_optional`, `sso` |
+| `auth.tenant`, `auth.client_id`, `auth.public_url`, `auth.domains` (0.2.5) | empty | Same; `auth.public_url` in HTTPS, used for the return address `<address>/api/auth/callback` |
+| `auth.client_secret` (0.2.5) | empty | Same; encrypted with AES-256-GCM (`CONFIG_ENC_KEY`), never returned nor logged; absent from the public settings |
 | Others | See the French text | `config/` |
 
 ## API and MCP
 
 New resources in 0.2.0: `/api/pieces` (six routes, including `GET /:id/contenu`), `/api/consultations` (read only), `/api/settings` (read and update). 55 routes, 52 MCP tools. OpenAPI contract on `GET /api/openapi.json`.
+
+New in 0.2.5: three open routes `/api/auth/config`, `/api/auth/sso/start`, `/api/auth/callback` (Microsoft sign-in, written list) and `/api/settings/auth` (`GET`, `PUT`, `POST /test`, administrator only). No MCP tools: they are browser navigation routes and sign-in settings handled on screen only. 61 routes in total, 52 MCP tools.

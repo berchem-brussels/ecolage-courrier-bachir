@@ -3,7 +3,7 @@
  * Patron SAGA App.tsx ; les couleurs viennent des paramètres de l'instance, jamais d'une constante.
  */
 import React, { useCallback, useMemo, useState } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { ConfigProvider, Spin, theme as antTheme } from 'antd';
 import frFR from 'antd/es/locale/fr_FR';
 import nlNL from 'antd/es/locale/nl_NL';
@@ -71,6 +71,12 @@ function AdminOnly({ children }: { children: React.ReactElement }) {
   return isAdmin ? children : <Navigate to="/" replace />;
 }
 
+/** Sans session : renvoi vers la connexion avec l'écran demandé, d'où part la connexion Microsoft sans clic (standard v3.3, section 8.6). */
+function ToLogin() {
+  const location = useLocation();
+  return <Navigate to={`/login?next=${encodeURIComponent(location.pathname + location.search)}`} replace />;
+}
+
 /** Écran d'arrivée : le registre pour qui le tient, le journal pour l'auditeur, les entités et registres pour l'administrateur, l'accueil sinon. */
 function Landing() {
   const { user, isAdmin } = useAuth();
@@ -86,7 +92,7 @@ function AppRoutes() {
     <React.Suspense fallback={<Loading />}>
       <Routes>
         <Route path="/login" element={user ? <Navigate to="/" replace /> : <LoginPage />} />
-        <Route path="/" element={user ? <AppLayout /> : <Navigate to="/login" replace />}>
+        <Route path="/" element={user ? <AppLayout /> : <ToLogin />}>
           <Route index element={<Landing />} />
           <Route path="accueil" element={<HomePage />} />
           <Route path="registre" element={<RegisterPage />} />
@@ -102,7 +108,7 @@ function AppRoutes() {
           <Route path="help" element={<HelpPage />} />
           <Route path="accessibility" element={<AccessibilityPage />} />
         </Route>
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={user ? <Navigate to="/" replace /> : <ToLogin />} />
       </Routes>
     </React.Suspense>
   );

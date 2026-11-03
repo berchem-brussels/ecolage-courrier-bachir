@@ -1,8 +1,8 @@
 # État de l'application courrier
 
-Application courrier · version 0.2.4 · état au 27/10/2026
+Application courrier · version 0.2.5 · état au 03/11/2026
 
-Archive installée sur NIXUS : `courrier-v0_2_3.tar.gz` (1 261 418 octets), installée en acceptance le 27/10/2026 ; sa recette a relevé un défaut du sélecteur de date et elle n'est pas publiée sur GitHub. Version préparée le 27/10/2026 : 0.2.4 (`courrier-v0_2_4.tar.gz`), qui corrige ce défaut ; à installer et à recetter. Dernière version publiée sur GitHub : 0.2.2 (`courrier-v0_2_2.tar.gz`, 1 271 020 octets), installée et recettée le 27/10/2026. Les fichiers du projet (ce fichier, ECARTS-CDC.md, CHANGELOG.md, APRES-DEPLOIEMENT.md, DECISIONS.md, CAHIER-DES-CHARGES-COURRIER.md) font foi s'ils diffèrent des copies de l'archive ; ils sont recopiés dans l'archive à la version suivante.
+Version préparée le 03/11/2026 : 0.2.5 (`courrier-v0_2_5.tar.gz`, connexion Microsoft compatible avec Portal), à installer et à recetter. Archive installée sur NIXUS : `courrier-v0_2_4.tar.gz` (1 264 765 octets), installée en acceptance et recettée le 27/10/2026, publiée sur GitHub le même jour (étiquette `v0.2.4`, publication immuable, empreinte vérifiée). Versions précédentes : 0.2.3 (installée, non publiée, remplacée), 0.2.2 (publiée), 0.2.1. Les fichiers du projet (ce fichier, ECARTS-CDC.md, CHANGELOG.md, APRES-DEPLOIEMENT.md, DECISIONS.md, CAHIER-DES-CHARGES-COURRIER.md) font foi s'ils diffèrent des copies de l'archive ; ils sont recopiés dans l'archive à la version suivante.
 
 ## 1. Ce qui fonctionne
 
@@ -40,9 +40,13 @@ Aucune fonction nouvelle, aucune migration, aucune dépendance ajoutée. `.githu
 
 Aucune fonction nouvelle, aucune migration, aucun changement dans `src/`. `multer` 2.5.0 (10 alertes hautes de Dependabot sur la 1.x), `vite` 8.3.5, `@vitejs/plugin-react` 6.1.2, `vitest` 4.1.12. Audit complet à 0 dans les deux parties. Décomptes : serveur 82 tests, écrans 58 tests, 0 échec. Verrou de l'interface écrit par npm 11, relu par `npm ci` sous npm 10. Détail dans `CHANGELOG.md`. Défaut relevé à la recette : sélecteur de date en anglais, au format mois/jour (cause : import de la langue d'Ant Design sous `vite` 8). Corrigé dans la 0.2.4.
 
-## 1 quater. Version 0.2.4, préparée le 27/10/2026
+## 1 quater. Version 0.2.4, installée, recettée et publiée le 27/10/2026
 
 Corrige le sélecteur de date de la 0.2.3 (`antd/es/locale/fr_FR` et `nl_NL`). Mêmes dépendances que la 0.2.3, aucun changement du serveur. Nouveau test `imports.test.ts`. Décomptes : serveur 82 tests, écrans 60 tests, 0 échec. Textes de 11 pages et 22 captures comparés à la 0.2.2, en français et en néerlandais : aucune différence. Détail dans `CHANGELOG.md`.
+
+## 1 quinquies. Version 0.2.5, préparée le 03/11/2026
+
+Première version du lot « connexion Microsoft, tickets, aide par écran » (décision du 03/11/2026), reprise du gabarit 1.3.0 : connexion Microsoft compatible avec Portal (standard v3.3, section 8.6). Migration 006 (`oid`, `is_admin_local`, `auth_pending`). Mode `local` par défaut : rien ne change pour les agents. Bouton « Tester l'annuaire » ajouté. Défaut du gabarit corrigé (redirection ouverte, E30). `qs` 6.16.2 (E31), `permissions: contents: read` dans `ci.yml` (E28). Décomptes : serveur 96 tests, écrans 67 tests, 0 échec ; parcours réel contre un faux Microsoft : 11 contrôles conformes. Recette réelle en 7 points (`SSO-COMPATIBLE-PORTAL.md`) non jouable avant l'inscription d'application Entra ID et le lien dans Portal. Détail dans `CHANGELOG.md`.
 
 ## 2. Environnement d'acceptance sur NIXUS
 
@@ -55,8 +59,8 @@ Corrige le sélecteur de date de la 0.2.3 (`antd/es/locale/fr_FR` et `nl_NL`). M
 | Fichier `.env` | Créé le 13/10/2026, droits 600 ; variables `APP_NAME`, `HTTPS_PORT`, `HTTP_PORT`, `PUBLIC_HOST`, `APP_ENVIRONMENT=acceptance`, `JWT_SECRET`, `CONFIG_ENC_KEY` ; ne jamais le recréer |
 | Sauvegarde | Tâche DSM « Sauvegarde courrier », chaque jour à 02:00, `bash /srv/docker/courrier/backup.sh`, archives dans `/srv/backups/courrier`, 30 jours ; 11 sauvegardes présentes le 20/10/2026 à 16:01, fichiers déposés compris |
 | Compte du serveur dans le conteneur | `appuser`, uid 10001, depuis la 0.2.0 (relevé sur NIXUS le 20/10/2026) ; `node`, uid 1000, jusqu'à la 0.1.1 |
-| Durée de construction mesurée | 8 min 40 s le 13/10/2026 ; 12 min 21 s le 20/10/2026 (0.1.1) ; 11 min 19 s le 20/10/2026 (0.2.0, `--no-cache`) ; démarrage `Healthy` en 90,9 s ; 5 min 21 s le 20/10/2026 (0.2.1, `Healthy` en 63,0 s) ; 2 min 5 s le 27/10/2026 (0.2.2, `Healthy` en 47,6 s) ; 3 min 14 s le 27/10/2026 (0.2.3, `--no-cache`, `Healthy` en 92,7 s) |
-| Archives présentes dans le dossier | `courrier-v0_1_0.tar.gz`, `courrier-v0_1_1.tar.gz`, `courrier-v0_2_0.tar.gz`, `courrier-v0_2_1.tar.gz`, `courrier-v0_2_2.tar.gz`, `courrier-v0_2_3.tar.gz` |
+| Durée de construction mesurée | 8 min 40 s le 13/10/2026 ; 12 min 21 s le 20/10/2026 (0.1.1) ; 11 min 19 s le 20/10/2026 (0.2.0, `--no-cache`) ; démarrage `Healthy` en 90,9 s ; 5 min 21 s le 20/10/2026 (0.2.1, `Healthy` en 63,0 s) ; 2 min 5 s le 27/10/2026 (0.2.2, `Healthy` en 47,6 s) ; 3 min 14 s le 27/10/2026 (0.2.3, `--no-cache`, `Healthy` en 92,7 s) ; 1 min 31 s le 27/10/2026 (0.2.4, sans `--no-cache`, `Healthy` en 42,3 s) |
+| Archives présentes dans le dossier | `courrier-v0_1_0.tar.gz`, `courrier-v0_1_1.tar.gz`, `courrier-v0_2_0.tar.gz`, `courrier-v0_2_1.tar.gz`, `courrier-v0_2_2.tar.gz`, `courrier-v0_2_3.tar.gz`, `courrier-v0_2_4.tar.gz` |
 
 Comptes sur l'instance d'acceptance (aucun mot de passe consigné) :
 
@@ -80,12 +84,16 @@ Chaque étape est une version complète au standard, déployable sur NIXUS en qu
 | 2 | 0.2.0, 0.2.1 | Pièces : dépôt PDF et images, contrôle du type réel, file « À enregistrer », aperçu à côté du formulaire, pièces dans la fiche par route authentifiée, journal des consultations, sauvegarde des fichiers ; ajout de `multer` | 0.2.0 livrée et recettée le 20/10/2026 ; 0.2.1 (corrections de la recette) installée le 20/10/2026, recettée le 27/10/2026 : terminée |
 | 2 bis | 0.2.2 | Dépôt public : GitHub Actions (`ci.yml`), `.gitignore`, valeurs d'exemple dans les documents, verrou du serveur mis à jour (`body-parser`, `fast-uri`) ; aucune fonction nouvelle | Installée et recettée le 27/10/2026 ; publiée sur GitHub (étiquette `v0.2.2`, CI verte) |
 | 2 ter | 0.2.3 | Dépendances : `multer` 2.5.0, `vite` 8.3.5, `@vitejs/plugin-react` 6.1.2, `vitest` 4.1.12 (accord de Renaud du 27/10/2026) ; aucune fonction nouvelle | Installée le 27/10/2026 ; défaut du sélecteur de date relevé à la recette ; non publiée, remplacée par la 0.2.4 |
-| 2 quater | 0.2.4 | Correction du sélecteur de date de la 0.2.3 ; mêmes dépendances ; aucune fonction nouvelle | Préparée le 27/10/2026, à installer, puis publication sur GitHub |
+| 2 quater | 0.2.4 | Correction du sélecteur de date de la 0.2.3 ; mêmes dépendances ; aucune fonction nouvelle | Installée, recettée et publiée le 27/10/2026 (étiquette `v0.2.4`) |
+| 2 quinquies | 0.2.5 | Connexion Microsoft compatible avec Portal (standard v3.3, 8.6), reprise du gabarit 1.3.0 ; `qs` 6.16.2 ; `ci.yml` avec `permissions` | Préparée le 03/11/2026, à installer et à recetter (recette réelle en 7 points après l'inscription Entra ID) |
+| 2 sexies | 0.2.6 | Tickets (standard 13.5) : bouton « Signaler », files métier et IT par entité, ITIL, MCP ; migration 007 | À faire, après « go » |
+| 2 septies | 0.2.7 | Aide par écran (1/2) : 14 fiches FR et NL, explication de chaque champ, centre d'aide, contrôles bloquants ; E23 | À faire |
+| 2 octies | 0.2.8 | Aide par écran (2/2) : captures annotées FR et NL par Playwright, FAQ locale en base, lien ticket vers FAQ ; migration 008 | À faire |
 | 3 | 0.3.0 | Attribution : service traitant, copies, agent nommé, renvoi au secrétariat, réattribution, bannettes en onglets avec compteurs, cloche | Prochaine étape après la recette de la 0.2.0 |
 | 4 | 0.4.0 | Traitement : prise en charge, commentaires, clôture avec motif, réouverture, historique complet | À faire |
 | 5 | 0.5.0 | Confidentialité à trois niveaux, pli remis fermé, entité active dans l'en-tête, suppléances, tests de cloisonnement étendus | À faire |
 | 6 | 0.6.0 | Recherche globale, exports Excel et CSV, registre et fiche imprimables, raccourcis clavier, visite guidée, correction de la date de réception avec motif | À faire |
-| 7 | 0.7.0 | Connexion Microsoft 365 (OpenID Connect côté serveur, signature vérifiée) | À faire ; inscription d'application Entra à demander |
+| 7 | 0.7.0 | Connexion Microsoft 365 : code livré en 0.2.5 ; reste la recette réelle (inscription d'application Entra ID, lien dans Portal) puis le provisioning Graph éventuel | Code livré ; recette réelle à faire, inscription d'application Entra à demander |
 | 8 | 0.8.0 | PostgreSQL 16, sauvegarde `pg_dump`, restauration jouée ; fin du lot L1 | À faire ; code de PILOT utile (pont PostgreSQL) |
 | 9 | 0.9.0 | Délais par type, jours fériés, échéances, onglet « En retard », prolongation | À faire |
 | 10 | 0.10.0 | Rappels, escalade, notifications par courriel | À faire |
@@ -100,7 +108,7 @@ Chaque étape est une version complète au standard, déployable sur NIXUS en qu
 | 19 | 0.19.0 | Webhooks, liens avec STEGA, BOS, Population et Finances | À faire |
 | 20 | 0.20.0 | Statistiques, rapport trimestriel, conservation et anonymisation, export des données d'une personne | À faire |
 | 21 | 0.21.0 | MCP complet : OAuth 2.1, invites métier, jetons des applications tierces | À faire |
-| 22 | 0.22.0 | Reprise de l'historique d'iCourrier | À faire ; export de l'ancien outil à obtenir (I-06) |
+| 22 | 0.22.0 | Reprise de l'historique d'iCourrier | À faire ; export l'éditeur de l'ancien outil à obtenir (I-06) |
 | 23 | 1.0.0 | Mise en production : chiffrement au repos, documentation NL et EN complète, grille de sécurité entière, hébergeur, accord de Renaud | À faire |
 | L5 | Après décision | OCR, cachet sur le PDF, suggestion par IA, eBox, IRISbox, antivirus (D-01 à D-08) | Après décisions de Renaud |
 
@@ -115,7 +123,7 @@ Informations attendues avant de la commencer : captures des écrans d'iCourrier 
 - Base `sql.js` : maquette d'atelier, données fictives uniquement. Aucun courrier ni aucun scan réel avant le passage à PostgreSQL (étape 8) et l'accord de Renaud.
 - La file « À enregistrer » ne se remplit que par dépôt à l'écran ; un fichier joint ne se retire pas ; pas d'antivirus ni d'aperçu des fichiers Office.
 - Aucune durée de conservation appliquée aux fichiers ni au journal des consultations (étape 20).
-- Connexion par comptes locaux seulement.
+- Connexion par comptes locaux par défaut ; connexion Microsoft livrée en 0.2.5, non recettée en réel (inscription Entra ID manquante).
 - Le courrier et ses fichiers ne sont visibles que du secrétariat et du gestionnaire de l'entité ; l'auditeur voit le journal des consultations ; les autres rôles ne voient rien tant que l'attribution n'existe pas.
 - La date de réception ne se corrige pas après l'enregistrement.
 - Le choix de l'entité se fait par des boutons dans l'écran, pas encore dans l'en-tête.
@@ -123,7 +131,7 @@ Informations attendues avant de la commencer : captures des écrans d'iCourrier 
 
 ## 6. Hors application, à garder en vue
 
-- Dépôt GitHub `berchem-brussels/ecolage-courrier-bachir` : public ; la 0.2.3 n'y est pas publiée et la 0.2.4 prendra sa place ; 0.2.2 envoyée et étiquetée `v0.2.2` le 27/10/2026, travail « tests » vert (1 min 47 s), publication immuable avec l'archive jointe. Protection de `main` active (règle `protection-main`). Restent : deux demandes de fusion de Dependabot (#1 `vitest`, #2 `vite`) à ne pas fusionner sans l'accord de Renaud, et 38 signalements dans « Security and quality » examinés mais non traités : 0 secret, 28 Dependabot (10 hautes sur `multer` côté serveur, 15 sur les outils de développement), 10 CodeQL (faux positifs probables, E25).
+- Dépôt GitHub `berchem-brussels/ecolage-courrier-bachir` : public ; la 0.2.3 n'y est pas publiée ; la 0.2.4 y est fusionnée, étiquetée `v0.2.4` et publiée (travail « tests » réussi en 49 s) ; 0.2.2 envoyée et étiquetée `v0.2.2` le 27/10/2026, travail « tests » vert (1 min 47 s), publication immuable avec l'archive jointe. Protection de `main` active (règle `protection-main`). Après la 0.2.4 : plus aucune demande de fusion ouverte, 28 alertes Dependabot fermées, 0 secret détecté ; restent 11 alertes CodeQL ouvertes : 10 sur `pieces.js` (faux positifs probables, E25) et 1 sur `ci.yml` (« Workflow does not contain permissions », moyenne, E28).
 - Réponse de Renaud du 27/10/2026 : accord pour `multer` 2.x avec un courriel (raisons et impact sur le standard) ; « idem » pour `vite` et `vitest`, lu par le conducteur du projet comme un oui ; alertes CodeQL à revérifier après la mise en production. `multer` 2.x et `vite` 8 sont installés dans la 0.2.3 et corrigés dans la 0.2.4 ; l'accord de Renaud sur `@vitejs/plugin-react` 6, imposé par `vite` 8 et non nommé dans le courriel, est à confirmer. Le courriel signale aussi l'usage de `npm audit fix` pour la 0.2.2 (E26).
 - Notification par courriel de NIXUS en panne (alerte DSM du 13/10/2026) : une sauvegarde en échec ne serait signalée à personne. Bloquant avant une production (standard 15.8).
 - Tâches de PILOT désactivées dans le Planificateur de NIXUS : laissées telles quelles, décision du 13/10/2026.

@@ -34,6 +34,7 @@ function buildApp() {
 
   const publicRouter = require('./routes/public');
   app.use('/api', publicRouter);
+  app.use('/api', require('./routes/sso'));
   app.use('/api/auth', require('./routes/auth'));
   for (const [mount, router] of Object.entries(require('./routes/resources').RESOURCES)) app.use(mount, router);
   app.use('/api/users', require('./routes/users'));

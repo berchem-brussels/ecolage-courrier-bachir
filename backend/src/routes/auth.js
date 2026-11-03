@@ -12,6 +12,7 @@ const { ok, fail, handle } = require('../envelope');
 const { logAudit } = require('../audit');
 const { TEST_MODE } = require('../config');
 const S = require('../schemas');
+const { getSetting } = require('../settings');
 
 const router = express.Router();
 
@@ -35,11 +36,13 @@ function profile(id) {
 
 router.post('/login', loginLimiter, validate(S.login), handle((req, res) => {
   const db = getDb();
-  const u = db.prepare('SELECT id, password_hash FROM users WHERE email = ? AND is_active = 1').get(req.body.email.trim());
+  const u = db.prepare('SELECT id, password_hash, is_admin_local FROM users WHERE email = ? AND is_active = 1').get(req.body.email.trim());
   if (!u || !u.password_hash || !u.password_hash.startsWith('$2') || !bcrypt.compareSync(req.body.password, u.password_hash)) {
     logAudit(u ? u.id : null, 'login.failure', 'user', u ? u.id : null, null);
     return fail(res, req, 401, 'LOGIN_FAILED');
   }
+  // Mode « sso » : le mot de passe ne sert qu'à l'accès de secours des administrateurs marqués (standard 8.1 et 8.6).
+  if (getSetting('auth.mode') === 'sso' && !u.is_admin_local) return fail(res, req, 403, 'LOCAL_LOGIN_DISABLED');
   const { token, csrf } = openSession(req, res, u);
   logAudit(u.id, 'login.success', 'user', u.id, { method: 'local' });
   ok(res, { user: profile(u.id), token, csrf_token: csrf }, { resource: 'session' });

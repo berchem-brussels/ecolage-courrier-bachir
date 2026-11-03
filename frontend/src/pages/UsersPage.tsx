@@ -1,6 +1,6 @@
 /** Comptes de l'application, réservés à l'administrateur (standard v3.2, section 17.4). Remplacé à terme par l'application Droits. */
 import { useCallback, useEffect, useState } from 'react';
-import { Alert, Button, Card, Checkbox, Form, Input, Modal, Popconfirm, Radio, Space, Table, Tag, Typography, message } from 'antd';
+import { Alert, Button, Card, Checkbox, Form, Input, Modal, Popconfirm, Radio, Space, Switch, Table, Tag, Typography, message } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import api, { ApiError, qs } from '../api';
 import { useI18n } from '../contexts/I18nContext';
@@ -8,7 +8,7 @@ import { useAuth, type EntityRole } from '../contexts/AuthContext';
 import { useEntities } from '../hooks';
 import { NO_FOR, pick, type Entity } from '../labels';
 
-interface U { id: number; email: string; first_name: string; last_name: string; user_role: 'agent' | 'admin'; preferred_lang: 'fr' | 'nl'; is_active: number; entity_roles: EntityRole[] }
+interface U { id: number; email: string; first_name: string; last_name: string; user_role: 'agent' | 'admin'; preferred_lang: 'fr' | 'nl'; is_active: number; is_admin_local: number; microsoft_linked: number; entity_roles: EntityRole[] }
 type RoleChoice = EntityRole['role'] | '';
 const ROLES: EntityRole['role'][] = ['agent', 'chef_service', 'secretariat', 'gestionnaire', 'auditeur'];
 
@@ -35,7 +35,7 @@ const toMap = (roles: EntityRole[]) => Object.fromEntries(roles.map((r) => [r.en
 const toList = (m: Record<number, RoleChoice> | undefined) => Object.entries(m || {}).filter(([, r]) => r).map(([id, role]) => ({ entity_id: Number(id), role }));
 
 export default function UsersPage() {
-  const { t } = useI18n();
+  const { t, hint } = useI18n();
   const [rows, setRows] = useState<U[]>([]);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
@@ -54,8 +54,9 @@ export default function UsersPage() {
   useEffect(() => { load(); }, [load]);
 
   const mode = Form.useWatch('password_mode', form);
+  const newRole = Form.useWatch('user_role', form);
 
-  const create = async (v: Omit<U, 'id' | 'is_active' | 'entity_roles'> & { password_mode: 'generated' | 'manual'; password?: string; must_change_password: boolean; roles?: Record<number, RoleChoice> }) => {
+  const create = async (v: Omit<U, 'id' | 'is_active' | 'entity_roles' | 'is_admin_local' | 'microsoft_linked'> & { is_admin_local?: boolean; password_mode: 'generated' | 'manual'; password?: string; must_change_password: boolean; roles?: Record<number, RoleChoice> }) => {
     const { roles, ...rest } = v;
     try {
       const r = await api.post<U & { generated_password?: string }>('/users', { ...rest, entity_roles: toList(roles) });
@@ -76,6 +77,7 @@ export default function UsersPage() {
       setRolesFor(null); message.success(t('common.saved')); load();
     } catch (e) { fail(e); }
   };
+  const setLocal = async (u: U, on: boolean) => { try { await api.put(`/users/${u.id}`, { is_admin_local: on ? 1 : 0 }); load(); } catch (e) { fail(e); } };
   const deactivate = async (u: U) => { try { await api.del(`/users/${u.id}`); load(); } catch (e) { fail(e); } };
 
   const roleOptions = [{ value: 'agent', label: t('users.role.agent') }, { value: 'admin', label: t('users.role.admin') }];
@@ -99,6 +101,12 @@ export default function UsersPage() {
             ) },
             { title: t('users.app_role'), key: 'role', render: (_, u) => (
               <Radio.Group size="small" optionType="button" value={u.user_role} options={roleOptions} disabled={!u.is_active} onChange={(e) => setRole(u, e.target.value)} />
+            ) },
+            { title: t('users.admin_local'), key: 'local', render: (_, u) => (
+              <Space size={4} wrap>
+                {u.user_role === 'admin' && <Switch size="small" aria-label={`${t('users.admin_local')} ${u.email}`} checked={!!u.is_admin_local} disabled={!u.is_active} onChange={(on) => setLocal(u, on)} />}
+                {u.microsoft_linked ? <Tag color="blue">{t('users.microsoft_linked')}</Tag> : null}
+              </Space>
             ) },
             { title: t('users.field.active'), key: 'active', render: (_, u) => (u.is_active ? <Tag color="green">{t('yes')}</Tag> : <Tag>{t('no')}</Tag>) },
             { title: t('common.actions'), key: 'actions', render: (_, u) => (u.is_active ? (
@@ -128,6 +136,7 @@ export default function UsersPage() {
             {mode === 'manual' && (
               <Form.Item name="password" label={t('users.password.value')} rules={[{ required: true, min: 8 }]}><Input.Password autoComplete="new-password" /></Form.Item>
             )}
+            {newRole === 'admin' && <Form.Item name="is_admin_local" valuePropName="checked" tooltip={hint('users.admin_local')}><Checkbox>{t('users.admin_local.field')}</Checkbox></Form.Item>}
             <Form.Item name="must_change_password" valuePropName="checked"><Checkbox>{t('users.password.must_change')}</Checkbox></Form.Item>
           </Form>
         )}

@@ -1,6 +1,6 @@
 /**
  * Administration › Paramètres (standard v3.2, section 17.3) : réglages de l'instance qui s'appliquent sans nouvelle
- * version. Version 0.2.0 : taille maximale d'un fichier déposé (décision D-23 du 20/10/2026, 50 Mo au plus, plafond
+ * version. Version 0.2.5 : carte « Connexion » (Microsoft). Version 0.2.0 : taille maximale d'un fichier déposé (décision D-23 du 20/10/2026, 50 Mo au plus, plafond
  * technique de nginx) et taille maximale d'un fichier lu par un assistant (MCP). Chaque changement est journalisé.
  */
 import { useEffect, useState } from 'react';
@@ -8,6 +8,7 @@ import { Alert, Button, Card, Form, InputNumber, Typography, message } from 'ant
 import api, { ApiError } from '../api';
 import { useI18n } from '../contexts/I18nContext';
 import { useSettings } from '../contexts/SettingsContext';
+import AuthSettingsCard from '../components/AuthSettingsCard';
 
 interface Settings { pieces_max_mb: number; pieces_mcp_read_max_mb: number; defaults?: { pieces_max_mb: number; pieces_mcp_read_max_mb: number } }
 
@@ -46,6 +47,7 @@ export default function SettingsPage() {
           <Button type="primary" htmlType="submit">{t('common.save')}</Button>
         </Form>
       </Card>
+      <AuthSettingsCard />
     </div>
   );
 }
