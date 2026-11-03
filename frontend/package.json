@@ -1,6 +1,6 @@
 {
   "name": "courrier-frontend",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "private": true,
   "license": "EUPL-1.2",
   "type": "module",

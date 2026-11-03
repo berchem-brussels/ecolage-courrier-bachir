@@ -1,4 +1,4 @@
-# Architecture, version 0.2.5
+# Architecture, version 0.2.6
 
 Le français fait foi. Les versions néerlandaise et anglaise sont des traductions de Claude à faire relire (écart E13).
 
@@ -30,7 +30,7 @@ Deux conteneurs Docker Compose : `courrier-web` (nginx, interface construite, re
 | `pieces` (0.2.0) | Fichier déposé : entité, courrier (après rattachement), statut `a_enregistrer`, `rattachee` ou `rejetee`, nom de stockage, nom d'origine, type vérifié, taille, empreinte SHA-256, position, motif de rejet |
 | `consultations` (0.2.0) | Journal des consultations : personne, entité, courrier, pièce, action (`fiche` ou `piece`), canal (`api` ou `mcp`), horodatage UTC |
 
-Migrations : `001_noyau`, `002_entites_registres`, `003_referentiels`, `004_courrier_entrant`, `005_pieces_consultations`, `006_connexion_microsoft` (0.2.5 : `users.oid`, `users.is_admin_local`, table `auth_pending` des connexions Microsoft en cours, dix minutes).
+Migrations : `001_noyau`, `002_entites_registres`, `003_referentiels`, `004_courrier_entrant`, `005_pieces_consultations`, `007_tickets` (0.2.6 : tables `tickets` et `ticket_messages`), `006_connexion_microsoft` (0.2.5 : `users.oid`, `users.is_admin_local`, table `auth_pending` des connexions Microsoft en cours, dix minutes).
 
 ## Rôles
 
@@ -65,6 +65,9 @@ Toute lecture du contenu et toute ouverture de fiche (`GET /api/mails/:id`) s'in
 | `app.timezone` | Europe/Brussels | Idem ; sert à la date du jour et aux filtres de période du journal |
 | `pieces.max_mb` | 50 | Idem ; modifiable dans Administration › Paramètres, de 1 à 50 (plafond de `client_max_body_size` de nginx, 51 Mo) |
 | `pieces.mcp_read_max_mb` | 5 | Idem ; de 1 à 10 |
+| `tickets.sla_json` (0.2.6) | P1 1 h et 8 h, P2 4 h et 24 h, P3 8 h et 72 h, P4 24 h et 240 h | `app_settings`, Administration › Paramètres › Tickets : heures [prise en charge, résolution] par priorité |
+| `tickets.reopen_days` (0.2.6) | 14 | Idem : jours pendant lesquels le demandeur rouvre un ticket résolu |
+| `tickets.business_roles`, `tickets.it_roles` (0.2.6) | `gestionnaire`, `admin` | Idem : codes de rôle de chaque file ; `admin` vaut pour toute l'application, les autres codes dans l'entité du ticket seulement |
 | `auth.mode` (0.2.5) | `local` | `app_settings`, modifiable dans Administration › Paramètres › Connexion : `local`, `sso_optional`, `sso` |
 | `auth.tenant`, `auth.client_id`, `auth.public_url`, `auth.domains` (0.2.5) | vide | Idem ; `auth.public_url` en HTTPS, sert à l'adresse de retour `<adresse>/api/auth/callback` |
 | `auth.client_secret` (0.2.5) | vide | Idem ; chiffré AES-256-GCM (`CONFIG_ENC_KEY`), jamais renvoyé ni inscrit au journal ; absent des paramètres publics |
@@ -83,4 +86,11 @@ Toute lecture du contenu et toute ouverture de fiche (`GET /api/mails/:id`) s'in
 | `/api/auth/config`, `/api/auth/sso/start`, `/api/auth/callback` (0.2.5) | Trois routes libres, en liste écrite : état de la connexion, départ vers Microsoft, retour de Microsoft | Aucun : routes de navigation du navigateur |
 | `/api/settings/auth` (0.2.5) | `GET`, `PUT`, `POST /test` : administrateur seul | Aucun : réglages de connexion réservés à l'écran |
 
-61 routes au total, 52 outils MCP exposés. Contrat OpenAPI généré sur `GET /api/openapi.json` ; le dépôt y est décrit en `multipart/form-data`.
+| `/api/tickets` (0.2.6) | `GET /`, `GET /stats`, `GET /to-handle`, `GET /:id`, `GET /:id/screenshot`, `POST /`, `PUT /:id`, `POST /:id/status`, `POST /:id/messages` | `list_tickets`, `ticket_stats`, `list_tickets_to_handle`, `get_ticket`, `get_ticket_screenshot`, `create_ticket`, `update_ticket`, `prepare_change_ticket_status`, `confirm_change_ticket_status`, `add_ticket_message` |
+| `/api/settings/tickets` (0.2.6) | `GET`, `PUT` : administrateur seul | `get_ticket_settings`, `update_ticket_settings` |
+
+72 routes au total, 64 outils MCP exposés. Contrat OpenAPI généré sur `GET /api/openapi.json` ; le dépôt y est décrit en `multipart/form-data`.
+
+## Tickets (0.2.6)
+
+Un ticket porte l'entité de son demandeur (`tickets.entity_id`) : celle de son seul rôle, ou celle qu'il choisit s'il a des rôles dans deux entités ; aucune pour l'administrateur seul. La file IT (incident, bug, souhait, et question sans entité) est traitée par les rôles de `tickets.it_roles` ; la file métier (question avec entité) par les rôles de `tickets.business_roles` tenus dans l'entité du ticket. L'administrateur n'a donc pas accès aux questions métier ni, par elles, au contenu du courrier. Le contexte joint (écran par son identifiant, version, langue, navigateur, date, dernière erreur de l'API) ne contient aucune donnée de courrier. Les écrans qui affichent du courrier n'acceptent aucune capture : `NO_CAPTURE_SCREENS` du serveur, repris par `frontend/src/screens.ts` (test d'alignement). Une capture de 2 Mo pèse environ 2,8 Mo en base64 : `express.json` à 4 Mo sur `/api/tickets` et bloc nginx de 4 Mo.

@@ -13,6 +13,10 @@ const DEFAULTS = {
   'auth.client_secret': '',
   'auth.public_url': '',
   'auth.domains': '',
+  'tickets.sla_json': '{"P1":[1,8],"P2":[4,24],"P3":[8,72],"P4":[24,240]}',
+  'tickets.reopen_days': '14',
+  'tickets.business_roles': 'gestionnaire',
+  'tickets.it_roles': 'admin',
 };
 const SECRETS = new Set(['auth.client_secret']);
 

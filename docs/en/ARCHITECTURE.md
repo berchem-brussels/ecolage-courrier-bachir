@@ -1,4 +1,4 @@
-# Architecture, version 0.2.5
+# Architecture, version 0.2.6
 
 The French text is authoritative. This translation was made by Claude and still needs review (gap E13).
 
@@ -25,7 +25,7 @@ Two Docker Compose containers: `courrier-web` (nginx, built interface, `/api/` p
 | `pieces` (0.2.0) | Uploaded file: entity, mail (once attached), status `a_enregistrer`, `rattachee` or `rejetee`, storage name, original name, verified type, size, SHA-256 hash, position, rejection reason |
 | `consultations` (0.2.0) | Access log: person, entity, mail, file, action (`fiche` or `piece`), channel (`api` or `mcp`), UTC timestamp |
 
-Migrations: `001_noyau` to `005_pieces_consultations`, `006_connexion_microsoft` (0.2.5: `users.oid`, `users.is_admin_local`, table `auth_pending` for sign-ins in progress, ten minutes).
+Migrations: `001_noyau` to `005_pieces_consultations`, `007_tickets` (0.2.6: tables `tickets` and `ticket_messages`), `006_connexion_microsoft` (0.2.5: `users.oid`, `users.is_admin_local`, table `auth_pending` for sign-ins in progress, ten minutes).
 
 ## Roles
 
@@ -51,6 +51,7 @@ Content is read through `GET /api/pieces/:id/contenu`, authenticated by the sess
 | --- | --- | --- |
 | `pieces.max_mb` | 50 | `config/instance.defaut.json`; editable in Administration › Settings, from 1 to 50 (nginx limit) |
 | `pieces.mcp_read_max_mb` | 5 | Same; from 1 to 10 |
+| `tickets.sla_json`, `tickets.reopen_days`, `tickets.business_roles`, `tickets.it_roles` (0.2.6) | P1 1 h and 8 h, P2 4 h and 24 h, P3 8 h and 72 h, P4 24 h and 240 h; 14 days; `gestionnaire`; `admin` | `app_settings`, Administration › Settings › Tickets: hours per priority, reopening period, roles of each queue (`admin` applies to the whole application, other codes only in the ticket's entity) |
 | `auth.mode` (0.2.5) | `local` | `app_settings`, editable in Administration › Settings › Sign-in: `local`, `sso_optional`, `sso` |
 | `auth.tenant`, `auth.client_id`, `auth.public_url`, `auth.domains` (0.2.5) | empty | Same; `auth.public_url` in HTTPS, used for the return address `<address>/api/auth/callback` |
 | `auth.client_secret` (0.2.5) | empty | Same; encrypted with AES-256-GCM (`CONFIG_ENC_KEY`), never returned nor logged; absent from the public settings |
@@ -60,4 +61,6 @@ Content is read through `GET /api/pieces/:id/contenu`, authenticated by the sess
 
 New resources in 0.2.0: `/api/pieces` (six routes, including `GET /:id/contenu`), `/api/consultations` (read only), `/api/settings` (read and update). 55 routes, 52 MCP tools. OpenAPI contract on `GET /api/openapi.json`.
 
-New in 0.2.5: three open routes `/api/auth/config`, `/api/auth/sso/start`, `/api/auth/callback` (Microsoft sign-in, written list) and `/api/settings/auth` (`GET`, `PUT`, `POST /test`, administrator only). No MCP tools: they are browser navigation routes and sign-in settings handled on screen only. 61 routes in total, 52 MCP tools.
+New in 0.2.5: three open routes `/api/auth/config`, `/api/auth/sso/start`, `/api/auth/callback` (Microsoft sign-in, written list) and `/api/settings/auth` (`GET`, `PUT`, `POST /test`, administrator only). No MCP tools: they are browser navigation routes and sign-in settings handled on screen only. 61 routes in total, 52 MCP tools (0.2.5).
+
+New in 0.2.6: `/api/tickets` (nine routes) and `/api/settings/tickets` (`GET`, `PUT`, administrator only), 11 MCP tools. 72 routes in total, 64 MCP tools. A ticket carries the requester's entity. The IT queue (incident, bug, wish, and question without entity) is handled by the roles of `tickets.it_roles`; the business queue (question with entity) by the roles of `tickets.business_roles` held in the ticket's entity. The administrator therefore has no access to business questions. No screenshot on screens that show mail (`NO_CAPTURE_SCREENS`, also in `frontend/src/screens.ts`). A 2 MB image weighs about 2.8 MB in base64: 4 MB on `/api/tickets` and in nginx.

@@ -30,6 +30,7 @@ const EntitiesPage = React.lazy(() => import('./pages/EntitiesPage'));
 const ServicesPage = React.lazy(() => import('./pages/ServicesPage'));
 const TypesPage = React.lazy(() => import('./pages/TypesPage'));
 const UsersPage = React.lazy(() => import('./pages/UsersPage'));
+const TicketsPage = React.lazy(() => import('./pages/TicketsPage'));
 const HelpPage = React.lazy(() => import('./pages/HelpPage'));
 const AccessibilityPage = React.lazy(() => import('./pages/AccessibilityPage'));
 
@@ -105,6 +106,7 @@ function AppRoutes() {
           <Route path="admin/services" element={<AdminOnly><ServicesPage /></AdminOnly>} />
           <Route path="admin/types" element={<TypesPage />} />
           <Route path="admin/parametres" element={<AdminOnly><SettingsPage /></AdminOnly>} />
+          <Route path="tickets" element={<TicketsPage />} />
           <Route path="help" element={<HelpPage />} />
           <Route path="accessibility" element={<AccessibilityPage />} />
         </Route>

@@ -9,6 +9,7 @@ import api, { ApiError } from '../api';
 import { useI18n } from '../contexts/I18nContext';
 import { useSettings } from '../contexts/SettingsContext';
 import AuthSettingsCard from '../components/AuthSettingsCard';
+import TicketSettingsCard from '../components/TicketSettingsCard';
 
 interface Settings { pieces_max_mb: number; pieces_mcp_read_max_mb: number; defaults?: { pieces_max_mb: number; pieces_mcp_read_max_mb: number } }
 
@@ -47,6 +48,7 @@ export default function SettingsPage() {
           <Button type="primary" htmlType="submit">{t('common.save')}</Button>
         </Form>
       </Card>
+      <TicketSettingsCard />
       <AuthSettingsCard />
     </div>
   );

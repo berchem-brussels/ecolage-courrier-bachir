@@ -32,7 +32,10 @@ const pieces = [{ id: 7, entity_id: 1, entity_code: 'AC', mail_id: null, mail_nu
   size_bytes: 52000, sha256: 'a'.repeat(64), position: 1, origin: 'depot', reject_reason: null, created_by: 1, created_by_first_name: 'Ada', created_by_last_name: 'Admin',
   created_at: '2026-10-20 08:00:00', updated_at: '2026-10-20 08:00:00' }];
 const mailDetail = { ...mails[0], files_count: 1, pieces: [{ ...pieces[0], mail_id: 1, mail_number: 'AC-2026-000001', status: 'rattachee' }] };
-const LISTS: Record<string, unknown[]> = { '/api/pieces': pieces, '/api/consultations': [], '/api/mails': mails, '/api/entities': entities, '/api/mail-types': types, '/api/services': services, '/api/contacts': contacts, '/api/registers': registers };
+const tickets = [{ id: 1, reference: 'TCK-2026-00001', type: 'question', title: 'Comment annuler ?', queue: 'business', entity_id: 1, entity_code: 'AC', priority: 'P2', status: 'new', wish_status: null,
+  fixed_version: null, screen: 'register', requester_id: 1, assignee_id: null, due_resolution_at: '2026-11-10 08:00:00', created_at: '2026-11-03 08:00:00', updated_at: '2026-11-03 08:00:00', has_screenshot: 0, overdue: 0, requester_name: 'Ada Admin', assignee_name: null }];
+const ticketSettings = { sla: { P1: [1, 8], P2: [4, 24], P3: [8, 72], P4: [24, 240] }, reopen_days: 14, business_roles: ['gestionnaire'], it_roles: ['admin'], role_codes: ['admin', 'agent', 'chef_service', 'secretariat', 'gestionnaire', 'auditeur'] };
+const LISTS: Record<string, unknown[]> = { '/api/pieces': pieces, '/api/tickets': tickets, '/api/consultations': [], '/api/mails': mails, '/api/entities': entities, '/api/mail-types': types, '/api/services': services, '/api/contacts': contacts, '/api/registers': registers };
 
 beforeEach(() => {
   vi.stubGlobal('fetch', vi.fn(async (url: string, init?: { method?: string; body?: unknown }) => (init?.method === 'POST' && url === '/api/pieces' && init.body instanceof FormData && init.body.get('mail_id') ? {
@@ -46,6 +49,8 @@ beforeEach(() => {
   } : {
     ok: true, status: 200, statusText: 'OK',
     json: async () => (url.startsWith('/api/mails/1') ? { data: mailDetail, meta: { envelope: 1 } }
+      : url.startsWith('/api/tickets/stats') ? { data: { open: 1, overdue: 0, unassigned: 1, resolved_30d: 0 }, meta: { envelope: 1 } }
+      : url.startsWith('/api/settings/tickets') ? { data: ticketSettings, meta: { envelope: 1 } }
       : url.startsWith('/api/settings') ? { data: { pieces_max_mb: 50, pieces_mcp_read_max_mb: 5, defaults: { pieces_max_mb: 50, pieces_mcp_read_max_mb: 5 } }, meta: { envelope: 1 } }
       : Object.keys(LISTS).find((k) => url.startsWith(k)) ? { data: LISTS[Object.keys(LISTS).find((k) => url.startsWith(k))!], meta: { envelope: 1 }, pagination: { total: 1, limit: 20, offset: 0 } }
       : url.startsWith('/api/users') ? { data: [{ ...user, is_active: 1 }], meta: { envelope: 1 }, pagination: { total: 1, limit: 200, offset: 0 } }
@@ -67,11 +72,12 @@ import LoginPage from '../pages/LoginPage';
 import InboxPage from '../pages/InboxPage';
 import ConsultationsPage from '../pages/ConsultationsPage';
 import SettingsPage from '../pages/SettingsPage';
+import TicketsPage from '../pages/TicketsPage';
 import MailDrawer, { type Mail } from '../components/MailDrawer';
 
 const PAGES: [string, React.ComponentType][] = [['Register', RegisterPage], ['Registration', RegistrationPage], ['Contacts', ContactsPage],
   ['Entities', EntitiesPage], ['Services', ServicesPage], ['Types', TypesPage], ['Home', HomePage], ['Users', UsersPage], ['Help', HelpPage], ['Accessibility', AccessibilityPage], ['Login', LoginPage],
-  ['Inbox', InboxPage], ['Consultations', ConsultationsPage], ['Settings', SettingsPage]];
+  ['Inbox', InboxPage], ['Consultations', ConsultationsPage], ['Settings', SettingsPage], ['Tickets', TicketsPage]];
 
 function wrap(C: React.ComponentType, lang: 'fr' | 'nl') {
   return (

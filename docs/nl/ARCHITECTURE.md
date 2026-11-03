@@ -1,4 +1,4 @@
-# Architectuur, versie 0.2.5
+# Architectuur, versie 0.2.6
 
 De Franse tekst is rechtsgeldig. Deze vertaling werd door Claude gemaakt en moet nog worden nagelezen (afwijking E13).
 
@@ -25,7 +25,7 @@ Twee Docker Compose-containers: `courrier-web` (nginx, gebouwde interface, doorg
 | `pieces` (0.2.0) | Neergelegd bestand: entiteit, brief (na koppeling), status `a_enregistrer`, `rattachee` of `rejetee`, opslagnaam, oorspronkelijke naam, gecontroleerd type, grootte, SHA-256-vingerafdruk, volgorde, reden van weigering |
 | `consultations` (0.2.0) | Raadplegingslogboek: persoon, entiteit, brief, stuk, actie (`fiche` of `piece`), kanaal (`api` of `mcp`), tijdstip in UTC |
 
-Migraties: `001_noyau` tot `005_pieces_consultations`, `006_connexion_microsoft` (0.2.5: `users.oid`, `users.is_admin_local`, tabel `auth_pending` voor lopende Microsoft-aanmeldingen, tien minuten).
+Migraties: `001_noyau` tot `005_pieces_consultations`, `007_tickets` (0.2.6: tabellen `tickets` en `ticket_messages`), `006_connexion_microsoft` (0.2.5: `users.oid`, `users.is_admin_local`, tabel `auth_pending` voor lopende Microsoft-aanmeldingen, tien minuten).
 
 ## Rollen
 
@@ -51,6 +51,7 @@ De inhoud wordt gelezen via `GET /api/pieces/:id/contenu`, geauthenticeerd door 
 | --- | --- | --- |
 | `pieces.max_mb` | 50 | `config/instance.defaut.json`; wijzigbaar in Beheer › Instellingen, van 1 tot 50 (grens van nginx) |
 | `pieces.mcp_read_max_mb` | 5 | Idem; van 1 tot 10 |
+| `tickets.sla_json`, `tickets.reopen_days`, `tickets.business_roles`, `tickets.it_roles` (0.2.6) | P1 1 u en 8 u, P2 4 u en 24 u, P3 8 u en 72 u, P4 24 u en 240 u; 14 dagen; `gestionnaire`; `admin` | `app_settings`, Beheer › Instellingen › Tickets: uren per prioriteit, heropeningstermijn, rollen van elke wachtrij (`admin` geldt voor de hele toepassing, de andere codes enkel in de entiteit van het ticket) |
 | `auth.mode` (0.2.5) | `local` | `app_settings`, aanpasbaar in Beheer › Instellingen › Aanmelden: `local`, `sso_optional`, `sso` |
 | `auth.tenant`, `auth.client_id`, `auth.public_url`, `auth.domains` (0.2.5) | leeg | Idem; `auth.public_url` in HTTPS, dient voor het terugkeeradres `<adres>/api/auth/callback` |
 | `auth.client_secret` (0.2.5) | leeg | Idem; versleuteld met AES-256-GCM (`CONFIG_ENC_KEY`), nooit teruggegeven noch gelogd; afwezig in de publieke parameters |
@@ -60,4 +61,6 @@ De inhoud wordt gelezen via `GET /api/pieces/:id/contenu`, geauthenticeerd door 
 
 Nieuwe bronnen in 0.2.0: `/api/pieces` (zes routes, waarvan `GET /:id/contenu`), `/api/consultations` (enkel lezen), `/api/settings` (lezen en wijzigen). 55 routes, 52 MCP-tools. OpenAPI-contract op `GET /api/openapi.json`.
 
-Nieuw in 0.2.5: drie vrije routes `/api/auth/config`, `/api/auth/sso/start`, `/api/auth/callback` (Microsoft-aanmelding, geschreven lijst) en `/api/settings/auth` (`GET`, `PUT`, `POST /test`, enkel beheerder). Geen MCP-tools: het zijn navigatieroutes van de browser en aanmeldinstellingen die enkel via het scherm gebeuren. 61 routes in totaal, 52 MCP-tools.
+Nieuw in 0.2.5: drie vrije routes `/api/auth/config`, `/api/auth/sso/start`, `/api/auth/callback` (Microsoft-aanmelding, geschreven lijst) en `/api/settings/auth` (`GET`, `PUT`, `POST /test`, enkel beheerder). Geen MCP-tools: het zijn navigatieroutes van de browser en aanmeldinstellingen die enkel via het scherm gebeuren. 61 routes in totaal, 52 MCP-tools (0.2.5).
+
+Nieuw in 0.2.6: `/api/tickets` (negen routes) en `/api/settings/tickets` (`GET`, `PUT`, enkel beheerder), 11 MCP-tools. 72 routes in totaal, 64 MCP-tools. Een ticket draagt de entiteit van de aanvrager. De IT-wachtrij (incident, bug, wens, en vraag zonder entiteit) wordt behandeld door de rollen van `tickets.it_roles`; de functionele wachtrij (vraag met entiteit) door de rollen van `tickets.business_roles` die in de entiteit van het ticket gehouden worden. De beheerder heeft dus geen toegang tot de functionele vragen. Geen schermafbeelding op schermen die post tonen (`NO_CAPTURE_SCREENS`, ook in `frontend/src/screens.ts`). Een afbeelding van 2 MB weegt ongeveer 2,8 MB in base64: 4 MB op `/api/tickets` en in nginx.

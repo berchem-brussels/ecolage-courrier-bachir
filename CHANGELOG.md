@@ -1,8 +1,25 @@
 # Historique des versions
 
-Application courrier · version 0.2.5 · historique au 03/11/2026
+Application courrier · version 0.2.6 · historique au 03/11/2026
 
-## 0.2.5 du 03/11/2026, préparée, à installer et à recetter sur NIXUS
+## 0.2.6 du 03/11/2026, préparée, à installer et à recetter sur NIXUS
+
+Tickets de l'application (standard v3.3, section 13.5), repris du gabarit 1.3.0 et adaptés aux rôles par entité. Deuxième version du lot « connexion, tickets, aide ». Migration 007. Aucune dépendance changée.
+
+- Bouton « Signaler » dans l'en-tête de chaque écran : type (incident, bug, question métier, souhait), titre, ce que je faisais, ce que j'attendais et ce qui s'est passé (incident et bug), qui est touché, gravité, capture facultative contrôlée sur son contenu (PNG ou JPEG, 2 Mo). Contexte joint sans saisie : écran (par son identifiant), version, langue, navigateur, date, dernière erreur de l'API (code et libellé seulement).
+- Référence `TCK-AAAA-NNNNN` par année ; priorité ITIL impact × urgence (P1 à P4) ; délais de prise en charge et de résolution par priorité (1 h et 8 h, 4 h et 24 h, 8 h et 72 h, 24 h et 240 h) ; échéance dépassée signalée ; cycle de vie contrôlé (nouveau, pris en charge, en attente du demandeur, résolu, rejeté, annulé, clos) avec motif obligatoire pour l'attente, la résolution, le rejet, l'annulation et la réouverture ; notes internes invisibles du demandeur ; rien n'est supprimé.
+- Files par entité (décision du 03/11/2026) : le ticket porte l'entité du demandeur ; la file IT (incident, bug, souhait) est traitée par l'administrateur ; la file métier (question) est traitée par le gestionnaire du registre de l'entité du ticket, jamais d'une autre entité ; une question sans entité (administrateur seul) va à la file IT ; un demandeur qui a des rôles dans deux entités choisit l'entité pour une question. Transfert motivé d'une file à l'autre ; vers la file métier seulement avec une entité.
+- Rôles de chaque file, délais et délai de réouverture réglables dans Administration › Paramètres › Tickets ; chaque changement s'inscrit au journal d'audit avec l'ancienne et la nouvelle valeur. Rôles possibles : administrateur (toute l'application) ou rôle par entité (dans l'entité du ticket).
+- RGPD by design : aucune capture sur les écrans qui affichent du courrier (registre, à enregistrer, enregistrer, consultations), refusée aussi par le serveur ; avertissement ailleurs ; le chemin joint ne porte aucun paramètre ni numéro de courrier. Écart voulu au standard 13.5 (E35).
+- Pilotage : compteurs (en cours, délai dépassé, sans responsable, résolus en 30 jours), volumes par type, priorité et écran, limités aux files de la personne.
+- API et MCP : 8 routes de tickets et 2 de réglages ; 11 outils MCP dont `list_tickets_to_handle` (tickets à traiter avec leur contexte, limités aux files de la personne). 72 routes au total, 64 outils MCP exposés.
+- nginx : bloc `/api/tickets` à 4 Mo ; le gabarit limite tout `/api/` à 1 Mo, ce qui refuserait une capture de plus de 0,7 Mo (E29, clos). Test du contenu de `nginx.conf` et capture de 2 Mo acceptée par le serveur.
+- Interface : écran Tickets (menu Aide), tiroir de ticket avec fil d'échanges et actions selon le rôle et le statut, table `screens.ts` des écrans (identifiants repris par l'aide en 0.2.7), explication de chaque champ des tickets (FR et NL), groupes de boutons sans étiquette orpheline, champs nommés.
+- Test statique SQL : liste des interpolations permises complétée par des constantes du code (colonnes de regroupement, clause des files).
+
+Suites : serveur 110 tests, écrans 78 tests, 0 échec ; parcours réel dans Chromium (10 contrôles : demandeur, gestionnaire, administrateur) ; 11 contrôles de sécurité retirés un à un, tous détectés ; `npm audit --omit=dev` à 0 dans les deux parties.
+
+## 0.2.5 du 03/11/2026, installée sur NIXUS et publiée sur GitHub le 03/11/2026
 
 Connexion Microsoft compatible avec Portal (standard v3.3, section 8.6), reprise du gabarit 1.3.0. Première version du lot « connexion, tickets, aide » ; elle avance la partie code de l'étape 7 du planning. Migration 006. Le mode de connexion reste `local` tant que l'inscription d'application Entra ID n'est pas saisie : aucun changement pour les agents.
 

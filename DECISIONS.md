@@ -1,6 +1,6 @@
 # Décisions et actions
 
-Application courrier · version 0.2.5 · journal au 03/11/2026
+Application courrier · version 0.2.6 · journal au 03/11/2026
 
 Ce fichier réunit les décisions prises pendant le développement, les règles de travail convenues avec le conducteur du projet et les actions à faire. Les décisions de périmètre du 13/10/2026 (A1 à A12) sont dans le cahier des charges, section 2.
 
@@ -59,6 +59,10 @@ Ce fichier réunit les décisions prises pendant le développement, les règles 
 | 03/11/2026 | Captures de l'aide | Produites par le script Playwright dans l'environnement de Claude, sur `atelier.exemple.json` (services fictifs) : aucun nom de service réel dans le dépôt public ; version de Playwright du standard (`^1.61.1`) si son navigateur s'installe, sinon information avant la 0.2.8 | Conducteur du projet (proposition de Claude par défaut) |
 | 03/11/2026 | `qs` et `ci.yml` | `npm update qs` seul (6.16.2) et `permissions: contents: read` dans `ci.yml`, dans la 0.2.5 ; Renaud à informer, GITHUB.md à mettre à jour | Conducteur du projet (proposition de Claude par défaut) |
 | 03/11/2026 | Redirection ouverte du gabarit | Corrigée dans l'interface (`safeNextPath`) ; à signaler à Renaud pour le gabarit 1.3.0 | Claude, constat du 03/11/2026 |
+| 03/11/2026 | Recette de la 0.2.5 sur NIXUS | 6 contrôles sur 6 conformes (version et courriers, connexion locale et déconnexion avec message, Paramètres › Connexion, test sans annuaire, accès de secours des deux administrateurs, néerlandais) ; le mode « Microsoft obligatoire » n'a pas été touché | Conducteur du projet |
+| 03/11/2026 | Publication de la 0.2.5 | Branche `version/v0.2.5`, demande de fusion n° 4, travail « tests » vert, fusion `2d7bb87`, étiquette `v0.2.5`, publication immuable avec l'archive ; empreinte SHA-256 identique sur le PC, sur GitHub et dans l'archive de Claude ; alerte CodeQL de `ci.yml` fermée | Conducteur du projet |
+| 03/11/2026 | Délais ITIL des tickets | Ceux du gabarit : P1 1 h et 8 h, P2 4 h et 24 h, P3 8 h et 72 h, P4 24 h et 240 h (prise en charge, résolution), réglables dans Paramètres | Conducteur du projet (« go » du 03/11/2026) |
+| 03/11/2026 | Version 0.2.6 | Tickets avec les décisions du 03/11/2026 sur les files par entité et les captures ; bloc nginx de 4 Mo ; pas de `--no-cache` (aucune dépendance changée) | Conducteur du projet (« go » du 03/11/2026) |
 
 ## 2. Règles de travail convenues
 
@@ -72,6 +76,8 @@ Elles s'ajoutent aux règles du standard (section 2).
 6. Avant une capture de contrôle d'affichage, remettre le zoom du navigateur à 100 % (Ctrl + 0).
 7. Pour l'enregistrement du courrier, l'administrateur doit aussi avoir un rôle de secrétariat ou de gestionnaire dans l'entité.
 8. Avant de livrer un changement d'outil de construction ou de dépendance de l'interface : comparer, en français et en néerlandais, les textes et les captures de toutes les pages avec la version précédente, avec un compte qui a les rôles de secrétariat. Les tests tournent sous Node et ne voient pas les défauts du moteur de construction.
+9. Le navigateur peut ranger les téléchargements dans un dossier OneDrive : GITHUB.md attend `Téléchargements`. Chercher l'archive (`Get-ChildItem -Path $HOME -Recurse -Filter <archive>`), puis la copier dans `Téléchargements` avant la section 5.
+10. Les commandes de NIXUS (session SSH) et celles de GitHub (PowerShell du PC) se tapent dans deux fenêtres distinctes : `exit` ferme la session SSH avant les commandes GitHub.
 
 ## 3. Actions à faire
 
@@ -91,3 +97,4 @@ Elles s'ajoutent aux règles du standard (section 2).
 | 12 | Envoyer à Renaud le courriel (raisons et impact sur le standard, `@vitejs/plugin-react` 6, `npm audit fix` de la 0.2.2) ; revérifier les alertes CodeQL après la mise en production | Conducteur du projet | Courriel : maintenant |
 | 13 | Ajouter à `docs/SECURITE.md` que `npm audit` ne signale pas `multer` : fait en 0.2.3. Corriger `sudo` devant `ls -t` : fait dans le dépôt en 0.2.3 | Claude | Fait |
 | 14 | Mettre à jour le contenu type de `ci.yml` dans GITHUB.md avec `permissions: contents: read` (E28 : appliqué en 0.2.5) ; informer Renaud de `qs` (E31), du bouton « Tester » (E32) et des deux défauts du gabarit 1.3.0 (E29 nginx 1 Mo, E30 redirection ouverte) | Conducteur du projet, Renaud | Avec la 0.2.5 |
+| 15 | Informer Renaud de la restriction des captures de tickets sur les écrans de courrier (E35), du garde-fou sur l'écran déclaré (E36) et de la limite nginx de 1 Mo du gabarit, corrigée par un bloc dédié (E29) | Conducteur du projet | Avec la 0.2.6 |

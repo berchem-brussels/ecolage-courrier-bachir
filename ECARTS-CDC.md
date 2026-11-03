@@ -1,6 +1,6 @@
 # Écarts mesurés
 
-Application courrier · version 0.2.5 · écarts au 03/11/2026
+Application courrier · version 0.2.6 · écarts au 03/11/2026
 
 Écarts entre le code livré, le cahier des charges (CDC, version 0.10) et le standard v3.2. Numérotation continue d'une version à l'autre ; un écart clos reste dans la liste avec sa date.
 
@@ -27,10 +27,12 @@ Application courrier · version 0.2.5 · écarts au 03/11/2026
 | E25 | Standard 10.2 | CodeQL (GitHub) signale 10 alertes de gravité haute « Uncontrolled data used in path expression » dans `backend/src/services/pieces.js` et `routes/pieces.js`. Lecture du code le 27/10/2026 : les noms des fichiers temporaires et des fichiers rangés sont générés par le serveur, `absolutePath()` vérifie la racine, le nom d'origine ne sert pas de chemin ; faux positifs probables, non confirmés par une attaque rejouée | Alertes laissées ouvertes ; confirmation et décision de fermeture avec Renaud |
 | E26 | Standard 4.4 | Le 27/10/2026, `npm audit fix --omit=dev` a été lancé sur le serveur pour préparer la 0.2.2, commande que le standard interdit ; deux dépendances indirectes ont monté sans l'accord de Renaud : `body-parser` 1.20.8 vers 1.20.9 et `fast-uri` 3.1.8 vers 3.1.9, même génération, `package.json` inchangé, écart du verrou relevé par comparaison | Signalé à Renaud par courriel ; confirmer le maintien ou retirer ces deux montées dans la version suivante ; règle : paquet par paquet par `npm update <paquet>` |
 | E27 | Standard 4.2, 4.3, 4.4, 18 | `multer` ^2.5.0, `vite` ^8.3.5, `@vitejs/plugin-react` ^6.1.2 et `vitest` ^4.1.12 au lieu de `multer` ^1.4.5-lts.1, Vite 5 et `@vitejs/plugin-react` 4 du standard ; montée de majeure acceptée par Renaud le 27/10/2026 pour `multer` et `vite`, `@vitejs/plugin-react` 6 non nommé ; verrou de l'interface écrit par npm 11 | Standard à mettre à jour par Renaud (4.2, 4.3, 4.4, liste de la section 18) ; accord sur `@vitejs/plugin-react` 6 à confirmer |
-| E29 | Gabarit 1.3.0, `nginx.conf`, standard 13.5 | Le gabarit limite `/api/` à 1 Mo : une capture de ticket de 2 Mo pèse environ 2,8 Mo une fois encodée et serait refusée | Bloc `/api/tickets` à 4 Mo en 0.2.6 ; à signaler à Renaud pour le gabarit |
 | E32 | Standard 8.2, gabarit 1.3.0 | Le standard prévoit un bouton « Tester » pour les identifiants Entra ; le gabarit n'en a pas. Ajouté en 0.2.5 sous une forme minimale : il lit les clés publiques du locataire chez Microsoft, il ne prouve ni l'identifiant ni le secret | À signaler à Renaud ; test complet possible avec l'inscription réelle |
-| E33 | Standard 13.1 | Explication de champ limitée aux champs de la connexion et de l'accès de secours ; les autres formulaires n'en ont pas encore | 0.2.7, avec le contrôle bloquant |
+| E33 | Standard 13.1 | Explication de champ limitée aux champs de la connexion, de l'accès de secours et des tickets ; les autres formulaires n'en ont pas encore | 0.2.7, avec le contrôle bloquant |
 | E34 | Standard 4.3, 10.2 | `npm audit` complet de l'interface : 12 alertes modérées dans la chaîne `eslint` (`minimatch`, outils de développement), 0 en production ; la correction demande une montée majeure d'`eslint` | Accord de Renaud avant toute montée majeure ; la CI ne bloque qu'au niveau « haute » |
+| E35 | Standard 13.5 (« capture facultative »), 9 | Aucune capture dans un ticket sur les écrans qui affichent du courrier (registre, à enregistrer, enregistrer, consultations) : l'administrateur de la file IT lit les captures et n'a pas droit au contenu du courrier. Restriction voulue (décision du 03/11/2026), refusée aussi par le serveur | À signaler à Renaud ; à garder tant que des courriers réels sont en jeu |
+| E36 | Standard 13.5, 10.2 | Le serveur refuse la capture d'après l'écran déclaré par l'interface, pas d'après le contenu de l'image : un client qui déclare un autre écran peut joindre une capture de courrier. Garde-fou, pas une garantie ; avertissement affiché ailleurs | Étape 20 (conservation, journal) ; examen avec le DPO |
+| E37 | Standard 13.5, 9.3 | Aucune durée de conservation appliquée aux tickets, à leurs messages ni à leurs captures | Étape 20 |
 
 ## 2. Écarts clos
 
@@ -47,6 +49,7 @@ Application courrier · version 0.2.5 · écarts au 03/11/2026
 | E28 | GITHUB.md section 7, Standard 10.2 | CodeQL : « Workflow does not contain permissions » sur `ci.yml` | 03/11/2026 : `permissions: contents: read` ajouté en 0.2.5 (décision du conducteur du projet) ; contenu type de GITHUB.md à mettre à jour par Renaud ; alerte à relire après la fusion |
 | E30 | Gabarit 1.3.0, `LoginPage.tsx`, standard 8.6 | Retour après connexion locale contrôlé par `startsWith('/')` : `//site` accepté, redirection ouverte | 03/11/2026 : `safeNextPath` identique au contrôle du serveur, test `connexion.test.tsx` ; à signaler à Renaud pour le gabarit |
 | E31 | Standard 4.4 | `qs` 6.16.0 (indirect, `express`) : alerte d'audit parue après le 27/10/2026 | 03/11/2026 : `npm update qs` seul, 6.16.2, même génération, `package.json` inchangé ; audit du serveur à 0 ; Renaud à informer |
+| E29 | Gabarit 1.3.0, `nginx.conf`, standard 13.5 | Le gabarit limite `/api/` à 1 Mo : une capture de ticket de 2 Mo (2,8 Mo encodée) serait refusée | 03/11/2026 : bloc `/api/tickets` à 4 Mo en 0.2.6, limite générale de 1 Mo conservée ; test du contenu de `nginx.conf`, capture de 2 Mo acceptée et capture plus grande refusée par le serveur ; à signaler à Renaud pour le gabarit |
 
 ## 3. Écarts du gabarit 1.1.0 corrigés
 

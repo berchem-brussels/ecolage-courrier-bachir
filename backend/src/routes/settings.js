@@ -9,11 +9,15 @@ const { validate } = require('../validation');
 const { ok, handle } = require('../envelope');
 const S = require('../schemas');
 const settings = require('../services/settings');
+const tickets = require('../services/tickets');
 
 const router = express.Router();
 router.use(authMiddleware);
 
 router.get('/', requireRole('admin'), handle((req, res) => ok(res, settings.get(req.user), { resource: 'settings' })));
 router.put('/', requireRole('admin'), validate(S.settingsUpdate), handle((req, res) => ok(res, settings.update(req.user, req.body), { resource: 'settings' })));
+
+router.get('/tickets', requireRole('admin'), handle((req, res) => ok(res, tickets.getSettings(req.user), { resource: 'settings' })));
+router.put('/tickets', requireRole('admin'), validate(S.ticketSettings), handle((req, res) => ok(res, tickets.updateSettings(req.user, req.body), { resource: 'settings' })));
 
 module.exports = router;
