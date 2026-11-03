@@ -14,7 +14,7 @@ const ROLES: EntityRole['role'][] = ['agent', 'chef_service', 'secretariat', 'ge
 
 /** Un choix exclusif par entité, en boutons (standard v3.2, section 12.4) ; « Aucun » retire le rôle. */
 function EntityRolesInput({ entities, value, onChange }: { entities: Entity[]; value?: Record<number, RoleChoice>; onChange?: (v: Record<number, RoleChoice>) => void }) {
-  const { t, lang } = useI18n();
+  const { t, lang, hint } = useI18n();
   return (
     <Space direction="vertical" style={{ width: '100%' }}>
       {entities.map((e) => (
@@ -123,21 +123,21 @@ export default function UsersPage() {
           <Alert type="warning" showIcon message={t('users.generated')} description={<Typography.Text copyable code>{generatedPassword}</Typography.Text>} />
         ) : (
           <Form form={form} layout="vertical" onFinish={create} initialValues={{ user_role: 'agent', preferred_lang: 'fr', password_mode: 'generated', must_change_password: false }}>
-            <Form.Item name="email" label={t('users.field.email')} rules={[{ required: true, type: 'email' }]}><Input /></Form.Item>
-            <Form.Item name="first_name" label={t('users.field.first_name')} rules={[{ required: true }]}><Input /></Form.Item>
-            <Form.Item name="last_name" label={t('users.field.last_name')} rules={[{ required: true }]}><Input /></Form.Item>
-            <Form.Item {...NO_FOR} name="roles" label={t('users.entity_roles')} extra={t('users.entity_roles.help')}><EntityRolesInput entities={entities} /></Form.Item>
-            <Form.Item {...NO_FOR} name="user_role" label={t('users.app_role')}><Radio.Group aria-label={t('users.app_role')} optionType="button" options={roleOptions} /></Form.Item>
-            <Form.Item {...NO_FOR} name="preferred_lang" label={t('users.field.lang')}><Radio.Group aria-label={t('users.field.lang')} optionType="button" options={[{ value: 'fr', label: 'FR' }, { value: 'nl', label: 'NL' }]} /></Form.Item>
+            <Form.Item name="email" tooltip={hint('users.email')} label={t('users.field.email')} rules={[{ required: true, type: 'email' }]}><Input autoComplete="off" /></Form.Item>
+            <Form.Item name="first_name" tooltip={hint('users.first_name')} label={t('users.field.first_name')} rules={[{ required: true }]}><Input autoComplete="off" /></Form.Item>
+            <Form.Item name="last_name" tooltip={hint('users.last_name')} label={t('users.field.last_name')} rules={[{ required: true }]}><Input autoComplete="off" /></Form.Item>
+            <Form.Item {...NO_FOR} name="roles" tooltip={hint('users.entity_roles')} label={t('users.entity_roles')} extra={t('users.entity_roles.help')}><EntityRolesInput entities={entities} /></Form.Item>
+            <Form.Item {...NO_FOR} name="user_role" tooltip={hint('users.app_role')} label={t('users.app_role')}><Radio.Group aria-label={t('users.app_role')} optionType="button" options={roleOptions} /></Form.Item>
+            <Form.Item {...NO_FOR} name="preferred_lang" tooltip={hint('users.lang')} label={t('users.field.lang')}><Radio.Group aria-label={t('users.field.lang')} optionType="button" options={[{ value: 'fr', label: 'FR' }, { value: 'nl', label: 'NL' }]} /></Form.Item>
             {/* Modèle Microsoft 365 (standard v3.2, section 8.1) */}
-            <Form.Item {...NO_FOR} name="password_mode" label={t('users.password.mode')}>
+            <Form.Item {...NO_FOR} name="password_mode" tooltip={hint('users.password_mode')} label={t('users.password.mode')}>
               <Radio.Group aria-label={t('users.password.mode')} optionType="button" options={[{ value: 'generated', label: t('users.password.generated') }, { value: 'manual', label: t('users.password.manual') }]} />
             </Form.Item>
             {mode === 'manual' && (
-              <Form.Item name="password" label={t('users.password.value')} rules={[{ required: true, min: 8 }]}><Input.Password autoComplete="new-password" /></Form.Item>
+              <Form.Item name="password" tooltip={hint('users.password')} label={t('users.password.value')} rules={[{ required: true, min: 8 }]}><Input.Password autoComplete="new-password" /></Form.Item>
             )}
             {newRole === 'admin' && <Form.Item name="is_admin_local" valuePropName="checked" tooltip={hint('users.admin_local')}><Checkbox>{t('users.admin_local.field')}</Checkbox></Form.Item>}
-            <Form.Item name="must_change_password" valuePropName="checked"><Checkbox>{t('users.password.must_change')}</Checkbox></Form.Item>
+            <Form.Item name="must_change_password" tooltip={hint('users.must_change')} valuePropName="checked"><Checkbox>{t('users.password.must_change')}</Checkbox></Form.Item>
           </Form>
         )}
       </Modal>

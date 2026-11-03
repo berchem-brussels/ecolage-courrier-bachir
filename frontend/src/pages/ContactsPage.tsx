@@ -62,7 +62,7 @@ export default function ContactsPage() {
             { title: t('common.actions'), key: 'actions', render: (_, c) => (c.is_active ? (
               <Space>
                 <Button size="small" onClick={() => setEditing(c)}>{t('common.edit')}</Button>
-                <Popconfirm title={<Input aria-label={t('common.reason')} placeholder={t('common.reason')} value={reason} onChange={(e) => setReason(e.target.value)} />}
+                <Popconfirm title={<Input autoComplete="off" aria-label={t('common.reason')} placeholder={t('common.reason')} value={reason} onChange={(e) => setReason(e.target.value)} />}
                   okText={t('common.deactivate')} cancelText={t('common.cancel')} onConfirm={() => deactivate(c)} okButtonProps={{ disabled: !reason.trim() }}>
                   <Button size="small" danger>{t('common.deactivate')}</Button>
                 </Popconfirm>

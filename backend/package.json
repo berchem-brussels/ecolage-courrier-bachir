@@ -1,6 +1,6 @@
 {
   "name": "courrier-backend",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "description": "Application courrier entrant et sortant : serveur (standard v3.2)",
   "license": "EUPL-1.2",
   "main": "src/index.js",

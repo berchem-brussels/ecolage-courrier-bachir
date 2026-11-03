@@ -18,7 +18,7 @@ export interface Contact {
 export function ContactFormModal({ open, contact, onClose, onSaved }: {
   open: boolean; contact?: Contact | null; onClose: () => void; onSaved: (c: Contact) => void;
 }) {
-  const { t } = useI18n();
+  const { t, hint } = useI18n();
   const [form] = Form.useForm();
   const kind = Form.useWatch('kind', form);
   useEffect(() => {
@@ -35,30 +35,30 @@ export function ContactFormModal({ open, contact, onClose, onSaved }: {
     <Modal open={open} title={contact ? t('contact.edit') : t('contact.new')} okText={t('common.save')} cancelText={t('common.cancel')}
       onOk={() => form.submit()} onCancel={onClose} destroyOnClose>
       <Form form={form} layout="vertical" onFinish={save}>
-        <Form.Item {...NO_FOR} name="kind" label={t('contact.kind')}>
+        <Form.Item {...NO_FOR} name="kind" tooltip={hint('contact.kind')} label={t('contact.kind')}>
           <Radio.Group aria-label={t('contact.kind')} optionType="button" options={[{ value: 'personne', label: t('contact.kind.personne') }, { value: 'organisation', label: t('contact.kind.organisation') }]} />
         </Form.Item>
-        <Form.Item name="name" label={kind === 'organisation' ? t('contact.name.organisation') : t('contact.name')} rules={[{ required: true, max: 200 }]}><Input /></Form.Item>
+        <Form.Item name="name" tooltip={hint('contact.name')} label={kind === 'organisation' ? t('contact.name.organisation') : t('contact.name')} rules={[{ required: true, max: 200 }]}><Input autoComplete="off" /></Form.Item>
         {kind !== 'organisation' && (
           <Space wrap style={{ width: '100%' }}>
-            <Form.Item name="first_name" label={t('contact.first_name')} rules={[{ max: 100 }]}><Input /></Form.Item>
-            <Form.Item name="organisation" label={t('contact.organisation')} rules={[{ max: 200 }]}><Input /></Form.Item>
+            <Form.Item name="first_name" tooltip={hint('contact.first_name')} label={t('contact.first_name')} rules={[{ max: 100 }]}><Input autoComplete="off" /></Form.Item>
+            <Form.Item name="organisation" tooltip={hint('contact.organisation')} label={t('contact.organisation')} rules={[{ max: 200 }]}><Input autoComplete="off" /></Form.Item>
           </Space>
         )}
-        <Form.Item {...NO_FOR} name="lang" label={t('contact.lang')}>
+        <Form.Item {...NO_FOR} name="lang" tooltip={hint('contact.lang')} label={t('contact.lang')}>
           <Radio.Group aria-label={t('contact.lang')} optionType="button" options={(['fr', 'nl', 'autre'] as const).map((l) => ({ value: l, label: t(`mail.lang.${l}`) }))} />
         </Form.Item>
         <Space wrap style={{ width: '100%' }}>
-          <Form.Item name="email" label={t('contact.email')} rules={[{ type: 'email', max: 200 }]}><Input /></Form.Item>
-          <Form.Item name="phone" label={t('contact.phone')} rules={[{ max: 50 }]}><Input /></Form.Item>
+          <Form.Item name="email" tooltip={hint('contact.email')} label={t('contact.email')} rules={[{ type: 'email', max: 200 }]}><Input autoComplete="off" /></Form.Item>
+          <Form.Item name="phone" tooltip={hint('contact.phone')} label={t('contact.phone')} rules={[{ max: 50 }]}><Input autoComplete="off" /></Form.Item>
         </Space>
-        <Form.Item name="street" label={t('contact.street')} rules={[{ max: 200 }]}><Input /></Form.Item>
+        <Form.Item name="street" tooltip={hint('contact.street')} label={t('contact.street')} rules={[{ max: 200 }]}><Input autoComplete="off" /></Form.Item>
         <Space wrap style={{ width: '100%' }}>
-          <Form.Item name="postal_code" label={t('contact.postal_code')} rules={[{ max: 20 }]}><Input style={{ width: 110 }} /></Form.Item>
-          <Form.Item name="city" label={t('contact.city')} rules={[{ max: 100 }]}><Input /></Form.Item>
-          <Form.Item name="country" label={t('contact.country')} rules={[{ max: 100 }]}><Input /></Form.Item>
+          <Form.Item name="postal_code" tooltip={hint('contact.postal_code')} label={t('contact.postal_code')} rules={[{ max: 20 }]}><Input autoComplete="off" style={{ width: 110 }} /></Form.Item>
+          <Form.Item name="city" tooltip={hint('contact.city')} label={t('contact.city')} rules={[{ max: 100 }]}><Input autoComplete="off" /></Form.Item>
+          <Form.Item name="country" tooltip={hint('contact.country')} label={t('contact.country')} rules={[{ max: 100 }]}><Input autoComplete="off" /></Form.Item>
         </Space>
-        {kind === 'organisation' && <Form.Item name="company_number" label={t('contact.company_number')} rules={[{ max: 20 }]}><Input /></Form.Item>}
+        {kind === 'organisation' && <Form.Item name="company_number" tooltip={hint('contact.company_number')} label={t('contact.company_number')} rules={[{ max: 20 }]}><Input autoComplete="off" /></Form.Item>}
       </Form>
     </Modal>
   );
@@ -68,7 +68,7 @@ export function ContactFormModal({ open, contact, onClose, onSaved }: {
 export function ContactPicker({ value, onChange, onPicked, id, initial }: {
   value?: number; onChange?: (v: number | undefined) => void; onPicked?: (c: Contact) => void; id?: string; initial?: Contact | null;
 }) {
-  const { t } = useI18n();
+  const { t, hint } = useI18n();
   const [options, setOptions] = useState<Contact[]>(initial ? [initial] : []);
   const [loading, setLoading] = useState(false);
   const [creating, setCreating] = useState(false);

@@ -14,7 +14,7 @@ import TicketSettingsCard from '../components/TicketSettingsCard';
 interface Settings { pieces_max_mb: number; pieces_mcp_read_max_mb: number; defaults?: { pieces_max_mb: number; pieces_mcp_read_max_mb: number } }
 
 export default function SettingsPage() {
-  const { t } = useI18n();
+  const { t, hint } = useI18n();
   const { reload } = useSettings();
   const [form] = Form.useForm();
   const [data, setData] = useState<Settings | null>(null);
@@ -39,10 +39,10 @@ export default function SettingsPage() {
       <Card title={t('settings.pieces')} style={{ maxWidth: 720 }}>
         <Alert type="info" showIcon style={{ marginBottom: 16 }} message={t('settings.pieces.help')} />
         <Form form={form} layout="vertical" onFinish={save}>
-          <Form.Item name="pieces_max_mb" label={`${t('settings.max_mb')} (${t('unit.mb')})`} extra={def('pieces_max_mb')} rules={[{ required: true }]}>
+          <Form.Item name="pieces_max_mb" tooltip={hint('settings.max_mb')} label={`${t('settings.max_mb')} (${t('unit.mb')})`} extra={def('pieces_max_mb')} rules={[{ required: true }]}>
             <InputNumber min={1} max={50} precision={0} style={{ width: 160 }} />
           </Form.Item>
-          <Form.Item name="pieces_mcp_read_max_mb" label={`${t('settings.mcp_read_max_mb')} (${t('unit.mb')})`} extra={def('pieces_mcp_read_max_mb')} rules={[{ required: true }]}>
+          <Form.Item name="pieces_mcp_read_max_mb" tooltip={hint('settings.mcp_read_max_mb')} label={`${t('settings.mcp_read_max_mb')} (${t('unit.mb')})`} extra={def('pieces_mcp_read_max_mb')} rules={[{ required: true }]}>
             <InputNumber min={1} max={10} precision={0} style={{ width: 160 }} />
           </Form.Item>
           <Button type="primary" htmlType="submit">{t('common.save')}</Button>

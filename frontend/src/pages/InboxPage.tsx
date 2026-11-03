@@ -107,7 +107,7 @@ export default function InboxPage() {
       <Modal open={rejectOpen} title={t('piece.reject')} okText={t('piece.reject')} cancelText={t('common.cancel')} okButtonProps={{ danger: true, disabled: !reason.trim() }}
         onOk={reject} onCancel={() => { setRejectOpen(false); setReason(''); }}>
         <Typography.Paragraph>{t('piece.reject.help')}</Typography.Paragraph>
-        <Input.TextArea rows={2} aria-label={t('common.reason')} placeholder={t('common.reason')} value={reason} onChange={(e) => setReason(e.target.value)} />
+        <Input.TextArea autoComplete="off" rows={2} aria-label={t('common.reason')} placeholder={t('common.reason')} value={reason} onChange={(e) => setReason(e.target.value)} />
       </Modal>
     </div>
   );

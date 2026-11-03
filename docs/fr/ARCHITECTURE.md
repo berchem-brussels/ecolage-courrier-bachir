@@ -1,4 +1,4 @@
-# Architecture, version 0.2.6
+# Architecture, version 0.2.7
 
 Le français fait foi. Les versions néerlandaise et anglaise sont des traductions de Claude à faire relire (écart E13).
 
@@ -94,3 +94,7 @@ Toute lecture du contenu et toute ouverture de fiche (`GET /api/mails/:id`) s'in
 ## Tickets (0.2.6)
 
 Un ticket porte l'entité de son demandeur (`tickets.entity_id`) : celle de son seul rôle, ou celle qu'il choisit s'il a des rôles dans deux entités ; aucune pour l'administrateur seul. La file IT (incident, bug, souhait, et question sans entité) est traitée par les rôles de `tickets.it_roles` ; la file métier (question avec entité) par les rôles de `tickets.business_roles` tenus dans l'entité du ticket. L'administrateur n'a donc pas accès aux questions métier ni, par elles, au contenu du courrier. Le contexte joint (écran par son identifiant, version, langue, navigateur, date, dernière erreur de l'API) ne contient aucune donnée de courrier. Les écrans qui affichent du courrier n'acceptent aucune capture : `NO_CAPTURE_SCREENS` du serveur, repris par `frontend/src/screens.ts` (test d'alignement). Une capture de 2 Mo pèse environ 2,8 Mo en base64 : `express.json` à 4 Mo sur `/api/tickets` et bloc nginx de 4 Mo.
+
+## Aide par écran (0.2.7)
+
+Une fiche par écran dans `frontend/src/help/topics/`, au schéma `HelpTopic` (`help/types.ts`) : identifiant, adresse, groupe du menu, rôles, rôle de l'écran, zones, procédures (cas d'usage, étapes, résultat, erreurs et solutions), questions, renvois ; FR et NL côte à côte. Un bouton ou un menu se cite par sa clé de traduction (`{{clé}}`) : `RichText` affiche le libellé réel. `PATHS` (même fichier) donne le parcours de lecture de chaque rôle. `help/HelpButton.tsx` ouvre la fiche de l'écran dans un panneau latéral ; `pages/HelpPage.tsx` est le centre d'aide (parcours, recherche, impression). Les identifiants et adresses des fiches sont ceux de `frontend/src/screens.ts`, que les tickets utilisent aussi : un test les compare. L'explication de chaque champ est dans `frontend/src/hints.ts` (une clé par concept, appelée par `tooltip={hint('clé')}`). Aucune donnée en base, aucune route : l'aide est du code livré avec l'interface ; la FAQ locale en base arrive en 0.2.8. Le texte passe par React, jamais par `innerHTML`.

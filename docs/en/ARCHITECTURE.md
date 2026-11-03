@@ -1,4 +1,4 @@
-# Architecture, version 0.2.6
+# Architecture, version 0.2.7
 
 The French text is authoritative. This translation was made by Claude and still needs review (gap E13).
 
@@ -64,3 +64,5 @@ New resources in 0.2.0: `/api/pieces` (six routes, including `GET /:id/contenu`)
 New in 0.2.5: three open routes `/api/auth/config`, `/api/auth/sso/start`, `/api/auth/callback` (Microsoft sign-in, written list) and `/api/settings/auth` (`GET`, `PUT`, `POST /test`, administrator only). No MCP tools: they are browser navigation routes and sign-in settings handled on screen only. 61 routes in total, 52 MCP tools (0.2.5).
 
 New in 0.2.6: `/api/tickets` (nine routes) and `/api/settings/tickets` (`GET`, `PUT`, administrator only), 11 MCP tools. 72 routes in total, 64 MCP tools. A ticket carries the requester's entity. The IT queue (incident, bug, wish, and question without entity) is handled by the roles of `tickets.it_roles`; the business queue (question with entity) by the roles of `tickets.business_roles` held in the ticket's entity. The administrator therefore has no access to business questions. No screenshot on screens that show mail (`NO_CAPTURE_SCREENS`, also in `frontend/src/screens.ts`). A 2 MB image weighs about 2.8 MB in base64: 4 MB on `/api/tickets` and in nginx.
+
+New in 0.2.7 (help per screen): one sheet per screen in `frontend/src/help/topics/`, following the `HelpTopic` schema (`help/types.ts`), French and Dutch side by side. A button or menu is quoted by its translation key (`{{key}}`): `RichText` shows the real label. `PATHS` gives each role's reading path. `help/HelpButton.tsx` opens the screen's sheet in a side panel; `pages/HelpPage.tsx` is the help centre (paths, search, printing). The sheets' ids and addresses are those of `frontend/src/screens.ts`, which tickets also use: a test compares them. The explanation of each field is in `frontend/src/hints.ts`. No data in the database, no route: help is code shipped with the interface; the local FAQ in the database arrives in 0.2.8. Text goes through React, never `innerHTML`.
