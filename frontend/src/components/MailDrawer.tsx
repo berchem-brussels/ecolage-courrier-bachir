@@ -27,7 +27,7 @@ interface MailType { id: number; label_fr: string; label_nl: string | null }
 const CHANNELS = ['courrier', 'recommande', 'colis', 'guichet'] as const;
 
 export default function MailDrawer({ mail: row, onClose, onChanged }: { mail: Mail | null; onClose: () => void; onChanged: (m: Mail) => void }) {
-  const { t, lang } = useI18n();
+  const { t, lang, hint } = useI18n();
   const { user } = useAuth();
   const screens = Grid.useBreakpoint();
   const [form] = Form.useForm();
@@ -113,26 +113,26 @@ export default function MailDrawer({ mail: row, onClose, onChanged }: { mail: Ma
           {mail.status === 'annule' ? null : (
             <>
               <Form form={form} layout="vertical" onFinish={save}>
-                <Form.Item {...NO_FOR} name="channel" label={t('mail.channel')}><Radio.Group aria-label={t('mail.channel')} {...RADIOGROUP} optionType="button" options={CHANNELS.map((c) => ({ value: c, label: t(`mail.channel.${c}`) }))} /></Form.Item>
-                {channel === 'recommande' && <Form.Item name="tracking_number" label={t('mail.tracking_number')} rules={[{ max: 50 }]}><Input /></Form.Item>}
-                <Form.Item name="sender_contact_id" label={t('mail.sender')} rules={[{ required: true }]}><ContactPicker initial={sender} /></Form.Item>
-                <Form.Item name="subject" label={t('mail.subject')} rules={[{ required: true, max: 500 }]}><Input.TextArea autoSize={{ minRows: 2, maxRows: 5 }} /></Form.Item>
-                <Form.Item {...NO_FOR} name="type_id" label={t('mail.type')} rules={[{ required: true }]}>
+                <Form.Item {...NO_FOR} name="channel" tooltip={hint('mail.channel')} label={t('mail.channel')}><Radio.Group aria-label={t('mail.channel')} {...RADIOGROUP} optionType="button" options={CHANNELS.map((c) => ({ value: c, label: t(`mail.channel.${c}`) }))} /></Form.Item>
+                {channel === 'recommande' && <Form.Item name="tracking_number" tooltip={hint('mail.tracking_number')} label={t('mail.tracking_number')} rules={[{ max: 50 }]}><Input autoComplete="off" /></Form.Item>}
+                <Form.Item name="sender_contact_id" tooltip={hint('mail.sender')} label={t('mail.sender')} rules={[{ required: true }]}><ContactPicker initial={sender} /></Form.Item>
+                <Form.Item name="subject" tooltip={hint('mail.subject')} label={t('mail.subject')} rules={[{ required: true, max: 500 }]}><Input.TextArea autoComplete="off" autoSize={{ minRows: 2, maxRows: 5 }} /></Form.Item>
+                <Form.Item {...NO_FOR} name="type_id" tooltip={hint('mail.type')} label={t('mail.type')} rules={[{ required: true }]}>
                   <Radio.Group aria-label={t('mail.type')} {...RADIOGROUP} optionType="button" style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }} options={types.map((ty) => ({ value: ty.id, label: pick(ty, 'label', lang) }))} />
                 </Form.Item>
-                <Form.Item {...NO_FOR} name="lang" label={t('mail.lang')}><Radio.Group aria-label={t('mail.lang')} optionType="button" options={(['fr', 'nl', 'autre'] as const).map((l) => ({ value: l, label: t(`mail.lang.${l}`) }))} /></Form.Item>
-                <Form.Item {...NO_FOR} name="urgency" label={t('mail.urgency')}><Radio.Group aria-label={t('mail.urgency')} optionType="button" options={(['normale', 'urgente'] as const).map((u) => ({ value: u, label: t(`mail.urgency.${u}`) }))} /></Form.Item>
-                <Form.Item name="addressee_name" label={t('mail.addressee_name')} rules={[{ max: 200 }]}><Input /></Form.Item>
-                <Form.Item name="sender_reference" label={t('mail.sender_reference')} rules={[{ max: 100 }]}><Input /></Form.Item>
-                <Form.Item name="document_date" label={t('mail.document_date')}><DatePicker format="L" disabledDate={(d) => d.isAfter(dayjs(), 'day')} /></Form.Item>
-                <Form.Item name="pieces_count" label={t('mail.pieces_count')}><InputNumber min={0} max={9999} /></Form.Item>
-                <Form.Item name="notes" label={t('mail.notes')} rules={[{ max: 5000 }]}><Input.TextArea rows={2} /></Form.Item>
+                <Form.Item {...NO_FOR} name="lang" tooltip={hint('mail.lang')} label={t('mail.lang')}><Radio.Group aria-label={t('mail.lang')} optionType="button" options={(['fr', 'nl', 'autre'] as const).map((l) => ({ value: l, label: t(`mail.lang.${l}`) }))} /></Form.Item>
+                <Form.Item {...NO_FOR} name="urgency" tooltip={hint('mail.urgency')} label={t('mail.urgency')}><Radio.Group aria-label={t('mail.urgency')} optionType="button" options={(['normale', 'urgente'] as const).map((u) => ({ value: u, label: t(`mail.urgency.${u}`) }))} /></Form.Item>
+                <Form.Item name="addressee_name" tooltip={hint('mail.addressee_name')} label={t('mail.addressee_name')} rules={[{ max: 200 }]}><Input autoComplete="off" /></Form.Item>
+                <Form.Item name="sender_reference" tooltip={hint('mail.sender_reference')} label={t('mail.sender_reference')} rules={[{ max: 100 }]}><Input autoComplete="off" /></Form.Item>
+                <Form.Item name="document_date" tooltip={hint('mail.document_date')} label={t('mail.document_date')}><DatePicker format="L" disabledDate={(d) => d.isAfter(dayjs(), 'day')} /></Form.Item>
+                <Form.Item name="pieces_count" tooltip={hint('mail.pieces_count')} label={t('mail.pieces_count')}><InputNumber min={0} max={9999} /></Form.Item>
+                <Form.Item name="notes" tooltip={hint('mail.notes')} label={t('mail.notes')} rules={[{ max: 5000 }]}><Input.TextArea autoComplete="off" rows={2} /></Form.Item>
                 <Button type="primary" htmlType="submit">{t('common.save')}</Button>
               </Form>
               {user && (
                 <Card size="small" style={{ marginTop: 24 }} title={t('mail.cancel')}>
                   <Alert type="info" showIcon style={{ marginBottom: 8 }} message={t('mail.cancel.help')} />
-                  <Input.TextArea rows={2} aria-label={t('mail.cancel_reason')} placeholder={t('mail.cancel_reason')} value={reason} onChange={(e) => setReason(e.target.value)} />
+                  <Input.TextArea autoComplete="off" rows={2} aria-label={t('mail.cancel_reason')} placeholder={t('mail.cancel_reason')} value={reason} onChange={(e) => setReason(e.target.value)} />
                   <Popconfirm title={t('mail.cancel.confirm')} okText={t('yes')} cancelText={t('no')} onConfirm={cancel} disabled={!reason.trim()}>
                     <Button danger style={{ marginTop: 8 }} disabled={!reason.trim()}>{t('mail.cancel')}</Button>
                   </Popconfirm>

@@ -1,4 +1,4 @@
-# Architectuur, versie 0.2.6
+# Architectuur, versie 0.2.7
 
 De Franse tekst is rechtsgeldig. Deze vertaling werd door Claude gemaakt en moet nog worden nagelezen (afwijking E13).
 
@@ -64,3 +64,5 @@ Nieuwe bronnen in 0.2.0: `/api/pieces` (zes routes, waarvan `GET /:id/contenu`),
 Nieuw in 0.2.5: drie vrije routes `/api/auth/config`, `/api/auth/sso/start`, `/api/auth/callback` (Microsoft-aanmelding, geschreven lijst) en `/api/settings/auth` (`GET`, `PUT`, `POST /test`, enkel beheerder). Geen MCP-tools: het zijn navigatieroutes van de browser en aanmeldinstellingen die enkel via het scherm gebeuren. 61 routes in totaal, 52 MCP-tools (0.2.5).
 
 Nieuw in 0.2.6: `/api/tickets` (negen routes) en `/api/settings/tickets` (`GET`, `PUT`, enkel beheerder), 11 MCP-tools. 72 routes in totaal, 64 MCP-tools. Een ticket draagt de entiteit van de aanvrager. De IT-wachtrij (incident, bug, wens, en vraag zonder entiteit) wordt behandeld door de rollen van `tickets.it_roles`; de functionele wachtrij (vraag met entiteit) door de rollen van `tickets.business_roles` die in de entiteit van het ticket gehouden worden. De beheerder heeft dus geen toegang tot de functionele vragen. Geen schermafbeelding op schermen die post tonen (`NO_CAPTURE_SCREENS`, ook in `frontend/src/screens.ts`). Een afbeelding van 2 MB weegt ongeveer 2,8 MB in base64: 4 MB op `/api/tickets` en in nginx.
+
+Nieuw in 0.2.7 (hulp per scherm): een fiche per scherm in `frontend/src/help/topics/`, volgens het schema `HelpTopic` (`help/types.ts`), Frans en Nederlands naast elkaar. Een knop of menu wordt aangehaald met zijn vertaalsleutel (`{{sleutel}}`): `RichText` toont het echte label. `PATHS` geeft het leestraject van elke rol. `help/HelpButton.tsx` opent de fiche in een zijpaneel; `pages/HelpPage.tsx` is het helpcentrum (trajecten, zoeken, afdrukken). De id's en adressen van de fiches zijn die van `frontend/src/screens.ts`, die ook de tickets gebruiken: een test vergelijkt ze. De uitleg van elk veld staat in `frontend/src/hints.ts`. Geen gegevens in de databank, geen route: de hulp is code die met de interface geleverd wordt; de lokale FAQ in de databank komt in 0.2.8. De tekst loopt via React, nooit via `innerHTML`.

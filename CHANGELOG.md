@@ -1,8 +1,23 @@
 # Historique des versions
 
-Application courrier · version 0.2.6 · historique au 03/11/2026
+Application courrier · version 0.2.7 · historique au 03/11/2026
 
-## 0.2.6 du 03/11/2026, préparée, à installer et à recetter sur NIXUS
+## 0.2.7 du 03/11/2026, préparée, à installer et à recetter sur NIXUS
+
+Aide par écran, première moitié (standard v3.3, section 13.1), reprise du gabarit 1.3.0 et adaptée aux rôles par entité. Troisième version du lot « connexion, tickets, aide ». Sans migration, aucune dépendance changée. Les repères numérotés et les captures annotées arrivent en 0.2.8 (E39).
+
+- 14 fiches d'aide, une par écran du menu, FR et NL côte à côte : accueil, registre, à enregistrer, enregistrer, contacts, consultations, comptes, entités et registres, services, types de courrier, paramètres, tickets, centre d'aide, accessibilité. 40 procédures (cas d'usage, étapes, résultat, erreurs et solutions), 22 questions propres aux écrans, renvois entre fiches. Un bouton ou un menu se cite par sa clé de traduction : l'aide affiche le libellé réel, dans la langue de la personne.
+- Bouton « Aide » dans l'en-tête commun de chaque écran : la fiche s'ouvre dans un panneau latéral, sans quitter l'écran, avec un lien vers le mode d'emploi complet.
+- Centre d'aide `/help` : parcours par rôle (agent, responsable de service, secrétariat, gestionnaire du registre, auditeur, administrateur), choisi par défaut d'après les rôles de la personne ; « tout le mode d'emploi » ; recherche plein texte ; impression complète du mode d'emploi (procédures dépliées) ; contact du support en paramètre. Remplace l'ancienne page d'aide écrite en dur (guide et 7 questions, reprises dans les fiches).
+- Explication de chaque champ, FR et NL, derrière l'icône « ? » : 79 explications pour les 91 champs à encoder de tous les formulaires (comptes, entités, services, types, contacts, enregistrement, fiche du courrier, mot de passe, paramètres, connexion, tickets). Elles disent quoi encoder et d'où vient la valeur.
+- E23 (remarques d'information de Chrome) : `autoComplete` posé sur tous les champs de saisie, champ de fichier du cadre de dépôt nommé (`id` et `name`), contrôlé par un test statique. Les 10 remarques sur les titres de groupes de boutons restent (E23).
+- Contrôles bloquants à chaque version : chaque route du menu a sa fiche ; fiches et écrans alignés ; au moins deux procédures de deux étapes ; aucune clé inconnue ; FR et NL différents ; aucune abréviation ni personne nommée ; parcours cohérents avec les rôles des fiches ; aucun champ sans explication ni explication de moins de 12 caractères ; aucune explication inutilisée ; aucun champ de saisie sans autocomplétion ; aucun HTML interprété.
+- Correction d'un défaut de présentation constaté pendant les essais : le contenu d'un panneau d'aide fermé restait dans la page (identifiants en double avec le centre d'aide) ; il est maintenant retiré à la fermeture.
+- Valeurs locales : aucune dans le code (le contrôle de portabilité a refusé un exemple de code postal local, remplacé).
+
+Suites : serveur 110 tests, écrans 101 tests (un test de captures ignoré hors contrôle strict), 0 échec ; parcours réel dans Chromium (7 contrôles) ; 10 contrôles retirés un à un, tous détectés ; `npm audit --omit=dev` à 0 dans les deux parties.
+
+## 0.2.6 du 03/11/2026, installée sur NIXUS et publiée sur GitHub le 03/11/2026
 
 Tickets de l'application (standard v3.3, section 13.5), repris du gabarit 1.3.0 et adaptés aux rôles par entité. Deuxième version du lot « connexion, tickets, aide ». Migration 007. Aucune dépendance changée.
 

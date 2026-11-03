@@ -67,3 +67,8 @@ body.app-dark ::-webkit-scrollbar-thumb { background: #424242; }
   .ant-layout-sider, .ant-layout-header, .chatbot-widget { display: none !important; }
   .ant-layout-content { margin: 0 !important; padding: 8px !important; }
 }
+
+/* Aide : repères numérotés et captures (standard v3.3, section 13.1) */
+.help-mark { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; padding: 0 5px; margin: 0 2px; border-radius: 10px; background: #cf1322; color: #fff; font-size: 12px; font-weight: 600; }
+.help-shot { display: block; max-width: 100%; border: 1px solid var(--app-border-strong); border-radius: 6px; margin: 8px 0 12px; }
+@media print { .help-search, .page-header-actions { display: none !important; } .help-topic { break-inside: avoid; } }

@@ -13,7 +13,7 @@ import { pick } from '../labels';
 interface Service { id: number; name_fr: string; name_nl: string | null; nl_to_validate: number; parent_id: number | null; parent_name_fr: string | null; parent_name_nl: string | null; entity_ids: number[]; is_active: number }
 
 export default function ServicesPage() {
-  const { t, lang } = useI18n();
+  const { t, lang, hint } = useI18n();
   const entities = useEntities();
   const [rows, setRows] = useState<Service[]>([]);
   const [loading, setLoading] = useState(false);
@@ -67,7 +67,7 @@ export default function ServicesPage() {
             { title: t('common.actions'), key: 'actions', render: (_, s) => (s.is_active ? (
               <Space>
                 <Button size="small" onClick={() => setEditing(s)}>{t('common.edit')}</Button>
-                <Popconfirm title={<Input aria-label={t('common.reason')} placeholder={t('common.reason')} value={reason} onChange={(e) => setReason(e.target.value)} />}
+                <Popconfirm title={<Input autoComplete="off" aria-label={t('common.reason')} placeholder={t('common.reason')} value={reason} onChange={(e) => setReason(e.target.value)} />}
                   okText={t('common.deactivate')} cancelText={t('common.cancel')} onConfirm={() => deactivate(s)} okButtonProps={{ disabled: !reason.trim() }}>
                   <Button size="small" danger>{t('common.deactivate')}</Button>
                 </Popconfirm>
@@ -78,13 +78,13 @@ export default function ServicesPage() {
       <Modal open={editing !== undefined} title={editing ? t('service.edit') : t('service.new')} okText={t('common.save')} cancelText={t('common.cancel')}
         onOk={() => form.submit()} onCancel={() => setEditing(undefined)} destroyOnClose>
         <Form form={form} layout="vertical" onFinish={save}>
-          <Form.Item name="name_fr" label={t('common.name_fr')} rules={[{ required: true, max: 200 }]}><Input /></Form.Item>
-          <Form.Item name="name_nl" label={t('common.name_nl')} rules={[{ max: 200 }]}><Input /></Form.Item>
-          <Form.Item name="nl_to_validate" valuePropName="checked"><Checkbox>{t('common.nl_to_validate')}</Checkbox></Form.Item>
-          <Form.Item name="entity_ids" label={t('service.entities')} extra={t('service.entities.help')} rules={[{ required: true, type: 'array', min: 1 }]}>
+          <Form.Item name="name_fr" tooltip={hint('service.name_fr')} label={t('common.name_fr')} rules={[{ required: true, max: 200 }]}><Input autoComplete="off" /></Form.Item>
+          <Form.Item name="name_nl" tooltip={hint('service.name_nl')} label={t('common.name_nl')} rules={[{ max: 200 }]}><Input autoComplete="off" /></Form.Item>
+          <Form.Item name="nl_to_validate" tooltip={hint('common.nl_to_validate')} valuePropName="checked"><Checkbox>{t('common.nl_to_validate')}</Checkbox></Form.Item>
+          <Form.Item name="entity_ids" tooltip={hint('service.entities')} label={t('service.entities')} extra={t('service.entities.help')} rules={[{ required: true, type: 'array', min: 1 }]}>
             <Checkbox.Group options={entities.map((e) => ({ value: e.id, label: `${e.code} · ${pick(e, 'name', lang)}` }))} />
           </Form.Item>
-          <Form.Item name="parent_id" label={t('service.parent')}>
+          <Form.Item name="parent_id" tooltip={hint('service.parent')} label={t('service.parent')}>
             <Select allowClear showSearch optionFilterProp="label" aria-label={t('service.parent')}
               options={rows.filter((s) => s.is_active && s.id !== editing?.id).map((s) => ({ value: s.id, label: pick(s, 'name', lang) }))} />
           </Form.Item>

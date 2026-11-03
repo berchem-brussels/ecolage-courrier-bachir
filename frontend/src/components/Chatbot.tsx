@@ -52,7 +52,7 @@ export default function Chatbot() {
             ))}
           </div>
           <Space.Compact style={{ width: '100%' }}>
-            <Input aria-label={t('chat.placeholder')} placeholder={t('chat.placeholder')} value={q} onChange={(e) => setQ(e.target.value)} onPressEnter={send} />
+            <Input autoComplete="off" aria-label={t('chat.placeholder')} placeholder={t('chat.placeholder')} value={q} onChange={(e) => setQ(e.target.value)} onPressEnter={send} />
             <Button type="primary" aria-label={t('chat.send')} icon={<SendOutlined />} onClick={send} />
           </Space.Compact>
         </Card>

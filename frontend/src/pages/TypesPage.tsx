@@ -11,7 +11,7 @@ import EntityChoice, { useEntityParam } from '../components/EntityChoice';
 interface MailType { id: number; entity_id: number; label_fr: string; label_nl: string | null; nl_to_validate: number; is_demo: number; is_active: number }
 
 export default function TypesPage() {
-  const { t } = useI18n();
+  const { t, hint } = useI18n();
   const { user, isAdmin } = useAuth();
   const entities = useEntities();
   const allowed = useMemo(() => entities.filter((e) => isAdmin || (user?.entity_roles || []).some((r) => r.entity_id === e.id && r.role === 'gestionnaire')), [entities, user, isAdmin]);
@@ -69,7 +69,7 @@ export default function TypesPage() {
             { title: t('common.actions'), key: 'actions', render: (_, ty) => (ty.is_active ? (
               <Space>
                 <Button size="small" onClick={() => setEditing(ty)}>{t('common.edit')}</Button>
-                <Popconfirm title={<Input aria-label={t('common.reason')} placeholder={t('common.reason')} value={reason} onChange={(e) => setReason(e.target.value)} />}
+                <Popconfirm title={<Input autoComplete="off" aria-label={t('common.reason')} placeholder={t('common.reason')} value={reason} onChange={(e) => setReason(e.target.value)} />}
                   okText={t('common.deactivate')} cancelText={t('common.cancel')} onConfirm={() => deactivate(ty)} okButtonProps={{ disabled: !reason.trim() }}>
                   <Button size="small" danger>{t('common.deactivate')}</Button>
                 </Popconfirm>
@@ -80,9 +80,9 @@ export default function TypesPage() {
       <Modal open={editing !== undefined} title={editing ? t('type.edit') : t('type.new')} okText={t('common.save')} cancelText={t('common.cancel')}
         onOk={() => form.submit()} onCancel={() => setEditing(undefined)} destroyOnClose>
         <Form form={form} layout="vertical" onFinish={save}>
-          <Form.Item name="label_fr" label={t('type.label_fr')} rules={[{ required: true, max: 200 }]}><Input /></Form.Item>
-          <Form.Item name="label_nl" label={t('type.label_nl')} rules={[{ max: 200 }]}><Input /></Form.Item>
-          <Form.Item name="nl_to_validate" valuePropName="checked"><Checkbox>{t('common.nl_to_validate')}</Checkbox></Form.Item>
+          <Form.Item name="label_fr" tooltip={hint('type.label_fr')} label={t('type.label_fr')} rules={[{ required: true, max: 200 }]}><Input autoComplete="off" /></Form.Item>
+          <Form.Item name="label_nl" tooltip={hint('type.label_nl')} label={t('type.label_nl')} rules={[{ max: 200 }]}><Input autoComplete="off" /></Form.Item>
+          <Form.Item name="nl_to_validate" tooltip={hint('common.nl_to_validate')} valuePropName="checked"><Checkbox>{t('common.nl_to_validate')}</Checkbox></Form.Item>
         </Form>
       </Modal>
     </div>

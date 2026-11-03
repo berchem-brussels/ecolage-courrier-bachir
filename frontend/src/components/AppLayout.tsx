@@ -19,6 +19,7 @@ import AppMark from './AppMark';
 import Chatbot from './Chatbot';
 import PasswordModal from './PasswordModal';
 import ReportTicketModal from './ReportTicketModal';
+import HelpButton from '../help/HelpButton';
 
 const { Header, Sider, Content } = Layout;
 
@@ -126,6 +127,7 @@ export default function AppLayout() {
             onClick={() => (isMobile ? setDrawerOpen(true) : setCollapsed(!collapsed))} />
           <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 4 : 12, minWidth: 0 }}>
             {settings.environment && settings.environment !== 'production' && !isMobile && <Tag color="orange">{t(`env.${settings.environment}`)}</Tag>}
+            <HelpButton compact={isMobile} />
             <Button size="small" aria-label={t('tickets.report')} icon={<FlagOutlined />} onClick={() => setReportOpen(true)}>{isMobile ? null : t('tickets.report')}</Button>
             <Segmented size="small" aria-label={t('layout.mode')} value={user?.ui_mode || 'simple'}
               onChange={(v) => savePreferences({ ui_mode: v as 'simple' | 'complet' })}

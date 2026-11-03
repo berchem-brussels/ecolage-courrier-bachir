@@ -22,7 +22,7 @@ const CHANNELS = ['courrier', 'recommande', 'colis', 'guichet'] as const;
 export default function RegistrationForm({ entity, pieceIds, onSaved, saveLabel }: {
   entity: Entity; pieceIds?: number[]; onSaved: (m: SavedMail) => void; saveLabel?: string;
 }) {
-  const { t, lang } = useI18n();
+  const { t, lang, hint } = useI18n();
   const { user } = useAuth();
   const [types, setTypes] = useState<MailType[]>([]);
   const [more, setMore] = useState(false);
@@ -63,47 +63,47 @@ export default function RegistrationForm({ entity, pieceIds, onSaved, saveLabel 
       <Form form={form} layout="vertical" onFinish={submit} initialValues={{ received_date: dayjs(), channel: 'courrier', lang: 'fr', urgency: 'normale' }}>
         <Row gutter={16}>
           <Col xs={24} sm={10}>
-            <Form.Item name="received_date" label={t('mail.received_date')} rules={[{ required: true }]}>
+            <Form.Item name="received_date" tooltip={hint('mail.received_date')} label={t('mail.received_date')} rules={[{ required: true }]}>
               <DatePicker format="L" allowClear={false} style={{ width: '100%' }} disabledDate={(d) => d.isAfter(dayjs(), 'day')} />
             </Form.Item>
           </Col>
           <Col xs={24} sm={14}>
-            <Form.Item {...NO_FOR} name="channel" label={t('mail.channel')} rules={[{ required: true }]}>
+            <Form.Item {...NO_FOR} name="channel" tooltip={hint('mail.channel')} label={t('mail.channel')} rules={[{ required: true }]}>
               <Radio.Group aria-label={t('mail.channel')} {...RADIOGROUP} optionType="button" options={CHANNELS.map((c) => ({ value: c, label: t(`mail.channel.${c}`) }))} />
             </Form.Item>
           </Col>
         </Row>
         {channel === 'recommande' && (
-          <Form.Item name="tracking_number" label={t('mail.tracking_number')} rules={[{ max: 50 }]}><Input style={{ maxWidth: 280 }} /></Form.Item>
+          <Form.Item name="tracking_number" tooltip={hint('mail.tracking_number')} label={t('mail.tracking_number')} rules={[{ max: 50 }]}><Input autoComplete="off" style={{ maxWidth: 280 }} /></Form.Item>
         )}
-        <Form.Item name="sender_contact_id" label={t('mail.sender')} rules={[{ required: true }]}>
+        <Form.Item name="sender_contact_id" tooltip={hint('mail.sender')} label={t('mail.sender')} rules={[{ required: true }]}>
           <ContactPicker onPicked={(c: Contact) => form.setFieldValue('lang', c.lang)} />
         </Form.Item>
-        <Form.Item name="subject" label={t('mail.subject')} rules={[{ required: true, max: 500 }]}><Input.TextArea rows={2} autoSize={{ minRows: 2, maxRows: 5 }} /></Form.Item>
-        <Form.Item {...NO_FOR} name="type_id" label={t('mail.type')} rules={[{ required: true }]}>
+        <Form.Item name="subject" tooltip={hint('mail.subject')} label={t('mail.subject')} rules={[{ required: true, max: 500 }]}><Input.TextArea autoComplete="off" rows={2} autoSize={{ minRows: 2, maxRows: 5 }} /></Form.Item>
+        <Form.Item {...NO_FOR} name="type_id" tooltip={hint('mail.type')} label={t('mail.type')} rules={[{ required: true }]}>
           <Radio.Group aria-label={t('mail.type')} {...RADIOGROUP} optionType="button" style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}
             options={types.map((ty) => ({ value: ty.id, label: pick(ty, 'label', lang) }))} />
         </Form.Item>
         <Row gutter={16}>
           <Col xs={24} sm={14}>
-            <Form.Item {...NO_FOR} name="lang" label={t('mail.lang')}>
+            <Form.Item {...NO_FOR} name="lang" tooltip={hint('mail.lang')} label={t('mail.lang')}>
               <Radio.Group aria-label={t('mail.lang')} optionType="button" options={(['fr', 'nl', 'autre'] as const).map((l) => ({ value: l, label: t(`mail.lang.${l}`) }))} />
             </Form.Item>
           </Col>
           <Col xs={24} sm={10}>
-            <Form.Item {...NO_FOR} name="urgency" label={t('mail.urgency')}>
+            <Form.Item {...NO_FOR} name="urgency" tooltip={hint('mail.urgency')} label={t('mail.urgency')}>
               <Radio.Group aria-label={t('mail.urgency')} optionType="button" options={(['normale', 'urgente'] as const).map((u) => ({ value: u, label: t(`mail.urgency.${u}`) }))} />
             </Form.Item>
           </Col>
         </Row>
         <div style={{ display: showMore ? 'block' : 'none' }}>
           <Row gutter={16}>
-            <Col xs={24} sm={12}><Form.Item name="addressee_name" label={t('mail.addressee_name')} rules={[{ max: 200 }]}><Input /></Form.Item></Col>
-            <Col xs={24} sm={12}><Form.Item name="sender_reference" label={t('mail.sender_reference')} rules={[{ max: 100 }]}><Input /></Form.Item></Col>
-            <Col xs={24} sm={12}><Form.Item name="document_date" label={t('mail.document_date')}><DatePicker format="L" style={{ width: '100%' }} disabledDate={(d) => d.isAfter(dayjs(), 'day')} /></Form.Item></Col>
-            <Col xs={24} sm={12}><Form.Item name="pieces_count" label={t('mail.pieces_count')}><InputNumber min={0} max={9999} style={{ width: '100%' }} /></Form.Item></Col>
+            <Col xs={24} sm={12}><Form.Item name="addressee_name" tooltip={hint('mail.addressee_name')} label={t('mail.addressee_name')} rules={[{ max: 200 }]}><Input autoComplete="off" /></Form.Item></Col>
+            <Col xs={24} sm={12}><Form.Item name="sender_reference" tooltip={hint('mail.sender_reference')} label={t('mail.sender_reference')} rules={[{ max: 100 }]}><Input autoComplete="off" /></Form.Item></Col>
+            <Col xs={24} sm={12}><Form.Item name="document_date" tooltip={hint('mail.document_date')} label={t('mail.document_date')}><DatePicker format="L" style={{ width: '100%' }} disabledDate={(d) => d.isAfter(dayjs(), 'day')} /></Form.Item></Col>
+            <Col xs={24} sm={12}><Form.Item name="pieces_count" tooltip={hint('mail.pieces_count')} label={t('mail.pieces_count')}><InputNumber min={0} max={9999} style={{ width: '100%' }} /></Form.Item></Col>
           </Row>
-          <Form.Item name="notes" label={t('mail.notes')} rules={[{ max: 5000 }]}><Input.TextArea rows={2} /></Form.Item>
+          <Form.Item name="notes" tooltip={hint('mail.notes')} label={t('mail.notes')} rules={[{ max: 5000 }]}><Input.TextArea autoComplete="off" rows={2} /></Form.Item>
         </div>
         {simple && (
           <Button type="link" style={{ padding: 0, marginBottom: 16 }} onClick={() => setMore(!more)}>{more ? t('common.less') : t('common.more')}</Button>

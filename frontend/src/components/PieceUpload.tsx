@@ -39,7 +39,7 @@ export default function PieceUpload({ fields, onDone, onSend, compact = false }:
     <div>
       {/* Aucun filtre « accept » : le composant écarterait sans message un fichier d'un autre type (TIFF), avant tout envoi
           (défaut relevé à la recette de la 0.2.0). Tout fichier part au serveur, qui contrôle le type réel et rend la raison du refus. */}
-      <Upload.Dragger multiple showUploadList={false}
+      <Upload.Dragger id="piece-upload" name="file" multiple showUploadList={false}
         customRequest={({ file, onSuccess }) => { send(file as File).finally(() => onSuccess?.({})); }}
         style={{ padding: compact ? 4 : 12 }}>
         <p className="ant-upload-drag-icon" style={{ marginBottom: compact ? 4 : undefined }}><InboxOutlined /></p>
