@@ -1,6 +1,6 @@
 # Décisions et actions
 
-Application courrier · version 0.2.4 · journal au 27/10/2026
+Application courrier · version 0.2.5 · journal au 03/11/2026
 
 Ce fichier réunit les décisions prises pendant le développement, les règles de travail convenues avec le conducteur du projet et les actions à faire. Les décisions de périmètre du 13/10/2026 (A1 à A12) sont dans le cahier des charges, section 2.
 
@@ -48,6 +48,17 @@ Ce fichier réunit les décisions prises pendant le développement, les règles 
 | 27/10/2026 | `@vitejs/plugin-react` 6 | Imposé par `vite` 8 (la 4.7.0 refuse `vite` 8) ; non nommé dans le courriel à Renaud ; accord à confirmer | Claude, mesure ; à confirmer par Renaud |
 | 27/10/2026 | Défaut du sélecteur de date de la 0.2.3 | Corrigé dans la 0.2.4 ; la 0.2.3 reste installée sur NIXUS en attendant et n'est pas publiée sur GitHub | Conducteur du projet (accord du 27/10/2026) |
 | 27/10/2026 | Test du dépôt | Ne signale plus `tsconfig.tsbuildinfo`, déjà exclu par `.gitignore` | Claude |
+| 27/10/2026 | Recette de la 0.2.4 sur NIXUS | 5 points sur 5 conformes : version, date en français et en néerlandais, calendrier dans la langue, enregistrement depuis la file, nom accentué intact | Conducteur du projet |
+| 27/10/2026 | Publication de la 0.2.4 | Branche, demande de fusion #3, travail « tests » vert, fusion, étiquette `v0.2.4`, publication immuable avec l'archive ; empreinte vérifiée sur le PC | Conducteur du projet |
+| 27/10/2026 | Alerte CodeQL sur `ci.yml` | « Workflow does not contain permissions » : à régler par `permissions: contents: read`, qui s'écarte du contenu type de la section 7 de GITHUB.md ; rien n'est modifié avant décision | À décider (conducteur du projet, puis Renaud pour GITHUB.md) |
+| 03/11/2026 | Lot « connexion Microsoft, tickets, aide par écran » | Quatre versions : 0.2.5 (connexion), 0.2.6 (tickets), 0.2.7 (aide 1/2), 0.2.8 (aide 2/2) ; l'étape 3 garde le numéro 0.3.0 ; le « go » vaut accord sur les propositions par défaut de Claude | Conducteur du projet (« go » du 03/11/2026) |
+| 03/11/2026 | Files de tickets | Le ticket porte l'entité du demandeur ; file IT (incident, bug, souhait) traitée par l'administrateur ; file métier (question) traitée par le gestionnaire du registre de l'entité du ticket ; question sans entité vers la file IT ; rôles de chaque file réglables dans Paramètres | Conducteur du projet (proposition de Claude par défaut) |
+| 03/11/2026 | Captures dans les tickets | Champ capture absent des écrans qui affichent du courrier (registre, à enregistrer, enregistrer, consultations), avertissement ailleurs ; écart voulu au standard 13.5 (« capture facultative »), à consigner | Conducteur du projet (proposition de Claude par défaut) |
+| 03/11/2026 | Connexion Microsoft | 0.2.5 livrée en mode `local` ; recette sur NIXUS en deux temps (non-régression et Paramètres maintenant, 7 points avec Portal après l'inscription Entra ID) ; bouton « Tester » minimal ajouté | Conducteur du projet (proposition de Claude par défaut) |
+| 03/11/2026 | E23 | Traitée dans la 0.2.7 avec l'explication des champs, au lieu du début de la 0.3.0 | Conducteur du projet (proposition de Claude par défaut) |
+| 03/11/2026 | Captures de l'aide | Produites par le script Playwright dans l'environnement de Claude, sur `atelier.exemple.json` (services fictifs) : aucun nom de service réel dans le dépôt public ; version de Playwright du standard (`^1.61.1`) si son navigateur s'installe, sinon information avant la 0.2.8 | Conducteur du projet (proposition de Claude par défaut) |
+| 03/11/2026 | `qs` et `ci.yml` | `npm update qs` seul (6.16.2) et `permissions: contents: read` dans `ci.yml`, dans la 0.2.5 ; Renaud à informer, GITHUB.md à mettre à jour | Conducteur du projet (proposition de Claude par défaut) |
+| 03/11/2026 | Redirection ouverte du gabarit | Corrigée dans l'interface (`safeNextPath`) ; à signaler à Renaud pour le gabarit 1.3.0 | Claude, constat du 03/11/2026 |
 
 ## 2. Règles de travail convenues
 
@@ -72,10 +83,11 @@ Elles s'ajoutent aux règles du standard (section 2).
 | 4 | Captures des écrans d'iCourrier et journée type du secrétariat de l'AC (I-01, I-02) | l'utilisatrice clé de l'AC | Avant l'étape 3 |
 | 5 | Types de courrier réels et délais (I-04) | l'utilisatrice clé de l'AC | Avant l'étape 9 |
 | 6 | Désigner l'utilisatrice clé du CPAS (D-17) et le service qui enregistre le courrier du CPAS (D-22) | Conducteur du projet | Avant l'étape 13 |
-| 7 | Demander l'inscription d'application Entra ID pour la connexion Microsoft 365 | Administrateur du locataire Microsoft 365 | Avant l'étape 7 |
+| 7 | Demander l'inscription d'application Entra ID (une inscription pour courrier, adresse de retour `https://<adresse>/api/auth/callback` exacte, consentement administrateur pour `openid profile email`, comptes du locataire seulement). Vérifier à la création si le portail accepte une adresse IP ; sinon prévoir un nom DNS | Administrateur du locataire Microsoft 365 | Avant la recette réelle de la 0.2.5 |
 | 8 | Fournir l'archive de PILOT (pont PostgreSQL, `oidc.js`, `oauth.js`) | Conducteur du projet | Avant l'étape 7 |
 | 9 | Réparer la notification par courriel de NIXUS (Panneau de configuration › Notification › Courriel) | IT | Avant toute production |
-| 10 | Obtenir de l'éditeur de l'ancien outil le format d'export et la clause de restitution (I-06) | Renaud | Avant l'étape 22 |
+| 10 | Obtenir d'l'éditeur de l'ancien outil le format d'export et la clause de restitution (I-06) | Renaud | Avant l'étape 22 |
 | 11 | Volumes de courrier, copieurs, boîtes partagées, modèles en usage (I-03, I-05, I-07, I-08) | Métier, IT | Selon les étapes 2, 11, 12 |
-| 12 | Envoyer à Renaud le courriel (raisons et impact sur le standard) ; compléter le courriel : `vite` 8 impose aussi `@vitejs/plugin-react` 6, non nommé jusqu'ici ; installer la 0.2.4 (`multer` 2.x, `vite` 8, sélecteur de date corrigé) ; revérifier les alertes CodeQL après la mise en production | Conducteur du projet | Courriel : maintenant |
-| 13 | Corriger `sudo` devant `ls -t` dans les notes de livraison de la prochaine version ; ajouter à `docs/SECURITE.md` que `npm audit` ne signale pas `multer` | Claude | 0.2.3 ou 0.3.0 |
+| 12 | Envoyer à Renaud le courriel (raisons et impact sur le standard, `@vitejs/plugin-react` 6, `npm audit fix` de la 0.2.2) ; revérifier les alertes CodeQL après la mise en production | Conducteur du projet | Courriel : maintenant |
+| 13 | Ajouter à `docs/SECURITE.md` que `npm audit` ne signale pas `multer` : fait en 0.2.3. Corriger `sudo` devant `ls -t` : fait dans le dépôt en 0.2.3 | Claude | Fait |
+| 14 | Mettre à jour le contenu type de `ci.yml` dans GITHUB.md avec `permissions: contents: read` (E28 : appliqué en 0.2.5) ; informer Renaud de `qs` (E31), du bouton « Tester » (E32) et des deux défauts du gabarit 1.3.0 (E29 nginx 1 Mo, E30 redirection ouverte) | Conducteur du projet, Renaud | Avec la 0.2.5 |

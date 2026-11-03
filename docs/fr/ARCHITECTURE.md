@@ -1,4 +1,4 @@
-# Architecture, version 0.2.0
+# Architecture, version 0.2.5
 
 Le français fait foi. Les versions néerlandaise et anglaise sont des traductions de Claude à faire relire (écart E13).
 
@@ -30,7 +30,7 @@ Deux conteneurs Docker Compose : `courrier-web` (nginx, interface construite, re
 | `pieces` (0.2.0) | Fichier déposé : entité, courrier (après rattachement), statut `a_enregistrer`, `rattachee` ou `rejetee`, nom de stockage, nom d'origine, type vérifié, taille, empreinte SHA-256, position, motif de rejet |
 | `consultations` (0.2.0) | Journal des consultations : personne, entité, courrier, pièce, action (`fiche` ou `piece`), canal (`api` ou `mcp`), horodatage UTC |
 
-Migrations : `001_noyau`, `002_entites_registres`, `003_referentiels`, `004_courrier_entrant`, `005_pieces_consultations`.
+Migrations : `001_noyau`, `002_entites_registres`, `003_referentiels`, `004_courrier_entrant`, `005_pieces_consultations`, `006_connexion_microsoft` (0.2.5 : `users.oid`, `users.is_admin_local`, table `auth_pending` des connexions Microsoft en cours, dix minutes).
 
 ## Rôles
 
@@ -65,6 +65,9 @@ Toute lecture du contenu et toute ouverture de fiche (`GET /api/mails/:id`) s'in
 | `app.timezone` | Europe/Brussels | Idem ; sert à la date du jour et aux filtres de période du journal |
 | `pieces.max_mb` | 50 | Idem ; modifiable dans Administration › Paramètres, de 1 à 50 (plafond de `client_max_body_size` de nginx, 51 Mo) |
 | `pieces.mcp_read_max_mb` | 5 | Idem ; de 1 à 10 |
+| `auth.mode` (0.2.5) | `local` | `app_settings`, modifiable dans Administration › Paramètres › Connexion : `local`, `sso_optional`, `sso` |
+| `auth.tenant`, `auth.client_id`, `auth.public_url`, `auth.domains` (0.2.5) | vide | Idem ; `auth.public_url` en HTTPS, sert à l'adresse de retour `<adresse>/api/auth/callback` |
+| `auth.client_secret` (0.2.5) | vide | Idem ; chiffré AES-256-GCM (`CONFIG_ENC_KEY`), jamais renvoyé ni inscrit au journal ; absent des paramètres publics |
 | Entités et registres | AC, CPAS, préfixes AC, D-AC, CPAS, D-CPAS, 6 chiffres | `config/registres.defaut.json`, chargé dans une base vide |
 
 ## API et MCP
@@ -77,4 +80,7 @@ Toute lecture du contenu et toute ouverture de fiche (`GET /api/mails/:id`) s'in
 | `/api/settings` | `GET /`, `PUT /` (ressource unique) | `get_settings`, `update_settings` |
 | `/api/users` | Cinq routes | `list_users`, `get_user`, `create_user`, `update_user`, `prepare_deactivate_user`, `confirm_deactivate_user` |
 
-55 routes au total, 52 outils MCP exposés. Contrat OpenAPI généré sur `GET /api/openapi.json` ; le dépôt y est décrit en `multipart/form-data`.
+| `/api/auth/config`, `/api/auth/sso/start`, `/api/auth/callback` (0.2.5) | Trois routes libres, en liste écrite : état de la connexion, départ vers Microsoft, retour de Microsoft | Aucun : routes de navigation du navigateur |
+| `/api/settings/auth` (0.2.5) | `GET`, `PUT`, `POST /test` : administrateur seul | Aucun : réglages de connexion réservés à l'écran |
+
+61 routes au total, 52 outils MCP exposés. Contrat OpenAPI généré sur `GET /api/openapi.json` ; le dépôt y est décrit en `multipart/form-data`.

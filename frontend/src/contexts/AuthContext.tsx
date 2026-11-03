@@ -60,7 +60,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const logout = useCallback(async () => {
-    try { await api.post('/auth/logout', {}); } finally { setCsrfToken(null); setUser(null); }
+    try { await api.post('/auth/logout', {}); } finally { setCsrfToken(null); setUser(null); window.location.assign('/login?deconnecte=1'); }
   }, []);
 
   const savePreferences = useCallback(async (p: Partial<Pick<User, 'preferred_lang' | 'ui_mode' | 'theme'>>) => {

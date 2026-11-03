@@ -37,6 +37,10 @@ const MESSAGES = {
   INTERNAL: { fr: 'Erreur interne. Elle a été enregistrée.', nl: 'Interne fout. Ze werd geregistreerd.' },
   BAD_JSON: { fr: 'Contenu illisible : JSON invalide.', nl: 'Onleesbare inhoud: ongeldige JSON.' },
   PAYLOAD_TOO_LARGE: { fr: 'Contenu trop volumineux.', nl: 'Inhoud te groot.' },
+  SSO_NO_ADMIN: { fr: "Mode Microsoft obligatoire refusé : aucun administrateur actif ne pourrait encore se connecter (accès de secours par mot de passe ou compte rattaché à Microsoft).", nl: 'Verplichte Microsoft-modus geweigerd: geen enkele actieve beheerder zou nog kunnen aanmelden (noodtoegang met wachtwoord of aan Microsoft gekoppeld account).' },
+  LOCAL_LOGIN_DISABLED: { fr: 'Connexion par mot de passe désactivée : utilisez votre compte Microsoft.', nl: 'Aanmelden met wachtwoord uitgeschakeld: gebruik uw Microsoft-account.' },
+  SSO_TENANT_REQUIRED: { fr: "Saisissez d'abord l'annuaire (locataire), puis relancez le test.", nl: 'Geef eerst de directory (tenant) op en start de test opnieuw.' },
+  SSO_TEST_FAILED: { fr: "Le test a échoué : l'annuaire (locataire) indiqué n'a pas répondu comme attendu chez Microsoft.", nl: 'De test is mislukt: de opgegeven directory (tenant) antwoordde niet zoals verwacht bij Microsoft.' },
   REFERENCE_INVALID: { fr: "Référence vers un élément inexistant ou encore utilisé.", nl: 'Verwijzing naar een onbestaand of nog gebruikt element.' },
 };
 

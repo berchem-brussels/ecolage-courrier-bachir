@@ -1,8 +1,24 @@
 # Historique des versions
 
-Application courrier · version 0.2.4 · historique au 27/10/2026
+Application courrier · version 0.2.5 · historique au 03/11/2026
 
-## 0.2.4 du 27/10/2026
+## 0.2.5 du 03/11/2026, préparée, à installer et à recetter sur NIXUS
+
+Connexion Microsoft compatible avec Portal (standard v3.3, section 8.6), reprise du gabarit 1.3.0. Première version du lot « connexion, tickets, aide » ; elle avance la partie code de l'étape 7 du planning. Migration 006. Le mode de connexion reste `local` tant que l'inscription d'application Entra ID n'est pas saisie : aucun changement pour les agents.
+
+- Serveur : `oidc.js` (OpenID Connect sans bibliothèque : code d'autorisation avec PKCE S256, aucun paramètre `prompt` ni `max_age`, jeton d'identité vérifié en RS256 avec la clé publiée par Microsoft, émetteur, audience, expiration, `nonce`), `routes/sso.js` (configuration, départ, retour, réglages, test), `settings.js` (clés `auth.*`, secret client chiffré et jamais renvoyé).
+- Départ automatique vers Microsoft en mode `sso`, retour à l'écran demandé (`next` gardé côté serveur, accepté seulement s'il commence par un seul `/` et ne contient que lettres, chiffres et `-._~/`), trois exceptions sans redirection : `/login?deconnecte=1`, `/login?erreur=<code>`, `/login?local=1`.
+- Rattachement du compte par `oid` d'abord, par adresse ensuite ; compte inconnu ou désactivé refusé avec un message qui dit qui contacter ; un compte désactivé perd sa session aussitôt.
+- Accès de secours : colonne `is_admin_local`, posée par l'installation et, par la migration 006, sur les administrateurs existants ; en mode `sso`, seuls ces comptes gardent le mot de passe. Passage en mode `sso` refusé tant qu'aucun administrateur actif ne peut se connecter ; même garde à chaque modification de compte (ajout au gabarit, test dédié).
+- Interface : page de connexion (bouton Microsoft, messages d'erreur traduits), déconnexion vers `/login?deconnecte=1`, Administration › Paramètres › carte « Connexion » avec explication de chaque champ, bouton « Tester l'annuaire » (le standard 8.2 le prévoit, le gabarit non), colonne « Accès de secours » et rattachement Microsoft dans Utilisateurs.
+- Défaut du gabarit corrigé (E30) : le retour après connexion locale acceptait `//site` (contrôle `startsWith('/')`), ce qui permettait une redirection vers un autre site ; contrôle identique à celui du serveur, avec test.
+- Cookies : le cookie de session et le cookie d'état ne s'écrasent plus (`appendCookie`).
+- `qs` 6.16.0 vers 6.16.2 par `npm update qs` seul (alerte d'audit parue après le 27/10/2026, E31). `permissions: contents: read` dans `ci.yml` (alerte CodeQL, E28).
+- Nouveaux fichiers : voir `MANIFESTE.md`. Documentation : `docs/fr|nl|en/SSO.md`, `docs/fonctionnel/connexion.md`.
+
+Suites : serveur 96 tests, écrans 67 tests, 0 échec ; parcours réel dans Chromium contre un faux Microsoft (11 contrôles) ; `npm audit --omit=dev` à 0 dans les deux parties ; audit complet de l'interface : 12 alertes modérées dans la chaîne `eslint` (outils de développement, E34).
+
+## 0.2.4 du 27/10/2026, installée sur NIXUS et publiée sur GitHub le 27/10/2026
 
 Correction d'un défaut de la 0.2.3 relevé à sa recette sur NIXUS. Aucune fonction nouvelle, aucune migration, aucune dépendance changée par rapport à la 0.2.3.
 

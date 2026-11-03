@@ -1,6 +1,6 @@
 # Après déploiement
 
-Application courrier · version 0.2.4 · journal des déploiements au 27/10/2026
+Application courrier · version 0.2.5 · journal des déploiements au 03/11/2026
 
 Ce fichier reprend en tête les procédures sur NIXUS, puis un bloc par version déployée, la plus récente d'abord. Les commandes se donnent une à une dans la conversation, avec leur résultat attendu, et la suivante n'arrive qu'après le résultat de la précédente. Chaque commande dit sur quelle machine elle s'exécute.
 
@@ -9,7 +9,7 @@ Ce fichier reprend en tête les procédures sur NIXUS, puis un bloc par version 
 ### 1.1 Règles
 
 1. File Station sert seulement à créer le dossier et à téléverser l'archive.
-2. Tout le reste se fait en SSH, depuis PowerShell sur le PC : `ssh utilisateur@192.0.2.10`. Le message `Could not chdir to home directory` est sans conséquence.
+2. Tout le reste se fait en SSH, depuis PowerShell sur le PC : `ssh administrator@192.0.2.10`. Le message `Could not chdir to home directory` est sans conséquence.
 3. Aucun fichier ne s'édite à la main sur le NAS. Le `.env` ne se recrée jamais.
 4. Une sauvegarde précède toute mise à jour.
 5. L'ancien code (`backend`, `frontend`, `docs`) est retiré avant l'extraction.
@@ -45,19 +45,33 @@ Retour arrière : rejouer les étapes 3 à 11 avec l'archive précédente, rest�
 
 Faite le 13/10/2026 (bloc 0.1.0). La procédure complète est dans `NOTES_LIVRAISON_v0.1.0.md` de l'archive. Elle ne se rejoue pas : le dossier, le `.env`, les volumes et la tâche de sauvegarde existent.
 
-## 2. Version 0.2.4, préparée le 27/10/2026
+## 2. Version 0.2.5, préparée le 03/11/2026, à déployer
 
 | Étape | Résultat relevé |
 | --- | --- |
-| Archive | `courrier-v0_2_4.tar.gz` : à relever |
+| Archive | `courrier-v0_2_5.tar.gz` : taille annoncée dans le message de livraison |
 | Sauvegarde avant mise à jour | À relever |
-| Construction | `docker compose build` (sans `--no-cache`, dépendances inchangées) : à relever |
-| Démarrage | À relever |
-| Version et compte | À relever |
-| Liste de contrôle à l'écran | À relever |
-| Dépôt GitHub | Branche `version/v0.2.4`, demande de fusion, travail « tests », étiquette `v0.2.4`, publication : à relever |
+| Construction | `docker compose build` : dépendance du serveur changée (`qs`), donc `--no-cache` ; durée à relever |
+| Migration | `006_connexion_microsoft appliquée` dans `sudo docker logs courrier-api` ; les administrateurs existants reçoivent l'accès de secours |
+| Démarrage, version et compte | À relever : `courrier-api Healthy`, version `0.2.5`, `id -u` = `10001` |
+| Liste de contrôle à l'écran | À relever : voir `NOTES_LIVRAISON_v0.2.5.md` (version, connexion locale inchangée, Paramètres › Connexion, Utilisateurs) |
+| Recette réelle en 7 points | Non jouable avant l'inscription d'application Entra ID et le lien dans Portal |
+| Dépôt GitHub | À faire après la recette : branche `version/v0.2.5` |
 
-## 3. Version 0.2.3, déployée le 27/10/2026, défaut relevé à la recette, remplacée par la 0.2.4
+## 3. Version 0.2.4, déployée, recettée et publiée le 27/10/2026
+
+| Étape | Résultat relevé |
+| --- | --- |
+| Archive | `courrier-v0_2_4.tar.gz`, 1 264 765 octets, identique au fichier livré ; même taille sur NIXUS |
+| Sauvegarde avant mise à jour | `sauvegarde terminée, 23 sauvegardes conservées.` à 16:25:34 |
+| Construction | `docker compose build` sans `--no-cache` : 30 étapes sur 30, sans erreur ; 16:26:22 à 16:27:53, soit 1 min 31 s (91,3 s) ; la connexion SSH s'est réinitialisée juste après le retour de l'invite, sans effet |
+| Démarrage | `courrier-api Healthy` en 42,3 s, `courrier-web Started` en 40,8 s ; les deux conteneurs `(healthy)` |
+| Version et compte | `{"data":{"version":"0.2.4"},"meta":{"envelope":1,"version":"0.2.4"}}` ; `id -u` = `10001` |
+| Liste de contrôle à l'écran | 5 points sur 5 conformes : `v0.2.4` au bas du menu, courriers `AC-2026-000001` à `AC-2026-000005` conservés ; champ « Reçu le » à `27/10/2026`, calendrier français (« oct. 2026 », « lu ma me je ve sa di », bouton « Aujourd'hui ») ; `Pièce fictive.pdf` resté dans la file, enregistré en `AC-2026-000006` ; nom du fichier intact dans la fiche (« è » correct) ; en néerlandais `27-10-2026`, calendrier en néerlandais (« okt 2026 », « ma di wo do vr za zo »), langue remise en FR. Le champ « Langue du courrier » du formulaire était resté sur « Néerlandais » : valeur reprise du dernier courrier, sans effet |
+| Dépôt GitHub | Branche `version/v0.2.4` (commit `8cbd53c`), demande de fusion #3, travail « tests » réussi en 49 s, fusion `0415b2f`, branche supprimée, étiquette `v0.2.4`, publication `v0.2.4` immuable « Latest » avec `courrier-v0_2_4.tar.gz` ; empreinte SHA-256 `e79cdfaa6f087dbe88f3d8e50633def06ca5845dd61f57ca6dccf8ad4b4cfaf5` identique sur le PC et sur GitHub (début relevé à l'écran) |
+| Constats | Demandes de fusion ouvertes : 0 (3 fermées dont #1 et #2 de Dependabot) ; alertes Dependabot : 28 fermées, 0 ouverte ; Code scanning : 11 ouvertes, soit les 10 de `pieces.js` (E25) et une nouvelle « Workflow does not contain permissions » (gravité moyenne, `ci.yml` ligne 8, E28) |
+
+## 4. Version 0.2.3, déployée le 27/10/2026, défaut relevé à la recette, remplacée par la 0.2.4
 
 | Étape | Résultat relevé |
 | --- | --- |
@@ -70,7 +84,7 @@ Faite le 13/10/2026 (bloc 0.1.0). La procédure complète est dans `NOTES_LIVRAI
 | Dépôt GitHub | Non publiée : le défaut a été relevé avant l'envoi |
 | Fichier laissé dans la file | `Pièce fictive.pdf` déposé pendant la recette, non enregistré : il reste dans la file « À enregistrer » de l'entité AC |
 
-## 4. Version 0.2.2, déployée et recettée le 27/10/2026
+## 5. Version 0.2.2, déployée et recettée le 27/10/2026
 
 | Étape | Résultat relevé |
 | --- | --- |
@@ -85,7 +99,7 @@ Faite le 13/10/2026 (bloc 0.1.0). La procédure complète est dans `NOTES_LIVRAI
 | Constats | Dependabot a ouvert deux demandes de fusion (#1 `@vitest/mocker` et `vitest`, #2 `vite`) et CodeQL s'est configuré tout seul ; l'onglet « Security and quality » affiche 38 signalements : 0 secret, 28 Dependabot (10 hautes sur `multer`, 15 sur `vite`, `launch-editor`, `vitest`, `esbuild`), 10 CodeQL sur `pieces.js` ; rien n'est fermé |
 | Protection de `main` | Règle `protection-main` créée et active : demande de fusion, travail « tests » obligatoire, suppression et `--force` interdits, liste de contournement vide, cible `main` |
 
-## 5. Version 0.2.1, déployée le 20/10/2026, recettée le 27/10/2026
+## 6. Version 0.2.1, déployée le 20/10/2026, recettée le 27/10/2026
 
 | Étape | Résultat relevé |
 | --- | --- |
@@ -96,7 +110,7 @@ Faite le 13/10/2026 (bloc 0.1.0). La procédure complète est dans `NOTES_LIVRAI
 | Version et compte | `{"data":{"version":"0.2.1"},"meta":{"envelope":1,"version":"0.2.1"}}` ; `id -u` = `10001` |
 | Liste de contrôle à l'écran (27/10/2026) | 6 points sur 6 conformes : version et données conservées ; TIFF glissé refusé avec « Fichier TIFF refusé : réglez le copieur pour produire des PDF. » ; enregistrement depuis la file (`AC-2026-000004`, puis `AC-2026-000005`) et grande barre verte effacée au dépôt suivant ; trombone de `AC-2026-000004` passé à « 2 » sans rechargement ; onglet « Issues » de Chrome à 0 erreur et 0 avertissement (20 remarques d'information, écart E23) ; mention « Valeur livrée » présente après enregistrement |
 
-## 6. Version 0.2.0, déployée le 20/10/2026
+## 7. Version 0.2.0, déployée le 20/10/2026
 
 | Étape | Résultat relevé |
 | --- | --- |
@@ -112,7 +126,7 @@ Faite le 13/10/2026 (bloc 0.1.0). La procédure complète est dans `NOTES_LIVRAI
 | Liste de contrôle à l'écran | 12 points conformes sur 13 : version et menus, données conservées, aperçu PDF lisible dans Chrome, enregistrement depuis la file (`AC-2026-000003`), rejet avec motif, registre et fiche (téléchargement de 668 octets, identique), ajout d'un fichier à `AC-2026-000002`, journal de l'auditeur, taille maximale réglable (refus à 1 Mo), néerlandais, thème sombre, affichage étroit (501 px). Non conforme : point 5 (TIFF écarté sans message). Relevé en marge du point 8 : trombone du registre non mis à jour sans F5. Console : huit signalements d'étiquettes. Corrigés en 0.2.1 |
 | Comptes | « Test Auditeur » (AC · Auditeur) créé pour le point 9, puis désactivé ; son mot de passe est passé dans la conversation |
 
-## 7. Version 0.1.1, déployée le 20/10/2026
+## 8. Version 0.1.1, déployée le 20/10/2026
 
 | Étape | Résultat relevé |
 | --- | --- |
@@ -126,7 +140,7 @@ Faite le 13/10/2026 (bloc 0.1.0). La procédure complète est dans `NOTES_LIVRAI
 | Liste de contrôle à l'écran | 8 points sur 8 conformes : onglet « Courrier » et « Briefwisseling », nom de l'administration sur deux lignes, v0.1.1, cadre « Entités », services sans « NL à valider » avec RD et SCAD renommés, seul « Fermer » après création d'un compte, menu mis à jour sans F5, « Inkomende post » entier, données conservées |
 | Comptes | « Version Essai » créé pour le test, puis désactivé |
 
-## 8. Version 0.1.0, installée le 13/10/2026
+## 9. Version 0.1.0, installée le 13/10/2026
 
 | Étape | Résultat relevé |
 | --- | --- |

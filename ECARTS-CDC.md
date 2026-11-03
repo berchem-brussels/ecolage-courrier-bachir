@@ -1,6 +1,6 @@
 # Écarts mesurés
 
-Application courrier · version 0.2.4 · écarts au 27/10/2026
+Application courrier · version 0.2.5 · écarts au 03/11/2026
 
 Écarts entre le code livré, le cahier des charges (CDC, version 0.10) et le standard v3.2. Numérotation continue d'une version à l'autre ; un écart clos reste dans la liste avec sa date.
 
@@ -11,7 +11,7 @@ Application courrier · version 0.2.4 · écarts au 27/10/2026
 | E1 | CE-044 | La date de réception ne se corrige pas après l'enregistrement | Correction avec motif, étape 6 |
 | E2 | CR-002, A12 | Visibilité limitée au secrétariat et au gestionnaire de l'entité : l'attribution n'existe pas encore | Étape 3 |
 | E3 | CE-002 | Choix de l'entité par des boutons dans l'écran (gardé dans l'adresse), pas encore dans l'en-tête | Étape 5 |
-| E5 | CI-001 | Comptes locaux seulement | Étape 7 |
+| E5 | CI-001 | Connexion Microsoft livrée en 0.2.5 (mode `local` par défaut) ; recette réelle en 7 points non jouée : inscription d'application Entra ID et lien dans Portal manquants | Recette dès que l'inscription existe ; clôture après |
 | E6 | CN-001 | `sql.js` au lieu de PostgreSQL 16 | Étape 8, avant toute donnée réelle |
 | E7 | Standard 7.4, CA-003 | MCP écrit à la main dans le processus de l'API, session ou jeton porteur, sans OAuth 2.1 ni SDK | Patron admis avec `sql.js` ; transport à revoir à l'étape 8, OAuth à l'étape 21 |
 | E9 | CE-151 | Pas encore de raccourcis clavier | Étape 6 |
@@ -27,6 +27,10 @@ Application courrier · version 0.2.4 · écarts au 27/10/2026
 | E25 | Standard 10.2 | CodeQL (GitHub) signale 10 alertes de gravité haute « Uncontrolled data used in path expression » dans `backend/src/services/pieces.js` et `routes/pieces.js`. Lecture du code le 27/10/2026 : les noms des fichiers temporaires et des fichiers rangés sont générés par le serveur, `absolutePath()` vérifie la racine, le nom d'origine ne sert pas de chemin ; faux positifs probables, non confirmés par une attaque rejouée | Alertes laissées ouvertes ; confirmation et décision de fermeture avec Renaud |
 | E26 | Standard 4.4 | Le 27/10/2026, `npm audit fix --omit=dev` a été lancé sur le serveur pour préparer la 0.2.2, commande que le standard interdit ; deux dépendances indirectes ont monté sans l'accord de Renaud : `body-parser` 1.20.8 vers 1.20.9 et `fast-uri` 3.1.8 vers 3.1.9, même génération, `package.json` inchangé, écart du verrou relevé par comparaison | Signalé à Renaud par courriel ; confirmer le maintien ou retirer ces deux montées dans la version suivante ; règle : paquet par paquet par `npm update <paquet>` |
 | E27 | Standard 4.2, 4.3, 4.4, 18 | `multer` ^2.5.0, `vite` ^8.3.5, `@vitejs/plugin-react` ^6.1.2 et `vitest` ^4.1.12 au lieu de `multer` ^1.4.5-lts.1, Vite 5 et `@vitejs/plugin-react` 4 du standard ; montée de majeure acceptée par Renaud le 27/10/2026 pour `multer` et `vite`, `@vitejs/plugin-react` 6 non nommé ; verrou de l'interface écrit par npm 11 | Standard à mettre à jour par Renaud (4.2, 4.3, 4.4, liste de la section 18) ; accord sur `@vitejs/plugin-react` 6 à confirmer |
+| E29 | Gabarit 1.3.0, `nginx.conf`, standard 13.5 | Le gabarit limite `/api/` à 1 Mo : une capture de ticket de 2 Mo pèse environ 2,8 Mo une fois encodée et serait refusée | Bloc `/api/tickets` à 4 Mo en 0.2.6 ; à signaler à Renaud pour le gabarit |
+| E32 | Standard 8.2, gabarit 1.3.0 | Le standard prévoit un bouton « Tester » pour les identifiants Entra ; le gabarit n'en a pas. Ajouté en 0.2.5 sous une forme minimale : il lit les clés publiques du locataire chez Microsoft, il ne prouve ni l'identifiant ni le secret | À signaler à Renaud ; test complet possible avec l'inscription réelle |
+| E33 | Standard 13.1 | Explication de champ limitée aux champs de la connexion et de l'accès de secours ; les autres formulaires n'en ont pas encore | 0.2.7, avec le contrôle bloquant |
+| E34 | Standard 4.3, 10.2 | `npm audit` complet de l'interface : 12 alertes modérées dans la chaîne `eslint` (`minimatch`, outils de développement), 0 en production ; la correction demande une montée majeure d'`eslint` | Accord de Renaud avant toute montée majeure ; la CI ne bloque qu'au niveau « haute » |
 
 ## 2. Écarts clos
 
@@ -37,9 +41,12 @@ Application courrier · version 0.2.4 · écarts au 27/10/2026
 | E11 | CE-020, CE-025, CE-124, CG-003, CG-005 | Aucune pièce, pas de file « À enregistrer », pas de journal des consultations | 20/10/2026 : livrés en 0.2.0 |
 | E14 | Standard 14.5 | `APRES-DEPLOIEMENT.md` absent de `docs/` de l'archive | 20/10/2026 : `docs/APRES-DEPLOIEMENT.md` en 0.2.0 |
 | E15 | Standard 5 et 10.2 | Serveur sous `node` (1000) au lieu d'`appuser` (10001) | 20/10/2026 : `appuser` en 0.2.0 ; `id -u` égal à `10001` relevé sur NIXUS le 20/10/2026 |
-| E17 | Standard 4.4 | `vitest` 4 installait `vite` 8.1.5 pour lui-même à côté de `vite` 5.4.21 | 27/10/2026 : `vite` 8.3.5 partout dans la 0.2.3 (accord de Renaud) ; à confirmer à la recette |
-| E19 | Standard 10.2 | Audit complet de l'interface : vulnérabilités dans les outils de développement ; `npm install` de `vitest` bloqué par l'erreur interne de npm 10 | 27/10/2026 : `vite` 8.3.5, `@vitejs/plugin-react` 6.1.2 et `vitest` 4.1.12 par npm 11, audit complet à 0 dans la 0.2.3 ; la panne de npm 10 subsiste, d'où le verrou écrit par npm 11 ; à confirmer à la recette |
-| E20 | Standard 4.2 | `multer` 1.4.5-lts.2 : génération 1.x dépréciée, 10 alertes hautes de Dependabot que `npm audit` ne signalait pas | 27/10/2026 : `multer` 2.5.0 dans la 0.2.3 (accord de Renaud), 82 tests serveur sur 82 ; à confirmer à la recette |
+| E17 | Standard 4.4 | `vitest` 4 installait `vite` 8.1.5 pour lui-même à côté de `vite` 5.4.21 | 27/10/2026 : `vite` 8.3.5 partout dans la 0.2.3 puis la 0.2.4 (accord de Renaud) ; confirmé à la recette de la 0.2.4 |
+| E19 | Standard 10.2 | Audit complet de l'interface : vulnérabilités dans les outils de développement ; `npm install` de `vitest` bloqué par l'erreur interne de npm 10 | 27/10/2026 : `vite` 8.3.5, `@vitejs/plugin-react` 6.1.2 et `vitest` 4.1.12 par npm 11, audit complet à 0 dans la 0.2.3 puis la 0.2.4 ; la panne de npm 10 subsiste, d'où le verrou écrit par npm 11 ; 28 alertes Dependabot fermées par GitHub après la fusion de la 0.2.4 |
+| E20 | Standard 4.2 | `multer` 1.4.5-lts.2 : génération 1.x dépréciée, 10 alertes hautes de Dependabot que `npm audit` ne signalait pas | 27/10/2026 : `multer` 2.5.0 dans la 0.2.3 puis la 0.2.4 (accord de Renaud), 82 tests serveur sur 82, dépôt d'un fichier accentué vérifié sur NIXUS ; alertes Dependabot de `multer` fermées |
+| E28 | GITHUB.md section 7, Standard 10.2 | CodeQL : « Workflow does not contain permissions » sur `ci.yml` | 03/11/2026 : `permissions: contents: read` ajouté en 0.2.5 (décision du conducteur du projet) ; contenu type de GITHUB.md à mettre à jour par Renaud ; alerte à relire après la fusion |
+| E30 | Gabarit 1.3.0, `LoginPage.tsx`, standard 8.6 | Retour après connexion locale contrôlé par `startsWith('/')` : `//site` accepté, redirection ouverte | 03/11/2026 : `safeNextPath` identique au contrôle du serveur, test `connexion.test.tsx` ; à signaler à Renaud pour le gabarit |
+| E31 | Standard 4.4 | `qs` 6.16.0 (indirect, `express`) : alerte d'audit parue après le 27/10/2026 | 03/11/2026 : `npm update qs` seul, 6.16.2, même génération, `package.json` inchangé ; audit du serveur à 0 ; Renaud à informer |
 
 ## 3. Écarts du gabarit 1.1.0 corrigés
 

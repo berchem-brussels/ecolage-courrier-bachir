@@ -8,8 +8,9 @@ const bcrypt = require('bcryptjs');
 const { getDb, safeBuildUpdate } = require('../database');
 const { AppError } = require('../envelope');
 const { logAudit } = require('../audit');
+const { getSetting } = require('../settings');
 
-const COLUMNS = 'id, email, first_name, last_name, user_role, preferred_lang, is_active, must_change_password, created_at, updated_at';
+const COLUMNS = 'id, email, first_name, last_name, user_role, preferred_lang, is_active, must_change_password, is_admin_local, (oid IS NOT NULL) AS microsoft_linked, created_at, updated_at';
 
 const rolesStmt = () => getDb().prepare(`SELECT r.entity_id, e.code AS entity_code, r.role FROM user_roles r
   JOIN entities e ON e.id = r.entity_id WHERE r.user_id = ? ORDER BY r.entity_id`);
@@ -57,9 +58,9 @@ function create(user, data, channel = 'api') {
   const generated = (data.password_mode || 'generated') === 'generated';
   const password = generated ? crypto.randomBytes(12).toString('base64url') : data.password;
   const id = db.transaction(() => {
-    const r = db.prepare(`INSERT INTO users (email, first_name, last_name, user_role, preferred_lang, password_hash, must_change_password, created_by, updated_by)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(data.email, data.first_name, data.last_name, data.user_role || 'agent',
-      data.preferred_lang || 'fr', bcrypt.hashSync(password, 10), data.must_change_password ? 1 : 0, user.id, user.id);
+    const r = db.prepare(`INSERT INTO users (email, first_name, last_name, user_role, preferred_lang, password_hash, must_change_password, is_admin_local, created_by, updated_by)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(data.email, data.first_name, data.last_name, data.user_role || 'agent',
+      data.preferred_lang || 'fr', bcrypt.hashSync(password, 10), data.must_change_password ? 1 : 0, data.is_admin_local && (data.user_role === 'admin') ? 1 : 0, user.id, user.id);
     if (data.entity_roles) setEntityRoles(user.id, r.lastInsertRowid, data.entity_roles);
     return r.lastInsertRowid;
   })();
@@ -69,12 +70,18 @@ function create(user, data, channel = 'api') {
   return generated ? { ...out, generated_password: password } : out;
 }
 
+/** Mode « sso » : au moins un administrateur actif doit pouvoir se connecter (secours par mot de passe ou compte rattaché à Microsoft). */
+function reachableAdminCount() {
+  return getDb().prepare("SELECT COUNT(*) AS n FROM users WHERE user_role = 'admin' AND is_active = 1 AND (is_admin_local = 1 OR oid IS NOT NULL)").get().n;
+}
+
 function activeAdminCount() {
   return getDb().prepare("SELECT COUNT(*) AS n FROM users WHERE user_role = 'admin' AND is_active = 1").get().n;
 }
 
 function update(user, id, data, channel = 'api') {
   const target = load(id);
+  if (data.is_admin_local === 1 && (data.user_role || target.user_role) !== 'admin') throw new AppError(400, 'VALIDATION', ['is_admin_local: réservé à un administrateur']);
   const losesAdmin = target.user_role === 'admin' && target.is_active === 1
     && ((data.user_role && data.user_role !== 'admin') || data.is_active === 0);
   if (losesAdmin && activeAdminCount() <= 1) throw new AppError(409, 'LAST_ADMIN');
@@ -85,6 +92,8 @@ function update(user, id, data, channel = 'api') {
     if (sets.length) db.prepare(`UPDATE users SET ${sets.join(', ')}, updated_by = ?, updated_at = datetime('now') WHERE id = ?`).run(...params, user.id, id);
     if (entityRoles !== undefined) setEntityRoles(user.id, id, entityRoles);
     if (data.is_active === 0) db.prepare('DELETE FROM sessions WHERE user_id = ?').run(id);
+    // Le changement est annulé s'il ne laissait plus aucun administrateur joignable en mode « sso ».
+    if (getSetting('auth.mode') === 'sso' && reachableAdminCount() === 0) throw new AppError(409, 'SSO_NO_ADMIN');
   })();
   if (sets.length || entityRoles !== undefined) logAudit(user.id, 'user.update', 'user', id, data, channel);
   return load(id);
@@ -95,4 +104,4 @@ function deactivate(user, id, channel = 'api') {
   return update(user, id, { is_active: 0 }, channel);
 }
 
-module.exports = { list, get, create, update, deactivate, activeAdminCount };
+module.exports = { list, get, create, update, deactivate, activeAdminCount, reachableAdminCount };
