@@ -1,6 +1,6 @@
 # Après déploiement
 
-Application courrier · version 0.2.5 · journal des déploiements au 03/11/2026
+Application courrier · version 0.2.6 · journal des déploiements au 03/11/2026
 
 Ce fichier reprend en tête les procédures sur NIXUS, puis un bloc par version déployée, la plus récente d'abord. Les commandes se donnent une à une dans la conversation, avec leur résultat attendu, et la suivante n'arrive qu'après le résultat de la précédente. Chaque commande dit sur quelle machine elle s'exécute.
 
@@ -16,6 +16,7 @@ Ce fichier reprend en tête les procédures sur NIXUS, puis un bloc par version 
 6. Le script d'atelier écrit dans la base : le conteneur `courrier-api` doit être arrêté pendant qu'il tourne.
 7. En cas de problème, les journaux d'abord : `sudo docker logs courrier-api --tail 30`.
 8. Aucun mot de passe ni secret dans une capture envoyée à Claude.
+9. Les commandes de GitHub se tapent dans PowerShell sur le PC, jamais dans la session SSH de NIXUS : `exit` ferme la session SSH d'abord. L'archive doit être dans `Téléchargements` : si le navigateur l'a rangée dans un dossier OneDrive, la copier d'abord.
 
 ### 1.2 Mise à jour (modèle, à adapter au numéro livré)
 
@@ -45,20 +46,33 @@ Retour arrière : rejouer les étapes 3 à 11 avec l'archive précédente, rest�
 
 Faite le 13/10/2026 (bloc 0.1.0). La procédure complète est dans `NOTES_LIVRAISON_v0.1.0.md` de l'archive. Elle ne se rejoue pas : le dossier, le `.env`, les volumes et la tâche de sauvegarde existent.
 
-## 2. Version 0.2.5, préparée le 03/11/2026, à déployer
+## 2. Version 0.2.6, préparée le 03/11/2026, à déployer
 
 | Étape | Résultat relevé |
 | --- | --- |
-| Archive | `courrier-v0_2_5.tar.gz` : taille annoncée dans le message de livraison |
+| Archive | `courrier-v0_2_6.tar.gz` : taille annoncée dans le message de livraison |
 | Sauvegarde avant mise à jour | À relever |
-| Construction | `docker compose build` : dépendance du serveur changée (`qs`), donc `--no-cache` ; durée à relever |
-| Migration | `006_connexion_microsoft appliquée` dans `sudo docker logs courrier-api` ; les administrateurs existants reçoivent l'accès de secours |
-| Démarrage, version et compte | À relever : `courrier-api Healthy`, version `0.2.5`, `id -u` = `10001` |
-| Liste de contrôle à l'écran | À relever : voir `NOTES_LIVRAISON_v0.2.5.md` (version, connexion locale inchangée, Paramètres › Connexion, Utilisateurs) |
-| Recette réelle en 7 points | Non jouable avant l'inscription d'application Entra ID et le lien dans Portal |
-| Dépôt GitHub | À faire après la recette : branche `version/v0.2.5` |
+| Construction | `docker compose build` sans `--no-cache` (aucune dépendance changée ; `nginx.conf` modifié) ; durée à relever |
+| Migration et démarrage | `007_tickets appliquée` dans `sudo docker logs courrier-api` ; `courrier-api Healthy`, version `0.2.6` |
+| Liste de contrôle à l'écran | À relever : voir `NOTES_LIVRAISON_v0.2.6.md` |
+| Dépôt GitHub | À faire après la recette : branche `version/v0.2.6` |
 
-## 3. Version 0.2.4, déployée, recettée et publiée le 27/10/2026
+## 3. Version 0.2.5, déployée, recettée et publiée le 03/11/2026
+
+| Étape | Résultat relevé |
+| --- | --- |
+| Archive | `courrier-v0_2_5.tar.gz`, 1 298 063 octets, identique au fichier livré ; même taille sur NIXUS ; SHA-256 `e9d5f5f55f5bd54ed4fad3564d90ce8e190361c29fc45d18a19741168e6e6ba6` identique sur le PC, sur GitHub et dans l'archive de Claude |
+| Sauvegarde avant mise à jour | `sauvegarde terminée, 31 sauvegardes conservées.` à 12:11:48 |
+| Construction | `docker compose build --no-cache` : 30 étapes sur 30, sans erreur ; 12:13:05 à 12:20:19, soit 7 min 14 s (426,4 s) |
+| Migration et démarrage | `[DB] Migration 006_connexion_microsoft appliquée`, `[APP] API 0.2.5 sur le port 3001` ; `courrier-api Healthy` en 96,7 s, `courrier-web Started` en 68,1 s ; les deux conteneurs `(healthy)` |
+| Version | `{"data":{"version":"0.2.5"},"meta":{"envelope":1,"version":"0.2.5"}}` |
+| Liste de contrôle à l'écran | 6 points sur 6 conformes : `v0.2.5` au bas du menu, `AC-2026-000001` à `AC-2026-000006` conservés ; connexion locale inchangée, message « Vous êtes déconnecté. » sur `/login?deconnecte=1` sans reconnexion automatique ; carte « Connexion » dans Paramètres avec explication de chaque champ ; « Tester l'annuaire » sans saisie : « Saisissez d'abord l'annuaire (locataire), puis relancez le test. » ; colonne « Accès de secours » activée pour les deux administrateurs actifs ; néerlandais conforme (« Aanmelden », « Directory testen », « Noodtoegang »). Le septième point (mode « Microsoft obligatoire ») n'a pas été joué : pas d'inscription Entra ID |
+| Recette réelle en 7 points | Non jouable avant l'inscription d'application Entra ID et le lien dans Portal |
+| Dépôt GitHub | Branche `version/v0.2.5` (commit `bfa1dbe`, 43 fichiers : 12 `A`, 31 `M`, aucun `D`), demande de fusion n° 4, travail « tests » réussi en 1 min, fusion `2d7bb87`, branche supprimée, étiquette `v0.2.5`, publication `v0.2.5` immuable « Latest » avec `courrier-v0_2_5.tar.gz` |
+| Constats | Code scanning : 10 alertes ouvertes, toutes sur `pieces.js` (E25), 1 fermée (`ci.yml`, E28) |
+| Incidents de procédure | `cd C:\dev\...` tapé dans la session SSH de NIXUS : sans effet, règle 9 ajoutée ; archive rangée par le navigateur dans un dossier OneDrive et non dans `Téléchargements` : copiée avant la section 5 |
+
+## 4. Version 0.2.4, déployée, recettée et publiée le 27/10/2026
 
 | Étape | Résultat relevé |
 | --- | --- |
@@ -71,7 +85,7 @@ Faite le 13/10/2026 (bloc 0.1.0). La procédure complète est dans `NOTES_LIVRAI
 | Dépôt GitHub | Branche `version/v0.2.4` (commit `8cbd53c`), demande de fusion #3, travail « tests » réussi en 49 s, fusion `0415b2f`, branche supprimée, étiquette `v0.2.4`, publication `v0.2.4` immuable « Latest » avec `courrier-v0_2_4.tar.gz` ; empreinte SHA-256 `e79cdfaa6f087dbe88f3d8e50633def06ca5845dd61f57ca6dccf8ad4b4cfaf5` identique sur le PC et sur GitHub (début relevé à l'écran) |
 | Constats | Demandes de fusion ouvertes : 0 (3 fermées dont #1 et #2 de Dependabot) ; alertes Dependabot : 28 fermées, 0 ouverte ; Code scanning : 11 ouvertes, soit les 10 de `pieces.js` (E25) et une nouvelle « Workflow does not contain permissions » (gravité moyenne, `ci.yml` ligne 8, E28) |
 
-## 4. Version 0.2.3, déployée le 27/10/2026, défaut relevé à la recette, remplacée par la 0.2.4
+## 5. Version 0.2.3, déployée le 27/10/2026, défaut relevé à la recette, remplacée par la 0.2.4
 
 | Étape | Résultat relevé |
 | --- | --- |
@@ -84,7 +98,7 @@ Faite le 13/10/2026 (bloc 0.1.0). La procédure complète est dans `NOTES_LIVRAI
 | Dépôt GitHub | Non publiée : le défaut a été relevé avant l'envoi |
 | Fichier laissé dans la file | `Pièce fictive.pdf` déposé pendant la recette, non enregistré : il reste dans la file « À enregistrer » de l'entité AC |
 
-## 5. Version 0.2.2, déployée et recettée le 27/10/2026
+## 6. Version 0.2.2, déployée et recettée le 27/10/2026
 
 | Étape | Résultat relevé |
 | --- | --- |
@@ -99,7 +113,7 @@ Faite le 13/10/2026 (bloc 0.1.0). La procédure complète est dans `NOTES_LIVRAI
 | Constats | Dependabot a ouvert deux demandes de fusion (#1 `@vitest/mocker` et `vitest`, #2 `vite`) et CodeQL s'est configuré tout seul ; l'onglet « Security and quality » affiche 38 signalements : 0 secret, 28 Dependabot (10 hautes sur `multer`, 15 sur `vite`, `launch-editor`, `vitest`, `esbuild`), 10 CodeQL sur `pieces.js` ; rien n'est fermé |
 | Protection de `main` | Règle `protection-main` créée et active : demande de fusion, travail « tests » obligatoire, suppression et `--force` interdits, liste de contournement vide, cible `main` |
 
-## 6. Version 0.2.1, déployée le 20/10/2026, recettée le 27/10/2026
+## 7. Version 0.2.1, déployée le 20/10/2026, recettée le 27/10/2026
 
 | Étape | Résultat relevé |
 | --- | --- |
@@ -110,7 +124,7 @@ Faite le 13/10/2026 (bloc 0.1.0). La procédure complète est dans `NOTES_LIVRAI
 | Version et compte | `{"data":{"version":"0.2.1"},"meta":{"envelope":1,"version":"0.2.1"}}` ; `id -u` = `10001` |
 | Liste de contrôle à l'écran (27/10/2026) | 6 points sur 6 conformes : version et données conservées ; TIFF glissé refusé avec « Fichier TIFF refusé : réglez le copieur pour produire des PDF. » ; enregistrement depuis la file (`AC-2026-000004`, puis `AC-2026-000005`) et grande barre verte effacée au dépôt suivant ; trombone de `AC-2026-000004` passé à « 2 » sans rechargement ; onglet « Issues » de Chrome à 0 erreur et 0 avertissement (20 remarques d'information, écart E23) ; mention « Valeur livrée » présente après enregistrement |
 
-## 7. Version 0.2.0, déployée le 20/10/2026
+## 8. Version 0.2.0, déployée le 20/10/2026
 
 | Étape | Résultat relevé |
 | --- | --- |
@@ -126,7 +140,7 @@ Faite le 13/10/2026 (bloc 0.1.0). La procédure complète est dans `NOTES_LIVRAI
 | Liste de contrôle à l'écran | 12 points conformes sur 13 : version et menus, données conservées, aperçu PDF lisible dans Chrome, enregistrement depuis la file (`AC-2026-000003`), rejet avec motif, registre et fiche (téléchargement de 668 octets, identique), ajout d'un fichier à `AC-2026-000002`, journal de l'auditeur, taille maximale réglable (refus à 1 Mo), néerlandais, thème sombre, affichage étroit (501 px). Non conforme : point 5 (TIFF écarté sans message). Relevé en marge du point 8 : trombone du registre non mis à jour sans F5. Console : huit signalements d'étiquettes. Corrigés en 0.2.1 |
 | Comptes | « Test Auditeur » (AC · Auditeur) créé pour le point 9, puis désactivé ; son mot de passe est passé dans la conversation |
 
-## 8. Version 0.1.1, déployée le 20/10/2026
+## 9. Version 0.1.1, déployée le 20/10/2026
 
 | Étape | Résultat relevé |
 | --- | --- |
@@ -140,7 +154,7 @@ Faite le 13/10/2026 (bloc 0.1.0). La procédure complète est dans `NOTES_LIVRAI
 | Liste de contrôle à l'écran | 8 points sur 8 conformes : onglet « Courrier » et « Briefwisseling », nom de l'administration sur deux lignes, v0.1.1, cadre « Entités », services sans « NL à valider » avec RD et SCAD renommés, seul « Fermer » après création d'un compte, menu mis à jour sans F5, « Inkomende post » entier, données conservées |
 | Comptes | « Version Essai » créé pour le test, puis désactivé |
 
-## 9. Version 0.1.0, installée le 13/10/2026
+## 10. Version 0.1.0, installée le 13/10/2026
 
 | Étape | Résultat relevé |
 | --- | --- |

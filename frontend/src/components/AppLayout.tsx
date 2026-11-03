@@ -9,7 +9,7 @@ import type { MenuProps } from 'antd';
 import {
   TeamOutlined, QuestionCircleOutlined, EyeOutlined, MenuFoldOutlined, MenuUnfoldOutlined, LogoutOutlined, LockOutlined, SunOutlined, MoonOutlined,
   BookOutlined, FormOutlined, ContactsOutlined, ApartmentOutlined, TagsOutlined, NumberOutlined, HomeOutlined,
-  InboxOutlined, AuditOutlined, SettingOutlined,
+  InboxOutlined, AuditOutlined, SettingOutlined, FlagOutlined, CustomerServiceOutlined,
 } from '@ant-design/icons';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { auditRoles, registerRoles, useAuth } from '../contexts/AuthContext';
@@ -18,6 +18,7 @@ import { useSettings } from '../contexts/SettingsContext';
 import AppMark from './AppMark';
 import Chatbot from './Chatbot';
 import PasswordModal from './PasswordModal';
+import ReportTicketModal from './ReportTicketModal';
 
 const { Header, Sider, Content } = Layout;
 
@@ -30,6 +31,7 @@ export default function AppLayout() {
   const [collapsed, setCollapsed] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [pwdOpen, setPwdOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
   const { user, isAdmin, logout, savePreferences } = useAuth();
   const { t, lang, setLang } = useI18n();
   const { settings } = useSettings();
@@ -60,6 +62,7 @@ export default function AppLayout() {
     ] },
     ...(admin.length ? [{ type: 'group' as const, label: t('nav.group.admin'), children: admin }] : []),
     { type: 'group', label: t('nav.group.help'), children: [
+      { key: '/tickets', icon: <CustomerServiceOutlined />, label: t('nav.tickets') },
       { key: '/help', icon: <QuestionCircleOutlined />, label: t('nav.help') },
       { key: '/accessibility', icon: <EyeOutlined />, label: t('nav.accessibility') },
     ] },
@@ -102,6 +105,7 @@ export default function AppLayout() {
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <a className="skip-link" href="#main-content">{t('layout.skip')}</a>
+      <ReportTicketModal open={reportOpen} onClose={() => setReportOpen(false)} />
       <PasswordModal open={pwdOpen || user?.must_change_password === 1} forced={user?.must_change_password === 1} onClose={() => setPwdOpen(false)} />
       {!isMobile && (
         <Sider trigger={null} collapsible collapsed={collapsed} width={230}
@@ -122,6 +126,7 @@ export default function AppLayout() {
             onClick={() => (isMobile ? setDrawerOpen(true) : setCollapsed(!collapsed))} />
           <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 4 : 12, minWidth: 0 }}>
             {settings.environment && settings.environment !== 'production' && !isMobile && <Tag color="orange">{t(`env.${settings.environment}`)}</Tag>}
+            <Button size="small" aria-label={t('tickets.report')} icon={<FlagOutlined />} onClick={() => setReportOpen(true)}>{isMobile ? null : t('tickets.report')}</Button>
             <Segmented size="small" aria-label={t('layout.mode')} value={user?.ui_mode || 'simple'}
               onChange={(v) => savePreferences({ ui_mode: v as 'simple' | 'complet' })}
               options={[{ label: t('layout.mode.simple'), value: 'simple' }, { label: t('layout.mode.complet'), value: 'complet' }]} />

@@ -22,6 +22,8 @@ function buildApp() {
     next();
   });
 
+  // Une capture de ticket (2 Mo, environ 2,8 Mo encodée) dépasse la limite générale : limite propre aux tickets, comme nginx.conf.
+  app.use('/api/tickets', express.json({ limit: '4mb' }));
   app.use(express.json({ limit: '256kb' }));
 
   const limiter = (limit) => rateLimit({
@@ -40,6 +42,7 @@ function buildApp() {
   app.use('/api/users', require('./routes/users'));
   app.use('/api/pieces', require('./routes/pieces'));
   app.use('/api/consultations', require('./routes/consultations'));
+  app.use('/api/tickets', require('./routes/tickets'));
   app.use('/api/settings', require('./routes/settings'));
 
   const { handleRpc } = require('./mcp');

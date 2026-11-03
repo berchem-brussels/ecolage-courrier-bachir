@@ -105,8 +105,8 @@ test('statique : aucune interpolation de valeur dans une requête SQL', () => {
   const files = [];
   const walk = (d) => fs.readdirSync(d).forEach((f) => { const p = path.join(d, f); fs.statSync(p).isDirectory() ? walk(p) : files.push(p); });
   walk(dir);
-  // Seules des constantes du code (listes de colonnes, jointures, clauses à paramètres ?) s'insèrent dans une requête.
-  const permis = /\$\{((E_|R_)?COLUMNS|FROM|PROFILE|clause|sets\.join\(', '\)|FIELDS\.join\(', '\)|FIELDS\.map\(\(\) => '\?'\)\.join\(', '\)|k|t\[\d\])\}/;
+  // Seules des constantes du code (listes de colonnes, jointures, clauses à paramètres ?, colonnes de regroupement écrites dans le code) s'insèrent dans une requête.
+  const permis = /\$\{((E_|R_)?COLUMNS|FROM|PROFILE|clause|sets\.join\(', '\)|FIELDS\.join\(', '\)|FIELDS\.map\(\(\) => '\?'\)\.join\(', '\)|k|t\[\d\]|LIST_COLUMNS|internalClause|sql|a|col|cond\.sql|parts\.join\(' OR '\)|ents\.map\(\(\) => '\?'\)\.join\(', '\)|extra\.length \? ', ' \+ extra\.join\(', '\) : ''|where\.join\(' AND '\))\}/;
   for (const f of files.filter((x) => x.endsWith('.js'))) {
     const src = fs.readFileSync(f, 'utf8');
     for (const m of src.matchAll(/prepare\(`([^`]*)`\)/g)) {

@@ -5,6 +5,9 @@
  * Réponses à l'enveloppe { data, meta, pagination } reconnue par meta.envelope === 1.
  */
 let csrfToken: string | null = null;
+/** Dernière erreur de l'API, jointe au contexte d'un ticket (standard v3.3, section 13.5) : code et libellé seulement, jamais de donnée. */
+let lastApiError: { status: number; route: string; code: string; message: string; at: string } | null = null;
+export const getLastApiError = () => lastApiError;
 export function setCsrfToken(t: string | null | undefined) { csrfToken = t || null; }
 export class ApiError extends Error {
   constructor(public status: number, public code: string, message: string, public details?: string[]) {
@@ -25,6 +28,7 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
   const json = await res.json().catch(() => null);
   if (!res.ok || !json || json.error) {
     if (res.status === 401 && path !== '/auth/login' && path !== '/auth/me') window.dispatchEvent(new Event('app-unauthorized'));
+    lastApiError = { status: res.status, route: `${method} ${path.split('?')[0].replace(/\/\d+/g, '/:id')}`, code: json?.code || 'INTERNAL', message: String(json?.message || res.statusText).slice(0, 300), at: new Date().toISOString() };
     throw new ApiError(res.status, json?.code || 'INTERNAL', json?.message || res.statusText, json?.details);
   }
   if (json.meta?.envelope !== 1) throw new ApiError(res.status, 'INTERNAL', 'Réponse hors enveloppe');

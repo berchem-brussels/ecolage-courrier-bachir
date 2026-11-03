@@ -32,6 +32,33 @@ module.exports = {
   }),
   authTest: obj({ tenant: T.str(100) }),
 
+  ticketList: listQuery({
+    status: T.en('new', 'in_progress', 'waiting_requester', 'resolved', 'rejected', 'cancelled', 'closed'),
+    type: T.en('incident', 'bug', 'question', 'wish'), queue: T.en('business', 'it'),
+    open_only: { type: 'boolean' }, mine: { type: 'boolean' },
+  }),
+  ticketCreate: obj({
+    type: T.en('incident', 'bug', 'question', 'wish'), title: T.reqStr(200),
+    description: T.text(8000), expected: T.text(4000), actual: T.text(4000),
+    impact: T.en('person', 'service', 'organisation'), urgency: T.en('blocking', 'annoying', 'comfort'),
+    entity_id: T.int(1), screen: T.str(200), context: { type: 'object' }, screenshot: { type: 'string', maxLength: 2900000 },
+  }, ['type', 'title']),
+  ticketUpdate: obj({
+    title: T.reqStr(200), description: T.text(8000), expected: T.text(4000), actual: T.text(4000),
+    assignee_id: { type: ['integer', 'null'], minimum: 1 }, impact: T.en('person', 'service', 'organisation'),
+    urgency: T.en('blocking', 'annoying', 'comfort'), priority: T.en('P1', 'P2', 'P3', 'P4'),
+    wish_status: T.en('study', 'planned', 'delivered', 'refused'), fixed_version: T.str(30),
+    queue: T.en('business', 'it'), reason: T.str(2000),
+  }),
+  ticketStatus: obj({ to: T.en('in_progress', 'waiting_requester', 'resolved', 'rejected', 'cancelled', 'closed', 'reopen'), reason: T.str(4000) }, ['to']),
+  ticketMessage: obj({ body: T.reqStr(8000), is_internal: { type: 'boolean' } }, ['body']),
+  // Réglages des tickets : délais en heures [prise en charge, résolution] par priorité, rôles de chaque file (codes de rôle, au moins un).
+  ticketSettings: (() => {
+    const hours = { type: 'array', minItems: 2, maxItems: 2, items: T.int(1, 8760) };
+    const roles = { type: 'array', minItems: 1, maxItems: 6, uniqueItems: true, items: T.en('admin', 'agent', 'chef_service', 'secretariat', 'gestionnaire', 'auditeur') };
+    return obj({ sla: obj({ P1: hours, P2: hours, P3: hours, P4: hours }, ['P1', 'P2', 'P3', 'P4']), reopen_days: T.int(1, 90), business_roles: roles, it_roles: roles });
+  })(),
+
   entityList: listQuery({ is_active: { type: 'integer', enum: [0, 1] } }),
   entityCreate: obj({ code: { type: 'string', pattern: '^[A-Z0-9-]{1,20}$' }, name_fr: T.reqStr(200), name_nl: T.reqStr(200) }, ['code', 'name_fr', 'name_nl']),
   entityUpdate: obj({ name_fr: T.reqStr(200), name_nl: T.reqStr(200), is_active: { type: 'integer', enum: [0, 1] } }),

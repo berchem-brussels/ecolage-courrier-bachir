@@ -43,7 +43,7 @@ test('initialize et liste des outils, descriptions FR et NL', async () => {
 });
 
 test('parité : chaque route de ressource a son outil ; chaque outil a sa route', () => {
-  const routes = collectRoutes(srv.app).filter((r) => /^\/api\/(mails|contacts|mail-types|services|entities|registers|users|pieces|consultations|settings$)/.test(r.path)).map((r) => `${r.method} ${r.path}`);
+  const routes = collectRoutes(srv.app).filter((r) => /^\/api\/(mails|contacts|mail-types|services|entities|registers|users|pieces|consultations|tickets|settings$|settings\/tickets$)/.test(r.path)).map((r) => `${r.method} ${r.path}`);
   const covered = TOOLS.map((t) => t.route);
   for (const r of routes) assert.ok(covered.includes(r), `route sans outil MCP : ${r}`);
   for (const c of covered) assert.ok(routes.includes(c), `outil sans route : ${c}`);
