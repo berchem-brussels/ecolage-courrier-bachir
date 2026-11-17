@@ -20,6 +20,9 @@ const PASSWORD = process.env.RECETTE_PASSWORD;
 if (!BASE || !USER || !PASSWORD) { console.error('Définissez RECETTE_URL, RECETTE_USER et RECETTE_PASSWORD dans cette fenêtre PowerShell.'); process.exit(2); }
 
 const VERSION = process.env.RECETTE_VERSION || '0.2.9';
+// Titre d'essai de la FAQ unique à chaque lancement : un titre fixe entre en collision avec la question retirée d'un lancement précédent.
+const STAMP = Date.now();
+const FAQ_TITLE = `Question de recette automatique ${STAMP}`;
 const OUT = path.resolve('captures');
 fs.mkdirSync(OUT, { recursive: true });
 const lines = [];
@@ -99,11 +102,14 @@ await step('Néerlandais', async () => {
 });
 
 await step('FAQ', async () => {
-  const created = await api('POST', '/api/faq', { topic_id: 'register', question_fr: 'Question de recette automatique (ne pas garder)', question_nl: 'Automatische testvraag (niet bewaren)', answer_fr: 'Réponse initiale.', answer_nl: 'Eerste antwoord.' });
+  // Questions d'essai restées actives d'un lancement interrompu : retirées d'abord.
+  const all = await api('GET', '/api/faq?limit=200');
+  for (const f of ((all.body && all.body.data) || []).filter((x) => x.is_active === 1 && x.question_fr.startsWith('Question de recette automatique'))) await api('DELETE', `/api/faq/${f.id}`);
+  const created = await api('POST', '/api/faq', { topic_id: 'register', question_fr: FAQ_TITLE, question_nl: `Automatische testvraag ${STAMP}`, answer_fr: 'Réponse initiale.', answer_nl: 'Eerste antwoord.' });
   ok('7. FAQ : question d’essai créée', created.status === 201, `HTTP ${created.status}`);
   const id = created.body && created.body.data && created.body.data.id;
   await page.goto(`${BASE}/help#help-register`); await page.waitForSelector('.help-topic'); await pause(1200);
-  const header = page.locator('.ant-collapse-header:has-text("Question de recette automatique")');
+  const header = page.locator(`.ant-collapse-header:has-text("${FAQ_TITLE}")`);
   await header.click();
   await page.locator('button:has-text("Modifier"):visible').first().click();
   await page.waitForSelector('.ant-modal:visible');
@@ -126,7 +132,7 @@ await step('FAQ', async () => {
   await shot('faq-retiree');
   await page.goto(`${BASE}/registre`); await page.waitForSelector('h1');
   await page.click('button[aria-label="Aide"]'); await page.waitForSelector('.ant-drawer .help-topic'); await pause(800);
-  ok('7. FAQ : la question retirée a disparu du panneau d’aide du registre', (await page.locator('.ant-drawer :text("Question de recette automatique")').count()) === 0);
+  ok('7. FAQ : la question retirée a disparu du panneau d’aide du registre', (await page.locator(`.ant-drawer :text("${FAQ_TITLE}")`).count()) === 0);
   await page.keyboard.press('Escape'); await pause(300);
 });
 

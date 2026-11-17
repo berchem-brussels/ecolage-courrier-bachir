@@ -85,8 +85,12 @@ function client(base) {
       const p = http.request({ host: '127.0.0.1', port: api.address().port, path: req.url, method: req.method, headers: req.headers }, (r) => { res.writeHead(r.statusCode, r.headers); r.pipe(res); });
       return req.pipe(p);
     }
-    let f = path.join(DIST, req.url.split('?')[0]);
-    if (!fs.existsSync(f) || fs.statSync(f).isDirectory()) f = path.join(DIST, 'index.html');
+    // Le fichier servi reste dans le dossier de l'interface construite : chemin normalisé puis contrôlé (aucune sortie par « .. »).
+    const root = path.resolve(DIST);
+    let wanted = '/';
+    try { wanted = decodeURIComponent(req.url.split('?')[0]); } catch { res.writeHead(400); return res.end(); }
+    let f = path.resolve(root, `.${path.posix.normalize(`/${wanted}`)}`);
+    if (!f.startsWith(root + path.sep) || !fs.existsSync(f) || fs.statSync(f).isDirectory()) f = path.join(root, 'index.html');
     const types = { '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.html': 'text/html', '.woff2': 'font/woff2', '.jpg': 'image/jpeg' };
     res.setHeader('Content-Type', types[path.extname(f)] || 'application/octet-stream');
     return fs.createReadStream(f).pipe(res);
