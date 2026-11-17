@@ -33,7 +33,7 @@ const LIST_COLUMNS = `t.id, t.reference, t.type, t.title, t.queue, t.priority, t
 
 const ROLE_CODES = ['admin', 'agent', 'chef_service', 'secretariat', 'gestionnaire', 'auditeur'];
 /** Écrans qui affichent du courrier : aucune capture (identifiants de src/screens.ts de l'interface). */
-const NO_CAPTURE_SCREENS = new Set(['register', 'inbox', 'registration', 'consultations']);
+const NO_CAPTURE_SCREENS = new Set(['bannettes', 'register', 'inbox', 'registration', 'consultations']);
 const QUEUE_KEY = { business: 'tickets.business_roles', it: 'tickets.it_roles' };
 
 const priorityOf = (impact, urgency) => ({ 2: 'P1', 3: 'P2', 4: 'P3' })[impact + urgency] || 'P4';

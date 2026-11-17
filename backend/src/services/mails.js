@@ -6,8 +6,9 @@
  * - L'enregistrement et la date d'enregistrement sont posés par le serveur ; la date de réception ne se modifie pas
  *   dans cette version (correction avec motif à une étape suivante).
  * - Aucune suppression : l'annulation garde le numéro au registre avec son motif (standard v3.2, section 7.1).
- * Visibilité de la version 0.1.0 : secrétariat et gestionnaire de l'entité. L'attribution aux services (étape 3)
- * et la confidentialité (étape 5) élargiront puis restreindront cette règle.
+ * Visibilité : secrétariat et gestionnaire de l'entité (0.1.0) ; depuis la 0.3.0, l'agent et le responsable d'un service
+ * voient aussi les courriers attribués à leur service, mis en copie ou qui les nomment (services/access.js) ; ils ne
+ * modifient ni n'annulent rien. La confidentialité (étape 5) restreindra cette règle.
  * Version 0.2.0 : l'enregistrement peut rattacher des pièces de la file « À enregistrer » (piece_ids) dans la même
  * transaction ; la lecture d'une fiche (get) rend ses pièces et s'inscrit au journal des consultations (CDC CG-003).
  */
@@ -15,6 +16,8 @@ const { getDb, safeBuildUpdate } = require('../database');
 const { AppError } = require('../envelope');
 const { logAudit } = require('../audit');
 const { assertRegister, registerEntities } = require('../rights');
+const access = require('./access');
+const attribution = require('./attribution');
 const { todayInInstance } = require('../instance');
 const pieces = require('./pieces');
 const consultations = require('./consultations');
@@ -23,11 +26,13 @@ const COLUMNS = `m.id, m.number, m.entity_id, e.code AS entity_code, m.register_
   m.channel, m.tracking_number, m.sender_contact_id, c.kind AS sender_kind, c.name AS sender_name, c.first_name AS sender_first_name,
   c.organisation AS sender_organisation, c.is_demo AS sender_is_demo, m.addressee_name, m.subject, m.type_id,
   t.label_fr AS type_label_fr, t.label_nl AS type_label_nl, m.lang, m.urgency, m.sender_reference, m.document_date, m.pieces_count,
-  m.notes, m.status, m.cancel_reason,
+  m.notes, m.status, m.cancel_reason, m.service_id, sv.name_fr AS service_name_fr, sv.name_nl AS service_name_nl,
+  m.agent_id, ag.first_name AS agent_first_name, ag.last_name AS agent_last_name, m.attributed_at, m.return_reason, m.returned_at,
   (SELECT COUNT(*) FROM pieces p WHERE p.mail_id = m.id AND p.status = 'rattachee') AS files_count, m.created_by, u.first_name AS created_by_first_name, u.last_name AS created_by_last_name,
   m.created_at, m.updated_at`;
 const FROM = `FROM mails m JOIN entities e ON e.id = m.entity_id JOIN contacts c ON c.id = m.sender_contact_id
-  JOIN mail_types t ON t.id = m.type_id LEFT JOIN users u ON u.id = m.created_by`;
+  JOIN mail_types t ON t.id = m.type_id LEFT JOIN users u ON u.id = m.created_by
+  LEFT JOIN org_services sv ON sv.id = m.service_id LEFT JOIN users ag ON ag.id = m.agent_id`;
 
 function load(id) {
   const m = getDb().prepare(`SELECT ${COLUMNS} ${FROM} WHERE m.id = ?`).get(id);
@@ -35,13 +40,22 @@ function load(id) {
   return m;
 }
 
-function list(user, { limit = 50, offset = 0, q, entity_id, status, year, channel } = {}) {
-  const allowed = registerEntities(user);
-  if (entity_id && !allowed.includes(Number(entity_id))) throw new AppError(403, 'FORBIDDEN');
-  const entities = entity_id ? [Number(entity_id)] : allowed;
-  if (entities.length === 0) return { rows: [], pagination: { total: 0, limit, offset } };
-  const where = [`m.entity_id IN (${entities.map(() => '?').join(', ')})`];
-  const params = [...entities];
+function list(user, { limit = 50, offset = 0, q, entity_id, status, year, channel, box } = {}) {
+  const where = [];
+  const params = [];
+  if (box) {
+    // Bannette (CE-120) : mêmes droits que la fiche, courriers annulés exclus.
+    const cond = attribution.boxCondition(user, box, entity_id);
+    where.push(cond.sql);
+    params.push(...cond.params);
+  } else {
+    const allowed = registerEntities(user);
+    if (entity_id && !allowed.includes(Number(entity_id))) throw new AppError(403, 'FORBIDDEN');
+    const entities = entity_id ? [Number(entity_id)] : allowed;
+    if (entities.length === 0) return { rows: [], pagination: { total: 0, limit, offset } };
+    where.push(`m.entity_id IN (${entities.map(() => '?').join(', ')})`);
+    params.push(...entities);
+  }
   if (status) { where.push('m.status = ?'); params.push(status); }
   if (year) { where.push('m.year = ?'); params.push(year); }
   if (channel) { where.push('m.channel = ?'); params.push(channel); }
@@ -56,18 +70,36 @@ function list(user, { limit = 50, offset = 0, q, entity_id, status, year, channe
   return { rows, pagination: { total, limit, offset } };
 }
 
-/** Courrier lisible par la personne (contrôle interne, sans inscription au journal des consultations). */
-function readable(user, id) {
+/** Courrier modifiable par la personne : rôle de registre dans l'entité (contrôle interne, sans journal). */
+function writable(user, id) {
   const m = load(id);
   assertRegister(user, m.entity_id);
   return m;
 }
 
-/** Ouverture de la fiche : courrier et pièces rattachées ; la consultation s'inscrit au journal. */
+/** Courrier lisible par la personne : registre de l'entité, ou service traitant, en copie, agent nommé (sans journal). */
+function readable(user, id) {
+  const m = load(id);
+  if (!access.canSeeMail(user, m)) throw new AppError(403, 'FORBIDDEN');
+  return m;
+}
+
+/** Courrier avec ses services en copie, son historique d'attribution et les actions permises à la personne. */
+function withAttribution(user, m) {
+  return { ...m, copies: attribution.copiesOf(m.id), attributions: attribution.history(m.id), rights: access.mailRights(user, m) };
+}
+
+/** Vue de la fiche sans inscription au journal : sert après une écriture (attribution, renvoi). */
+function view(user, id) {
+  const m = readable(user, id);
+  return { ...withAttribution(user, m), pieces: pieces.listForMail(m.id) };
+}
+
+/** Ouverture de la fiche : courrier, pièces rattachées, attribution ; la consultation s'inscrit au journal. */
 function get(user, id, channel = 'api') {
   const m = readable(user, id);
   consultations.record(user, { entity_id: m.entity_id, mail_id: m.id, action: 'fiche' }, channel);
-  return { ...m, pieces: pieces.listForMail(m.id) };
+  return { ...withAttribution(user, m), pieces: pieces.listForMail(m.id) };
 }
 
 function checkType(typeId, entityId) {
@@ -125,7 +157,7 @@ function create(user, data, channel = 'api') {
 }
 
 function update(user, id, data, channel = 'api') {
-  const m = readable(user, id);
+  const m = writable(user, id);
   if (m.status === 'annule') throw new AppError(409, 'CANCELLED');
   if (data.type_id !== undefined) checkType(data.type_id, m.entity_id);
   if (data.sender_contact_id !== undefined) checkContact(data.sender_contact_id);
@@ -135,16 +167,16 @@ function update(user, id, data, channel = 'api') {
     getDb().prepare(`UPDATE mails SET ${sets.join(', ')}, updated_by = ?, updated_at = datetime('now') WHERE id = ?`).run(...params, user.id, id);
     logAudit(user.id, 'mail.update', 'mail', id, { number: m.number, fields: Object.keys(data) }, channel);
   }
-  return load(id);
+  return withAttribution(user, load(id));
 }
 
 /** Annulation : le numéro reste au registre avec la mention « annulé » et son motif (CDC CE-043). */
 function cancel(user, id, reason, channel = 'api') {
-  const m = readable(user, id);
+  const m = writable(user, id);
   if (m.status === 'annule') throw new AppError(409, 'CANCELLED');
   getDb().prepare("UPDATE mails SET status = 'annule', cancel_reason = ?, updated_by = ?, updated_at = datetime('now') WHERE id = ?").run(reason, user.id, id);
   logAudit(user.id, 'mail.cancel', 'mail', id, { number: m.number, reason }, channel);
-  return load(id);
+  return withAttribution(user, load(id));
 }
 
-module.exports = { list, get, create, update, cancel };
+module.exports = { list, get, view, create, update, cancel };

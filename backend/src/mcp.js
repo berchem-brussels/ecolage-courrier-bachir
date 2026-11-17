@@ -15,6 +15,8 @@ const orgServices = require('./services/org-services');
 const types = require('./services/mail-types');
 const contacts = require('./services/contacts');
 const mails = require('./services/mails');
+const attribution = require('./services/attribution');
+const notifications = require('./services/notifications');
 const users = require('./services/users');
 const pieces = require('./services/pieces');
 const consultations = require('./services/consultations');
@@ -71,6 +73,32 @@ const TOOLS = [
     schemas: { list: S.mailList, create: S.mailCreate, update: S.mailUpdate },
     fr: { one: 'un courrier entrant (numéro attribué par le serveur à la création)', plural: 'courriers entrants' },
     nl: { one: 'een inkomende brief (nummer toegekend door de server bij aanmaak)', plural: 'inkomende brieven' } }),
+  // Attribution et bannettes (version 0.3.0). Une attribution se corrige par une autre attribution : pas de confirmation en deux appels.
+  { name: 'get_mail_counts', route: 'GET /api/mails/counts', read: true, schema: S.mailCounts,
+    fr: 'Compteurs des onglets de bannettes de la personne connectée : à enregistrer, à attribuer, mon service, moi, en copie (entity_id facultatif).',
+    nl: 'Tellers van de bakjes van de aangemelde persoon: te registreren, toe te wijzen, mijn dienst, ik, in kopie (entity_id optioneel).',
+    run: (u, a) => attribution.counts(u, a) },
+  { name: 'attribute_mail', route: 'PUT /api/mails/:id/attribution', schema: withId(S.mailAttribution),
+    fr: 'Attribue un courrier (secrétariat ou gestionnaire de l’entité) : service traitant, agent nommé facultatif, services en copie facultatifs ; motif obligatoire si le service traitant change.',
+    nl: 'Wijst een brief toe (secretariaat of beheerder van de entiteit): behandelende dienst, optioneel aangeduide bediende, optionele diensten in kopie; reden verplicht als de behandelende dienst wijzigt.',
+    run: (u, { id, ...a }) => mails.view(u, attribution.attribute(u, id, a, 'mcp').id) },
+  { name: 'set_mail_agent', route: 'PUT /api/mails/:id/agent', schema: withId(S.mailAgent),
+    fr: 'Nomme ou change l’agent d’un courrier dans son service traitant (responsable de ce service, secrétariat) ; agent_id nul retire la nomination.',
+    nl: 'Duidt een bediende aan of wijzigt die binnen de behandelende dienst (verantwoordelijke van die dienst, secretariaat); agent_id null trekt de aanduiding in.',
+    run: (u, a) => mails.view(u, attribution.setAgent(u, a.id, a.agent_id, 'mcp').id) },
+  { name: 'return_mail', route: 'POST /api/mails/:id/return', schema: withId(S.mailReturn),
+    fr: 'Renvoie au secrétariat un courrier qui n’est pas celui du service (membre du service traitant), avec un motif ; le secrétariat le réattribue.',
+    nl: 'Stuurt een brief die niet voor de dienst bestemd is terug naar het secretariaat (lid van de behandelende dienst), met een reden; het secretariaat wijst hem opnieuw toe.',
+    run: (u, a) => { const m = attribution.returnToSecretariat(u, a.id, a.reason, 'mcp'); try { return mails.view(u, m.id); } catch (e) { return { id: m.id, number: m.number, returned: true }; } } },
+  { name: 'list_service_members', route: 'GET /api/services/:id/members', read: true, schema: withId(S.serviceMembers),
+    fr: 'Liste les agents et responsables d’un service (pour nommer un agent) : prénom, nom, rôle.', nl: 'Lijst van de bedienden en verantwoordelijken van een dienst (om een bediende aan te duiden): voornaam, naam, rol.',
+    run: (u, { id, ...a }) => attribution.members(u, id, a) },
+  { name: 'list_notifications', route: 'GET /api/notifications', read: true, schema: S.notificationList,
+    fr: 'Liste les notifications de la personne connectée (courrier attribué, en copie, renvoyé) ; unread=true pour les non lues.', nl: 'Lijst van de meldingen van de aangemelde persoon (brief toegewezen, in kopie, teruggestuurd); unread=true voor de ongelezen.',
+    run: (u, a) => notifications.list(u, { limit: 50, offset: 0, ...a }) },
+  { name: 'mark_notifications_read', route: 'POST /api/notifications/read', schema: S.notificationRead,
+    fr: 'Marque comme lues des notifications données (ids), ou toutes les siennes si ids est absent.', nl: 'Markeert opgegeven meldingen (ids) als gelezen, of al de eigen als ids ontbreekt.',
+    run: (u, a) => notifications.markRead(u, a.ids) },
   ...resourceTools({ singular: 'contact', plural: 'contacts', route: '/api/contacts', svc: contacts,
     schemas: { list: S.contactList, create: S.contactCreate, update: S.contactUpdate },
     fr: { one: 'un contact (expéditeur ou destinataire)', plural: 'contacts' }, nl: { one: 'een contact (afzender of bestemmeling)', plural: 'contacten' } }),
@@ -229,6 +257,7 @@ function callTool(name, args, user) {
 const INSTRUCTIONS = [
   'Chercher avec list_* avant de lire avec get_*.',
   'Le numéro d’un courrier est attribué par le serveur : ne jamais le proposer ni le deviner.',
+  'Attribuer un courrier, nommer un agent ou renvoyer au secrétariat engage un service : le faire seulement à la demande explicite de la personne, avec les identifiants lus (list_services, list_service_members), jamais devinés.',
   'Ne jamais inventer un identifiant.',
   "Dire qu'une donnée absente est absente.",
   'Toute annulation, désactivation ou rejet passe par prepare_* puis confirm_*, après accord explicite de la personne.',

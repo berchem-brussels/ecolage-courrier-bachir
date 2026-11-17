@@ -9,29 +9,54 @@ const { getDb, safeBuildUpdate } = require('../database');
 const { AppError } = require('../envelope');
 const { logAudit } = require('../audit');
 const { getSetting } = require('../settings');
+const { AGENT_ROLES } = require('../rights');
 
 const COLUMNS = 'id, email, first_name, last_name, user_role, preferred_lang, is_active, must_change_password, is_admin_local, (oid IS NOT NULL) AS microsoft_linked, created_at, updated_at';
 
 const rolesStmt = () => getDb().prepare(`SELECT r.entity_id, e.code AS entity_code, r.role FROM user_roles r
   JOIN entities e ON e.id = r.entity_id WHERE r.user_id = ? ORDER BY r.entity_id`);
 
+/** Rôles par entité d'un compte, avec les services auxquels il est rattaché dans chaque entité (agent et responsable). */
+function rolesOf(userId) {
+  const stmt = getDb().prepare('SELECT service_id FROM user_services WHERE user_id = ? AND entity_id = ? ORDER BY service_id');
+  return rolesStmt().all(userId).map((r) => ({ ...r, service_ids: stmt.all(userId, r.entity_id).map((x) => x.service_id) }));
+}
+
 function load(id) {
   const u = getDb().prepare(`SELECT ${COLUMNS} FROM users WHERE id = ?`).get(id);
   if (!u) throw new AppError(404, 'NOT_FOUND');
-  return { ...u, entity_roles: rolesStmt().all(id) };
+  return { ...u, entity_roles: rolesOf(id) };
 }
 
-/** Remplace les rôles par entité d'un compte : un rôle au plus par entité ; entités vérifiées. */
+/**
+ * Remplace les rôles par entité d'un compte : un rôle au plus par entité ; entités vérifiées. Les services d'un agent ou
+ * d'un responsable (service_ids) doivent servir l'entité du rôle. Sans service_ids, les services déjà rattachés dans une
+ * entité qui garde un rôle d'agent ou de responsable sont conservés : un client qui ne les connaît pas ne les efface pas.
+ */
 function setEntityRoles(actorId, userId, roles) {
   const db = getDb();
   const seen = new Set();
+  const before = db.prepare('SELECT entity_id, service_id FROM user_services WHERE user_id = ?').all(userId);
+  const plan = [];
   for (const r of roles) {
     if (seen.has(r.entity_id)) throw new AppError(400, 'VALIDATION', ['entity_roles: une entité en double']);
     seen.add(r.entity_id);
     if (!db.prepare('SELECT 1 FROM entities WHERE id = ?').get(r.entity_id)) throw new AppError(409, 'REFERENCE_INVALID');
+    const treats = AGENT_ROLES.includes(r.role);
+    if (r.service_ids && r.service_ids.length > 0 && !treats) throw new AppError(400, 'VALIDATION', ['entity_roles: des services ne vont qu’avec le rôle d’agent ou de responsable']);
+    const ids = !treats ? [] : [...new Set(r.service_ids !== undefined ? r.service_ids : before.filter((b) => b.entity_id === r.entity_id).map((b) => b.service_id))];
+    for (const sid of ids) {
+      const ok = db.prepare('SELECT 1 FROM org_services s JOIN org_service_entities x ON x.service_id = s.id WHERE s.id = ? AND x.entity_id = ?').get(sid, r.entity_id);
+      if (!ok) throw new AppError(409, 'SERVICE_INVALID');
+    }
+    plan.push({ ...r, ids });
   }
+  db.prepare('DELETE FROM user_services WHERE user_id = ?').run(userId);
   db.prepare('DELETE FROM user_roles WHERE user_id = ?').run(userId);
-  for (const r of roles) db.prepare('INSERT INTO user_roles (user_id, entity_id, role, created_by) VALUES (?, ?, ?, ?)').run(userId, r.entity_id, r.role, actorId);
+  for (const r of plan) {
+    db.prepare('INSERT INTO user_roles (user_id, entity_id, role, created_by) VALUES (?, ?, ?, ?)').run(userId, r.entity_id, r.role, actorId);
+    for (const sid of r.ids) db.prepare('INSERT INTO user_services (user_id, entity_id, service_id) VALUES (?, ?, ?)').run(userId, r.entity_id, sid);
+  }
 }
 
 function list(user, { limit = 50, offset = 0, q, is_active } = {}) {
@@ -43,8 +68,7 @@ function list(user, { limit = 50, offset = 0, q, is_active } = {}) {
   const db = getDb();
   const total = db.prepare(`SELECT COUNT(*) AS n FROM users ${clause}`).get(...params).n;
   const rows = db.prepare(`SELECT ${COLUMNS} FROM users ${clause} ORDER BY last_name, first_name LIMIT ? OFFSET ?`).all(...params, limit, offset);
-  const stmt = rolesStmt();
-  return { rows: rows.map((u) => ({ ...u, entity_roles: stmt.all(u.id) })), pagination: { total, limit, offset } };
+  return { rows: rows.map((u) => ({ ...u, entity_roles: rolesOf(u.id) })), pagination: { total, limit, offset } };
 }
 
 function get(user, id) {

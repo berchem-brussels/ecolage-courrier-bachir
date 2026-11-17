@@ -4,8 +4,9 @@
  *   RECETTE_URL       adresse de l'application, par exemple https://192.0.2.10:8450
  *   RECETTE_USER      adresse e-mail du compte administrateur d'acceptance
  *   RECETTE_PASSWORD  son mot de passe
- *   RECETTE_VERSION   version attendue au bas du menu (0.2.9 par défaut)
+ *   RECETTE_VERSION   version attendue au bas du menu (0.3.1 par défaut)
  *   RECETTE_HEADLESS  1 pour ne pas afficher le navigateur (poste sans écran)
+ * Les contrôles des bannettes (0.3.0 et suivantes) sont en lecture seule : aucun courrier n'est attribué, renvoyé ni modifié.
  * Ce que le script modifie sur l'instance d'acceptance : il crée une question de FAQ d'essai, la corrige puis la retire
  * (désactivation logique, rien n'est supprimé) ; il passe un instant la langue du compte en néerlandais puis la remet en français.
  * Résultat : une ligne OK ou ÉCHEC par contrôle, un rapport rapport.txt et des captures dans le dossier captures.
@@ -19,10 +20,7 @@ const USER = process.env.RECETTE_USER;
 const PASSWORD = process.env.RECETTE_PASSWORD;
 if (!BASE || !USER || !PASSWORD) { console.error('Définissez RECETTE_URL, RECETTE_USER et RECETTE_PASSWORD dans cette fenêtre PowerShell.'); process.exit(2); }
 
-const VERSION = process.env.RECETTE_VERSION || '0.2.9';
-// Titre d'essai de la FAQ unique à chaque lancement : un titre fixe entre en collision avec la question retirée d'un lancement précédent.
-const STAMP = Date.now();
-const FAQ_TITLE = `Question de recette automatique ${STAMP}`;
+const VERSION = process.env.RECETTE_VERSION || '0.3.1';
 const OUT = path.resolve('captures');
 fs.mkdirSync(OUT, { recursive: true });
 const lines = [];
@@ -51,6 +49,9 @@ const api = (method, url, body) => page.evaluate(async ({ method, url, body }) =
 }, { method, url, body });
 const loaded = (sel) => page.waitForFunction((s) => { const i = document.querySelector(s); return !!i && i.complete && i.naturalWidth > 0; }, sel, { timeout: 15000 });
 const pause = (ms) => page.waitForTimeout(ms);
+// Titre d'essai propre à chaque passage : une question d'essai restée active ne provoque plus de collision.
+const FAQ_TAG = `essai ${Date.now().toString(36)}`;
+const FAQ_TITLE = `Question de recette automatique ${FAQ_TAG}`;
 
 // Connexion locale
 await page.goto(`${BASE}/login`);
@@ -59,11 +60,44 @@ await page.fill('#password', PASSWORD);
 await page.click('button[type=submit]');
 try { await page.waitForURL((u) => !u.pathname.startsWith('/login'), { timeout: 20000 }); }
 catch { say('ÉCHEC connexion : identifiants refusés ou instance inaccessible'); await browser.close(); fs.writeFileSync('rapport.txt', lines.join('\n') + '\n'); process.exit(1); }
+await page.waitForLoadState('networkidle');
 say(`Recette ${VERSION} sur ${BASE}, ${new Date().toISOString()}`);
 
 await step('Version', async () => {
   await page.goto(`${BASE}/registre`); await page.waitForSelector('h1'); await pause(500);
   ok(`1. Version affichée v${VERSION} au bas du menu`, (await page.locator('body').innerText()).includes(`v${VERSION}`));
+});
+
+await step('Bannettes', async () => {
+  await page.goto(`${BASE}/bannettes`); await page.waitForSelector('h1'); await pause(900);
+  const tabs = await page.locator('[role=tab]').allInnerTexts();
+  ok('10. Bannettes : onglets avec compteurs pour le secrétariat (À enregistrer, À attribuer)', tabs.length >= 2 && tabs.some((t) => /^À enregistrer \(\d+\)$/.test(t.trim())) && tabs.some((t) => /^À attribuer \(\d+\)$/.test(t.trim())), tabs.join(' | '));
+  ok('10. Bannettes : le menu propose « Bannettes » en premier', /Bannettes/.test((await page.locator('nav .ant-menu-item').first().innerText())));
+  ok('10. Cloche de notifications présente dans l’en-tête', (await page.locator('button[aria-label^="Notifications"]').count()) === 1);
+  await page.locator('button[aria-label^="Notifications"]').click(); await pause(600);
+  ok('10. Cloche : la liste s’ouvre (notifications ou « Aucune notification. »)', (await page.locator('.ant-popover').innerText()).length > 0);
+  await shot('bannettes-cloche');
+  await page.keyboard.press('Escape'); await pause(300);
+  const counts = await api('GET', '/api/mails/counts');
+  ok('10. API des compteurs : cinq compteurs numériques', counts.status === 200 && ['a_enregistrer', 'a_attribuer', 'mon_service', 'moi', 'en_copie'].every((k) => typeof counts.body.data[k] === 'number'), JSON.stringify(counts.body && counts.body.data));
+  await page.click('button[aria-label="Aide"]');
+  await page.waitForSelector('.ant-drawer .help-topic');
+  await loaded('.ant-drawer img.help-shot');
+  const src = await page.locator('.ant-drawer img.help-shot').first().getAttribute('src');
+  ok('10. Panneau d’aide des bannettes : capture annotée affichée', /\/help\/fr\/bannettes-overview\.jpg/.test(src), src);
+  ok('10. Panneau d’aide des bannettes : deux repères numérotés', (await page.locator('.ant-drawer .help-mark').count()) === 2);
+  await page.keyboard.press('Escape'); await pause(400);
+});
+
+await step('Attribution (lecture)', async () => {
+  await page.goto(`${BASE}/registre`); await page.waitForSelector('h1'); await pause(800);
+  await page.locator('.ant-table-row').first().click();
+  await page.waitForSelector('.ant-drawer:visible'); await pause(1200);
+  const drawer = await page.locator('.ant-drawer').innerText();
+  ok('11. Fiche : cadre « Attribution » avec service traitant, agent nommé et services en copie', ['Attribution', 'Service traitant', 'Agent nommé', 'Services en copie'].every((t) => drawer.includes(t)));
+  ok('11. Fiche : le secrétariat dispose du bouton « Attribuer »', (await page.locator('.ant-drawer button:has-text("Attribuer")').count()) === 1);
+  await shot('fiche-attribution');
+  await page.keyboard.press('Escape'); await pause(400);
 });
 
 await step('Panneau', async () => {
@@ -102,10 +136,7 @@ await step('Néerlandais', async () => {
 });
 
 await step('FAQ', async () => {
-  // Questions d'essai restées actives d'un lancement interrompu : retirées d'abord.
-  const all = await api('GET', '/api/faq?limit=200');
-  for (const f of ((all.body && all.body.data) || []).filter((x) => x.is_active === 1 && x.question_fr.startsWith('Question de recette automatique'))) await api('DELETE', `/api/faq/${f.id}`);
-  const created = await api('POST', '/api/faq', { topic_id: 'register', question_fr: FAQ_TITLE, question_nl: `Automatische testvraag ${STAMP}`, answer_fr: 'Réponse initiale.', answer_nl: 'Eerste antwoord.' });
+  const created = await api('POST', '/api/faq', { topic_id: 'register', question_fr: `${FAQ_TITLE} (ne pas garder)`, question_nl: 'Automatische testvraag (niet bewaren)', answer_fr: 'Réponse initiale.', answer_nl: 'Eerste antwoord.' });
   ok('7. FAQ : question d’essai créée', created.status === 201, `HTTP ${created.status}`);
   const id = created.body && created.body.data && created.body.data.id;
   await page.goto(`${BASE}/help#help-register`); await page.waitForSelector('.help-topic'); await pause(1200);
@@ -143,7 +174,7 @@ await step('Clés brutes', async () => {
   await pause(800);
   const text = await page.locator('.help-topics').innerText();
   ok('5. Plus aucune clé brute entre accolades dans les fiches', !text.includes('{{'));
-  ok('5. Quatorze fiches en « Tout le mode d’emploi »', (await page.locator('.help-topic').count()) === 14);
+  ok('5. Quinze fiches en « Tout le mode d’emploi »', (await page.locator('.help-topic').count()) === 15);
 });
 
 await step('Parcours', async () => {
@@ -153,7 +184,7 @@ await step('Parcours', async () => {
   await page.locator('.ant-select-item-option:has-text("Administrateur")').click();
   await pause(800);
   const second = await page.locator('.help-topic').count();
-  ok('6. Parcours avec # : le choix « Administrateur » est respecté', first === 14 && second === 9, `${first} fiches d’abord, puis ${second}`);
+  ok('6. Parcours avec # : le choix « Administrateur » est respecté', first === 15 && second === 9, `${first} fiches d’abord, puis ${second}`);
 });
 
 await step('Création de compte', async () => {
@@ -203,6 +234,8 @@ const screens = [
   ['Entités et registres › clic sur un registre', '/admin/registres', async () => { await page.locator('.ant-table-row').last().click(); await page.waitForSelector('.ant-modal:visible'); }],
   ['Tickets › Signaler', '/tickets', btn('Signaler')],
   ['Aide › Ajouter une question', '/help', btn('Ajouter une question')],
+  ['Bannettes', '/bannettes'],
+  ['Utilisateurs › Modifier les rôles', '/admin/utilisateurs', async () => { await page.locator('button:has-text("Modifier les rôles")').first().click(); await page.waitForSelector('.ant-modal:visible'); }],
   ['Registre › fiche d’un courrier', '/registre', async () => { await page.locator('.ant-table-row').first().click(); await page.waitForSelector('.ant-drawer:visible'); }],
 ];
 for (const [name, route, action] of screens) {

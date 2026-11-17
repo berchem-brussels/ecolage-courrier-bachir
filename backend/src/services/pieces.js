@@ -20,6 +20,7 @@ const { assertRegister, registerEntities } = require('../rights');
 const { instanceSettings } = require('../instance');
 const { FILES_DIR } = require('../config');
 const consultations = require('./consultations');
+const access = require('./access');
 
 const TMP_DIR = path.join(FILES_DIR, 'tmp');
 
@@ -92,10 +93,23 @@ function load(id) {
   return p;
 }
 
-/** Pièce lisible par la personne : rôle de registre dans l'entité de la pièce. */
-function readable(user, id) {
+/** Pièce modifiable (rejet, renommage) : rôle de registre dans l'entité de la pièce. */
+function writable(user, id) {
   const p = load(id);
   assertRegister(user, p.entity_id);
+  return p;
+}
+
+/**
+ * Pièce lisible par la personne : rôle de registre dans l'entité, ou, pour une pièce rattachée à un courrier, le droit
+ * de lire ce courrier (service traitant, copie, agent nommé : services/access.js). Une pièce de la file « À enregistrer »
+ * n'est lisible que du registre.
+ */
+function readable(user, id) {
+  const p = load(id);
+  if (registerEntities(user).includes(p.entity_id)) return p;
+  const m = p.mail_id ? access.mailForAccess(p.mail_id) : null;
+  if (!m || !access.canSeeMail(user, m)) throw new AppError(403, 'FORBIDDEN');
   return p;
 }
 
@@ -105,13 +119,13 @@ function mailOf(mailId) {
   return m;
 }
 
-/** File « À enregistrer » ou pièces d'un courrier, selon les filtres ; limitée aux entités dont la personne tient le registre. */
+/** File « À enregistrer » (entités dont la personne tient le registre) ou pièces d'un courrier que la personne peut lire. */
 function list(user, { limit = 50, offset = 0, entity_id, status, mail_id } = {}) {
   const where = [];
   const params = [];
   if (mail_id) {
     const m = mailOf(mail_id);
-    assertRegister(user, m.entity_id);
+    if (!access.canSeeMail(user, access.mailForAccess(m.id))) throw new AppError(403, 'FORBIDDEN');
     where.push('p.mail_id = ?');
     params.push(mail_id);
   } else {
@@ -221,7 +235,7 @@ function create(user, data, channel = 'api') {
 
 /** Modification : nom affiché et ordre dans le courrier. Le fichier lui-même ne change jamais. */
 function update(user, id, data, channel = 'api') {
-  const p = readable(user, id);
+  const p = writable(user, id);
   if (p.status === 'rejetee') throw new AppError(409, 'CANCELLED');
   const sets = [];
   const params = [];
@@ -236,7 +250,7 @@ function update(user, id, data, channel = 'api') {
 
 /** Rejet d'une pièce de la file avec motif. Une pièce rattachée à un courrier ne se rejette pas. */
 function cancel(user, id, reason, channel = 'api') {
-  const p = readable(user, id);
+  const p = writable(user, id);
   if (p.status === 'rejetee') throw new AppError(409, 'CANCELLED');
   if (p.status === 'rattachee') throw new AppError(409, 'PIECE_ATTACHED');
   getDb().prepare("UPDATE pieces SET status = 'rejetee', reject_reason = ?, updated_by = ?, updated_at = datetime('now') WHERE id = ? AND status = 'a_enregistrer'")

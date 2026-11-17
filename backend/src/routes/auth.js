@@ -31,7 +31,10 @@ function profile(id) {
   const db = getDb();
   const roles = db.prepare(`SELECT r.entity_id, e.code AS entity_code, r.role FROM user_roles r JOIN entities e ON e.id = r.entity_id
     WHERE r.user_id = ? ORDER BY r.entity_id`).all(id);
-  return { ...db.prepare(`SELECT ${PROFILE} FROM users WHERE id = ?`).get(id), entity_roles: roles };
+  // Services de la personne par entité : l'interface sait ainsi si une bannette de service peut se remplir.
+  const services = db.prepare('SELECT service_id FROM user_services WHERE user_id = ? AND entity_id = ? ORDER BY service_id');
+  const withServices = roles.map((r) => ({ ...r, service_ids: services.all(id, r.entity_id).map((x) => x.service_id) }));
+  return { ...db.prepare(`SELECT ${PROFILE} FROM users WHERE id = ?`).get(id), entity_roles: withServices };
 }
 
 router.post('/login', loginLimiter, validate(S.login), handle((req, res) => {

@@ -38,12 +38,16 @@ function buildApp() {
   app.use('/api', publicRouter);
   app.use('/api', require('./routes/sso'));
   app.use('/api/auth', require('./routes/auth'));
+  // Attribution et bannettes avant les routes génériques des courriers (« /api/mails/counts » n'est pas un identifiant).
+  app.use('/api/mails', require('./routes/mail-attribution'));
+  app.use('/api/services', require('./routes/service-members'));
   for (const [mount, router] of Object.entries(require('./routes/resources').RESOURCES)) app.use(mount, router);
   app.use('/api/users', require('./routes/users'));
   app.use('/api/pieces', require('./routes/pieces'));
   app.use('/api/consultations', require('./routes/consultations'));
   app.use('/api/tickets', require('./routes/tickets'));
   app.use('/api/faq', require('./routes/faq'));
+  app.use('/api/notifications', require('./routes/notifications'));
   app.use('/api/settings', require('./routes/settings'));
 
   const { handleRpc } = require('./mcp');

@@ -10,7 +10,7 @@ export const ROLES: Role[] = ['agent', 'chef_service', 'secretariat', 'gestionna
 /** Clé de traduction du nom d'un rôle : « admin » est le rôle global, les autres sont des rôles par entité. */
 export const roleKey = (r: Role) => (r === 'admin' ? 'users.role.admin' : `role.${r}`);
 
-export interface ShotAction { click?: string; clickSel?: string; fill?: { sel: string; value: string }; wait?: number }
+export interface ShotAction { click?: string; clickSel?: string; scroll?: string; fill?: { sel: string; value: string }; wait?: number }
 
 /** Capture produite par le script help-capture (version 0.2.8) : jamais à la main. */
 export interface Shot {
@@ -50,10 +50,10 @@ export interface HelpTopic {
 
 /** Parcours de lecture proposés par le centre d'aide : les fiches utiles à chaque rôle, dans l'ordre où l'on s'en sert. */
 export const PATHS: Record<Role, string[]> = {
-  agent: ['home', 'tickets', 'help', 'accessibility'],
-  chef_service: ['home', 'tickets', 'help', 'accessibility'],
-  secretariat: ['registration', 'inbox', 'register', 'contacts', 'tickets', 'help', 'accessibility'],
-  gestionnaire: ['registration', 'inbox', 'register', 'contacts', 'types', 'tickets', 'help', 'accessibility'],
+  agent: ['bannettes', 'home', 'tickets', 'help', 'accessibility'],
+  chef_service: ['bannettes', 'home', 'tickets', 'help', 'accessibility'],
+  secretariat: ['bannettes', 'registration', 'inbox', 'register', 'contacts', 'tickets', 'help', 'accessibility'],
+  gestionnaire: ['bannettes', 'registration', 'inbox', 'register', 'contacts', 'types', 'tickets', 'help', 'accessibility'],
   auditeur: ['home', 'consultations', 'tickets', 'help', 'accessibility'],
   admin: ['home', 'users', 'entities', 'services', 'types', 'settings', 'tickets', 'help', 'accessibility'],
 };

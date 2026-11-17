@@ -60,6 +60,7 @@ const topic: HelpTopic = {
     },
   ],
   faq: [
+    { q: { fr: "Pourquoi un agent ne voit-il aucun courrier ?", nl: "Waarom ziet een bediende geen enkele brief?" }, a: { fr: "Un agent ou un responsable de service ne voit que le courrier de ses services. Ouvrez {{users.edit_roles}}, choisissez son rôle dans l'entité, puis ses services dans {{users.services}}. Sans service, ses bannettes restent vides.", nl: "Een bediende of diensthoofd ziet enkel de post van zijn diensten. Open {{users.edit_roles}}, kies zijn rol in de entiteit en daarna zijn diensten in {{users.services}}. Zonder dienst blijven zijn bakjes leeg." } },
     { q: { fr: "Le mot de passe généré a été perdu. Que faire ?", nl: "Het gegenereerde wachtwoord is verloren. Wat moet ik doen?" }, a: { fr: "Il ne peut pas être affiché une seconde fois et aucun écran ne permet encore de le réinitialiser. Contactez le support indiqué dans {{help.contact}}.", nl: "Het kan niet een tweede keer getoond worden en geen enkel scherm laat nog toe het opnieuw in te stellen. Neem contact op met de ondersteuning die onder {{help.contact}} staat." } },
     { q: { fr: "Pourquoi le dernier administrateur ne peut-il pas être désactivé ?", nl: "Waarom kan de laatste beheerder niet gedeactiveerd worden?" }, a: { fr: "L'application doit toujours avoir au moins un administrateur actif, sinon plus personne ne pourrait la régler.", nl: "De toepassing moet altijd minstens een actieve beheerder hebben, anders kan niemand ze nog instellen." } },
   ],

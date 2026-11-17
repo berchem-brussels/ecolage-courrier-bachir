@@ -25,6 +25,9 @@ const KNOWN_ABSENT: Record<string, string> = {
   'entities:entity.edit': 'titre de la fenêtre ouverte par un clic sur une ligne des entités',
   'entities:register.edit': 'titre de la fenêtre ouverte par un clic sur une ligne des registres',
   'entities:register.issued': 'texte de la fenêtre du registre, affiché quand des numéros ont déjà été donnés',
+  'bannettes:box.mon_service': 'onglet des agents et responsables : le compte de démonstration tient le registre',
+  'bannettes:box.moi': 'onglet des agents et responsables : le compte de démonstration tient le registre',
+  'bannettes:box.en_copie': 'onglet des agents et responsables : le compte de démonstration tient le registre',
   'accessibility:layout.skip': 'lien visible seulement au focus clavier',
 };
 

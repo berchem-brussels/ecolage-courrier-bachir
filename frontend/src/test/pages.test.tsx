@@ -23,7 +23,8 @@ const entities = [{ id: 1, code: 'AC', name_fr: 'Administration communale', name
 const mails = [{ id: 1, number: 'AC-2026-000001', entity_id: 1, entity_code: 'AC', year: 2026, seq: 1, received_date: '2026-10-13', registered_at: '2026-10-13 08:00:00', channel: 'courrier',
   tracking_number: null, sender_contact_id: 1, sender_kind: 'personne', sender_name: 'Exemple', sender_first_name: 'Marie', sender_organisation: null, sender_is_demo: 1, addressee_name: null,
   subject: 'Demande de renseignements', type_id: 1, type_label_fr: 'Demande', type_label_nl: 'Aanvraag', lang: 'fr', urgency: 'normale', sender_reference: null, document_date: null,
-  pieces_count: null, notes: null, status: 'enregistre', cancel_reason: null, created_by_first_name: 'Ada', created_by_last_name: 'Admin', created_at: '2026-10-13 08:00:00', updated_at: '2026-10-13 08:00:00' }];
+  pieces_count: null, notes: null, status: 'enregistre', cancel_reason: null, created_by_first_name: 'Ada', created_by_last_name: 'Admin', created_at: '2026-10-13 08:00:00', updated_at: '2026-10-13 08:00:00',
+  service_id: null, service_name_fr: null, service_name_nl: null, agent_id: null, agent_first_name: null, agent_last_name: null, attributed_at: null, return_reason: null, returned_at: null }];
 const types = [{ id: 1, entity_id: 1, entity_code: 'AC', label_fr: 'Demande', label_nl: 'Aanvraag', nl_to_validate: 1, is_demo: 1, is_active: 1 }];
 const services = [{ id: 1, name_fr: 'Ressources humaines', name_nl: 'Personeelszaken', nl_to_validate: 1, parent_id: null, parent_name_fr: null, parent_name_nl: null, entity_ids: [1, 2], is_active: 1 }];
 const contacts = [{ id: 1, kind: 'personne', name: 'Exemple', first_name: 'Marie', organisation: null, email: null, phone: null, street: null, postal_code: null, city: 'Ville fictive', country: null, lang: 'fr', company_number: null, is_demo: 1, is_active: 1, cancel_reason: null }];
@@ -31,7 +32,9 @@ const registers = [{ id: 1, entity_id: 1, entity_code: 'AC', direction: 'entree'
 const pieces = [{ id: 7, entity_id: 1, entity_code: 'AC', mail_id: null, mail_number: null, status: 'a_enregistrer', original_name: 'scan-fictif.pdf', mime: 'application/pdf',
   size_bytes: 52000, sha256: 'a'.repeat(64), position: 1, origin: 'depot', reject_reason: null, created_by: 1, created_by_first_name: 'Ada', created_by_last_name: 'Admin',
   created_at: '2026-10-20 08:00:00', updated_at: '2026-10-20 08:00:00' }];
-const mailDetail = { ...mails[0], files_count: 1, pieces: [{ ...pieces[0], mail_id: 1, mail_number: 'AC-2026-000001', status: 'rattachee' }] };
+// Fiche à la forme exacte de GET /api/mails/:id pour le secrétariat : droits, services en copie, historique.
+const rights = { edit: true, cancel: true, attribute: true, set_agent: false, return_to_secretariat: false };
+const mailDetail = { ...mails[0], copies: [], attributions: [], rights, files_count: 1, pieces: [{ ...pieces[0], mail_id: 1, mail_number: 'AC-2026-000001', status: 'rattachee' }] };
 const tickets = [{ id: 1, reference: 'TCK-2026-00001', type: 'question', title: 'Comment annuler ?', queue: 'business', entity_id: 1, entity_code: 'AC', priority: 'P2', status: 'new', wish_status: null,
   fixed_version: null, screen: 'register', requester_id: 1, assignee_id: null, due_resolution_at: '2026-11-10 08:00:00', created_at: '2026-11-03 08:00:00', updated_at: '2026-11-03 08:00:00', has_screenshot: 0, overdue: 0, requester_name: 'Ada Admin', assignee_name: null }];
 const ticketSettings = { sla: { P1: [1, 8], P2: [4, 24], P3: [8, 72], P4: [24, 240] }, reopen_days: 14, business_roles: ['gestionnaire'], it_roles: ['admin'], role_codes: ['admin', 'agent', 'chef_service', 'secretariat', 'gestionnaire', 'auditeur'] };
@@ -49,6 +52,8 @@ beforeEach(() => {
   } : {
     ok: true, status: 200, statusText: 'OK',
     json: async () => (url.startsWith('/api/mails/1') ? { data: mailDetail, meta: { envelope: 1 } }
+      : url.startsWith('/api/mails/counts') ? { data: { a_enregistrer: 1, a_attribuer: 1, mon_service: 0, moi: 0, en_copie: 0 }, meta: { envelope: 1 } }
+      : url.startsWith('/api/notifications') ? { data: [], meta: { envelope: 1, unread: 0 }, pagination: { total: 0, limit: 20, offset: 0 } }
       : url.startsWith('/api/tickets/stats') ? { data: { open: 1, overdue: 0, unassigned: 1, resolved_30d: 0 }, meta: { envelope: 1 } }
       : url.startsWith('/api/settings/tickets') ? { data: ticketSettings, meta: { envelope: 1 } }
       : url.startsWith('/api/settings') ? { data: { pieces_max_mb: 50, pieces_mcp_read_max_mb: 5, defaults: { pieces_max_mb: 50, pieces_mcp_read_max_mb: 5 } }, meta: { envelope: 1 } }
@@ -73,9 +78,10 @@ import InboxPage from '../pages/InboxPage';
 import ConsultationsPage from '../pages/ConsultationsPage';
 import SettingsPage from '../pages/SettingsPage';
 import TicketsPage from '../pages/TicketsPage';
+import BannettesPage from '../pages/BannettesPage';
 import MailDrawer, { type Mail } from '../components/MailDrawer';
 
-const PAGES: [string, React.ComponentType][] = [['Register', RegisterPage], ['Registration', RegistrationPage], ['Contacts', ContactsPage],
+const PAGES: [string, React.ComponentType][] = [['Bannettes', BannettesPage], ['Register', RegisterPage], ['Registration', RegistrationPage], ['Contacts', ContactsPage],
   ['Entities', EntitiesPage], ['Services', ServicesPage], ['Types', TypesPage], ['Home', HomePage], ['Users', UsersPage], ['Help', HelpPage], ['Accessibility', AccessibilityPage], ['Login', LoginPage],
   ['Inbox', InboxPage], ['Consultations', ConsultationsPage], ['Settings', SettingsPage], ['Tickets', TicketsPage]];
 

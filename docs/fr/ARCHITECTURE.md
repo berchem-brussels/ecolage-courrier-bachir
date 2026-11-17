@@ -1,4 +1,4 @@
-# Architecture, version 0.2.9
+# Architecture, version 0.3.1
 
 Le français fait foi. Les versions néerlandaise et anglaise sont des traductions de Claude à faire relire (écart E13).
 
@@ -34,13 +34,13 @@ Migrations : `001_noyau`, `002_entites_registres`, `003_referentiels`, `004_cour
 
 ## Rôles
 
-| Rôle | Portée | Droits dans la version 0.2.0 |
+| Rôle | Portée | Droits dans la version 0.3.0 |
 | --- | --- | --- |
 | `admin` (global) | Application | Comptes, rôles, entités, registres, services, types, paramètres ; aucun accès au contenu du courrier ni aux fichiers |
 | `secretariat` | Entité | Enregistre, consulte, corrige et annule le courrier de son entité ; dépose, consulte et rejette les fichiers de la file ; ajoute un fichier à un courrier ; contacts |
 | `gestionnaire` | Entité | Comme le secrétariat, plus les types de courrier de son entité |
 | `auditeur` | Entité | Journal des consultations de son entité, sans contenu du courrier |
-| `agent`, `chef_service` | Entité | Aucun accès au courrier avant l'étape 3 |
+| `agent`, `chef_service` | Entité | Lisent le courrier attribué à leurs services (traitant ou copie) ou qui les nomme, et ses fichiers ; ne modifient, n'annulent ni n'attribuent rien. Le responsable de service nomme l'agent dans son service ; tout membre du service traitant renvoie au secrétariat avec un motif |
 
 ## Pièces
 
@@ -105,10 +105,21 @@ Une fiche par écran dans `frontend/src/help/topics/`, au schéma `HelpTopic` (`
 - **Captures de l'aide** : `frontend/help-capture/capture.spec.ts` (Playwright, `npm run help:capture`) lit les captures décrites dans les fiches (`shots`) et écrit `frontend/public/help/<langue>/<id>.jpg`. `npm run help:demo` démarre une instance éphémère sur `backend/instance/atelier.exemple.json` avec un compte de démonstration : jamais de donnée réelle. Un bouton se vise par sa clé de traduction. Les repères `[[n]]` du texte des zones sont ceux de la capture d'ensemble : un test les compare, vérifie que chaque capture existe en FR et en NL, qu'elle est un JPEG de moins de 400 Ko et qu'aucune n'est inutilisée. nginx : `absolute_redirect off` et `try_files $uri /index.html` pour que `/help` reste l'écran du centre d'aide malgré le dossier des captures.
 - **Groupes de boutons** : `components/GroupItem.tsx` remplace `Form.Item` pour les champs à boutons ou à cases : le titre est le nom du groupe (`role="group"`, `aria-labelledby`), pas un `<label>` orphelin.
 
-77 routes au total, 70 outils MCP exposés.
+84 routes au total, 77 outils MCP exposés (67 outils, dont ceux qui passent en deux appels).
 
 ## Audit des fiches et script de recette (0.2.9)
 
 - **Audit « fiche contre écran réel »** : `frontend/help-capture/audit-fiches.spec.ts` (`npm run help:audit`, sur l'instance de démonstration). Pour chaque fiche, tout libellé `{{clé}}` cité dans la liste des zones doit se retrouver à l'écran de la fiche ; les absences normales (état conditionnel, titre de fenêtre) sont listées avec leur raison dans `KNOWN_ABSENT`. Les libellés cités par les étapes sont listés « non vus à l'écran » à relire à la main (ils sont souvent dans une fenêtre). Une fiche décrite sans vérification contre l'écran est une erreur en puissance.
 - **Script de recette** : `frontend/help-capture/recette.mjs`, à lancer depuis un poste qui atteint l'instance (`RECETTE_URL`, `RECETTE_USER`, `RECETTE_PASSWORD` dans la fenêtre de commande, jamais dans le fichier) avec Node et le paquet `playwright` ; il pilote le Chrome du poste. Il rejoue la version affichée, le panneau et ses captures, nginx, le néerlandais, la FAQ (création, correction, retrait), les clés brutes, le parcours avec `#`, l'image de création d'un compte, puis relève les remarques de Chrome (avec l'élément visé) et les étiquettes mal reliées ou les champs sans identifiant ni nom sur 11 écrans et fenêtres. Il modifie l'instance : une question de FAQ d'essai (retirée ensuite) et la langue du compte (remise en français).
 - **Champs** : les zones de recherche et les champs de motif hors `Form.Item` portent un `name` ; les titres de groupes de boutons ou de cases passent par `GroupItem`.
+
+## Attribution et bannettes (0.3.0)
+
+- **Migration 009** : colonnes `service_id`, `agent_id`, `attributed_at`, `return_reason`, `returned_at` sur `mails` ; tables `mail_copies` (services en copie), `mail_attributions` (historique : attribution, réattribution, agent, copies, renvoi, avec motif et auteur), `user_services` (services d'une personne par entité) et `notifications`. Les courriers existants gardent toutes leurs valeurs : service et agent restent vides jusqu'à leur attribution.
+- **Droits** : `services/access.js` (sans dépendance vers les courriers ni les pièces) décide qui lit un courrier (`canSeeMail`) et ce qu'il peut y faire (`mailRights`, rendu dans le champ `rights` de la fiche). Le registre de l'entité lit tout ; l'agent et le responsable lisent les courriers de leurs services, en copie ou qui les nomment, dans l'entité où ils ont ce rôle ; l'administrateur, l'auditeur et l'autre entité ne lisent rien. Les pièces suivent le même droit de lecture ; la file « À enregistrer » reste au registre. La modification, l'annulation, le rejet et le renommage d'une pièce restent au registre.
+- **Attribution** (`services/attribution.js`) : le secrétariat attribue (service traitant, agent nommé facultatif, services en copie facultatifs ; motif obligatoire si le service traitant change) ; le responsable de service change l'agent de son service ; tout membre du service traitant renvoie au secrétariat avec un motif (le courrier perd service et agent, garde le motif, revient dans « À attribuer »). Chaque changement s'écrit dans l'historique et au journal d'audit, sans objet ni expéditeur. Un courrier annulé ne s'attribue plus.
+- **Bannettes** : `GET /api/mails?box=a_attribuer|mon_service|moi|en_copie` et `GET /api/mails/counts` (compteurs, « À enregistrer » compris), même droit que la fiche (CR-008), courriers annulés exclus.
+- **Rattachement des personnes** : `service_ids` dans les rôles par entité de `/api/users` ; réservé aux rôles d'agent et de responsable, services de l'entité seulement ; absent d'une mise à jour, il conserve les services existants.
+- **Notifications** (`services/notifications.js`) : courrier attribué à la personne, à son service, mis en copie, renvoyé au secrétariat ; numéro et nature seulement ; écartées si le courrier n'est plus lisible. Routes `GET /api/notifications` et `POST /api/notifications/read`.
+- **Routes et outils MCP ajoutés** : `GET /api/mails/counts`, `PUT /api/mails/:id/attribution`, `PUT /api/mails/:id/agent`, `POST /api/mails/:id/return`, `GET /api/services/:id/members`, `GET /api/notifications`, `POST /api/notifications/read` ; outils `get_mail_counts`, `attribute_mail`, `set_mail_agent`, `return_mail`, `list_service_members`, `list_notifications`, `mark_notifications_read`.
+- **Interface** : page Bannettes (onglets avec compteurs selon le rôle dans l'entité), cadre « Attribution » de la fiche (lecture seule pour qui ne peut pas modifier), cloche de l'en-tête (relue toutes les minutes), services dans « Modifier les rôles ». Aide : fiche « Bannettes » (15 fiches).

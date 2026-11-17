@@ -1,6 +1,7 @@
 /** Liste des fiches d'aide, dans l'ordre du menu, et recherche de la fiche d'un écran. */
 import type { HelpTopic } from './types';
 import home from './topics/home';
+import bannettes from './topics/bannettes';
 import register from './topics/register';
 import inbox from './topics/inbox';
 import registration from './topics/registration';
@@ -15,7 +16,7 @@ import tickets from './topics/tickets';
 import help from './topics/help';
 import accessibility from './topics/accessibility';
 
-export const TOPICS: HelpTopic[] = [home, register, inbox, registration, contacts, consultations, users, entities, services, types, settings, tickets, help, accessibility];
+export const TOPICS: HelpTopic[] = [home, bannettes, register, inbox, registration, contacts, consultations, users, entities, services, types, settings, tickets, help, accessibility];
 
 export function topicForPath(path: string): HelpTopic | undefined {
   const clean = path.replace(/\/+$/, '') || '/';
