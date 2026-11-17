@@ -28,6 +28,7 @@ const KNOWN_ABSENT: Record<string, string> = {
   'bannettes:box.mon_service': 'onglet des agents et responsables : le compte de démonstration tient le registre',
   'bannettes:box.moi': 'onglet des agents et responsables : le compte de démonstration tient le registre',
   'bannettes:box.en_copie': 'onglet des agents et responsables : le compte de démonstration tient le registre',
+  'bannettes:box.clos': 'onglet des agents et responsables : le compte de démonstration tient le registre',
   'accessibility:layout.skip': 'lien visible seulement au focus clavier',
 };
 

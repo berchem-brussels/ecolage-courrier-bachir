@@ -13,13 +13,14 @@ const { getDb } = require('../database');
 const { AppError } = require('../envelope');
 const { logAudit } = require('../audit');
 const { REGISTER_ROLES, AGENT_ROLES, assertRegister, registerEntities, rolesOf } = require('../rights');
-const { serviceIdsOf, isRegister, isMemberOf, mailRights } = require('./access');
+const { STATUS_SQL, serviceIdsOf, isRegister, isMemberOf, mailRights } = require('./access');
 const { notify } = require('./notifications');
 
-const BOXES = ['a_attribuer', 'mon_service', 'moi', 'en_copie'];
+const BOXES = ['a_attribuer', 'mon_service', 'moi', 'en_copie', 'clos'];
 
 function loadMail(id) {
-  const m = getDb().prepare('SELECT id, number, entity_id, status, service_id, agent_id, return_reason FROM mails WHERE id = ?').get(id);
+  const m = getDb().prepare(`SELECT m.id, m.number, m.entity_id, ${STATUS_SQL} AS status, m.processing, m.service_id, m.agent_id, m.return_reason
+    FROM mails m WHERE m.id = ?`).get(id);
   if (!m) throw new AppError(404, 'NOT_FOUND');
   return m;
 }
@@ -85,6 +86,7 @@ function attribute(user, mailId, data, channel = 'api') {
   const m = loadMail(mailId);
   assertRegister(user, m.entity_id);
   if (m.status === 'annule') throw new AppError(409, 'CANCELLED');
+  if (m.status === 'clos') throw new AppError(409, 'CLOSED');
   checkService(data.service_id, m.entity_id);
   const db = getDb();
   const currentCopies = copiesOf(m.id).map((c) => c.service_id);
@@ -110,9 +112,10 @@ function attribute(user, mailId, data, channel = 'api') {
   db.transaction(() => {
     if (serviceChanged) {
       db.prepare(`UPDATE mails SET service_id = ?, agent_id = ?, attributed_at = datetime('now'), return_reason = NULL, returned_at = NULL,
-        updated_by = ?, updated_at = datetime('now') WHERE id = ?`).run(data.service_id, agentId || null, user.id, m.id);
+        processing = 'none', taken_by = NULL, taken_at = NULL, updated_by = ?, updated_at = datetime('now') WHERE id = ?`).run(data.service_id, agentId || null, user.id, m.id);
     } else if (agentChanged) {
-      db.prepare("UPDATE mails SET agent_id = ?, updated_by = ?, updated_at = datetime('now') WHERE id = ?").run(agentId || null, user.id, m.id);
+      // Un courrier en traitement dont l'agent change redevient « attribué » : la nouvelle personne le prend en charge à son tour.
+      db.prepare(`UPDATE mails SET agent_id = ?, processing = 'none', taken_by = NULL, taken_at = NULL, updated_by = ?, updated_at = datetime('now') WHERE id = ?`).run(agentId || null, user.id, m.id);
     }
     if (copiesChanged) {
       db.prepare('DELETE FROM mail_copies WHERE mail_id = ?').run(m.id);
@@ -134,12 +137,12 @@ function attribute(user, mailId, data, channel = 'api') {
 function setAgent(user, mailId, agentId, channel = 'api') {
   const m = loadMail(mailId);
   if (m.status === 'annule') throw new AppError(409, 'CANCELLED');
-  if (!mailRights(user, m).set_agent) throw new AppError(403, 'FORBIDDEN');
+  if (!mailRights(user, m).set_agent) throw new AppError(m.status === 'clos' ? 409 : 403, m.status === 'clos' ? 'CLOSED' : 'FORBIDDEN');
   if (agentId) checkAgent(agentId, m.entity_id, m.service_id);
   if ((agentId || null) === (m.agent_id || null)) return m;
   const db = getDb();
   db.transaction(() => {
-    db.prepare("UPDATE mails SET agent_id = ?, updated_by = ?, updated_at = datetime('now') WHERE id = ?").run(agentId || null, user.id, m.id);
+    db.prepare(`UPDATE mails SET agent_id = ?, processing = 'none', taken_by = NULL, taken_at = NULL, updated_by = ?, updated_at = datetime('now') WHERE id = ?`).run(agentId || null, user.id, m.id);
     writeEvent(db, m.id, user, { kind: 'agent', service_id: m.service_id, from_service_id: m.service_id, agent_id: agentId, from_agent_id: m.agent_id });
     if (agentId) notify([agentId], m.id, 'attribue', user.id);
   })();
@@ -151,13 +154,13 @@ function setAgent(user, mailId, agentId, channel = 'api') {
 function returnToSecretariat(user, mailId, reason, channel = 'api') {
   const m = loadMail(mailId);
   if (m.status === 'annule') throw new AppError(409, 'CANCELLED');
-  if (!mailRights(user, m).return_to_secretariat) throw new AppError(403, 'FORBIDDEN');
+  if (!mailRights(user, m).return_to_secretariat) throw new AppError(m.status === 'clos' && isMemberOf(user, m.entity_id, m.service_id) ? 409 : 403, m.status === 'clos' && isMemberOf(user, m.entity_id, m.service_id) ? 'CLOSED' : 'FORBIDDEN');
   const text = String(reason || '').trim();
   if (!text) throw new AppError(400, 'REASON_REQUIRED');
   const db = getDb();
   db.transaction(() => {
     db.prepare(`UPDATE mails SET service_id = NULL, agent_id = NULL, return_reason = ?, returned_at = datetime('now'),
-      updated_by = ?, updated_at = datetime('now') WHERE id = ?`).run(text, user.id, m.id);
+      processing = 'none', taken_by = NULL, taken_at = NULL, updated_by = ?, updated_at = datetime('now') WHERE id = ?`).run(text, user.id, m.id);
     writeEvent(db, m.id, user, { kind: 'renvoi', service_id: null, from_service_id: m.service_id, agent_id: null, from_agent_id: m.agent_id, reason: text });
     notify(registerMemberIds(m.entity_id), m.id, 'renvoye', user.id);
   })();
@@ -187,7 +190,23 @@ function boxCondition(user, box, entityId) {
     return { sql: `(m.entity_id IN (${marks(ents)}) AND m.service_id IS NULL AND m.status = 'enregistre')`, params: [...ents] };
   }
   if (box === 'moi') {
-    return { sql: `(m.agent_id = ? AND m.entity_id IN (${marks(ents)}) AND m.status = 'enregistre')`, params: [user.id, ...ents] };
+    return { sql: `(m.agent_id = ? AND m.entity_id IN (${marks(ents)}) AND m.status = 'enregistre' AND m.processing <> 'clos')`, params: [user.id, ...ents] };
+  }
+  if (box === 'clos') {
+    // Courriers clos de mes services (traitant ou copie) ou dont je suis l'agent nommé : ils quittent les autres bannettes.
+    const parts = [];
+    const closedParams = [];
+    for (const e of ents) {
+      const services = serviceIdsOf(user.id, e);
+      let cond = 'm.agent_id = ?';
+      closedParams.push(e, user.id);
+      if (services.length > 0) {
+        cond += ` OR m.service_id IN (${marks(services)}) OR m.id IN (SELECT mail_id FROM mail_copies WHERE service_id IN (${marks(services)}))`;
+        closedParams.push(...services, ...services);
+      }
+      parts.push(`(m.entity_id = ? AND (${cond}))`);
+    }
+    return { sql: `((${parts.join(' OR ')}) AND m.status = 'enregistre' AND m.processing = 'clos')`, params: closedParams };
   }
   const groups = [];
   const params = [];
@@ -199,7 +218,7 @@ function boxCondition(user, box, entityId) {
     params.push(e, ...services);
   }
   if (groups.length === 0) return { sql: '0 = 1', params: [] };
-  return { sql: `((${groups.join(' OR ')}) AND m.status = 'enregistre')`, params };
+  return { sql: `((${groups.join(' OR ')}) AND m.status = 'enregistre' AND m.processing <> 'clos')`, params };
 }
 
 /** Compteurs des onglets de bannettes pour la personne (CE-120) : « À enregistrer » compte la file de dépôt. */
@@ -207,7 +226,7 @@ function counts(user, { entity_id: entityId } = {}) {
   const db = getDb();
   const hasRole = rolesOf(user).some((r) => (!entityId || r.entity_id === Number(entityId)) && [...REGISTER_ROLES, ...AGENT_ROLES].includes(r.role));
   if (entityId && !hasRole) throw new AppError(403, 'FORBIDDEN');
-  const out = { a_enregistrer: 0, a_attribuer: 0, mon_service: 0, moi: 0, en_copie: 0 };
+  const out = { a_enregistrer: 0, a_attribuer: 0, mon_service: 0, moi: 0, en_copie: 0, clos: 0 };
   const ents = registerEntities(user).filter((e) => !entityId || e === Number(entityId));
   if (ents.length > 0) {
     out.a_enregistrer = db.prepare(`SELECT COUNT(*) AS n FROM pieces WHERE status = 'a_enregistrer' AND entity_id IN (${ents.map(() => '?').join(', ')})`).get(...ents).n;
@@ -243,4 +262,4 @@ function members(user, serviceId, { entity_id: entityId } = {}) {
   return rows;
 }
 
-module.exports = { BOXES, attribute, setAgent, returnToSecretariat, boxCondition, counts, members, copiesOf, history };
+module.exports = { BOXES, attribute, setAgent, returnToSecretariat, boxCondition, counts, members, copiesOf, history, memberIds, registerMemberIds };

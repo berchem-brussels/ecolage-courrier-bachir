@@ -15,21 +15,26 @@ import { ContactPicker, type Contact } from './ContactForm';
 import PieceUpload from './PieceUpload';
 import PieceViewer, { type Piece } from './PieceViewer';
 import AttributionCard, { type MailAttribution } from './AttributionCard';
+import TraitementCard, { type MailTreatment, type TimelineItem } from './TraitementCard';
 
 export interface Mail {
   id: number; number: string; entity_id: number; entity_code: string; year: number; seq: number; received_date: string; registered_at: string;
   channel: 'courrier' | 'recommande' | 'colis' | 'guichet'; tracking_number: string | null; sender_contact_id: number; sender_kind: string;
   sender_name: string; sender_first_name: string | null; sender_organisation: string | null; sender_is_demo: number; addressee_name: string | null;
   subject: string; type_id: number; type_label_fr: string; type_label_nl: string | null; lang: 'fr' | 'nl' | 'autre'; urgency: 'normale' | 'urgente';
-  sender_reference: string | null; document_date: string | null; pieces_count: number | null; notes: string | null; status: 'enregistre' | 'annule';
+  sender_reference: string | null; document_date: string | null; pieces_count: number | null; notes: string | null; status: 'enregistre' | 'en_traitement' | 'clos' | 'annule';
   cancel_reason: string | null; created_by_first_name: string | null; created_by_last_name: string | null; created_at: string; updated_at: string;
   files_count?: number; pieces?: Piece[];
   service_id: number | null; service_name_fr: string | null; service_name_nl: string | null; agent_id: number | null;
   agent_first_name: string | null; agent_last_name: string | null; return_reason: string | null; returned_at: string | null;
+  taken_by_first_name?: string | null; taken_by_last_name?: string | null; taken_at?: string | null;
+  closed_by_first_name?: string | null; closed_by_last_name?: string | null; closed_at?: string | null;
+  close_reason_label_fr?: string | null; close_reason_label_nl?: string | null; close_note?: string | null; timeline?: TimelineItem[];
   copies?: MailAttribution['copies']; attributions?: MailAttribution['attributions']; rights?: MailAttribution['rights'];
 }
 interface MailType { id: number; label_fr: string; label_nl: string | null }
 const CHANNELS = ['courrier', 'recommande', 'colis', 'guichet'] as const;
+export const STATUS_COLOR: Record<Mail['status'], string> = { enregistre: 'blue', en_traitement: 'gold', clos: 'green', annule: 'default' };
 
 export default function MailDrawer({ mail: row, onClose, onChanged, onReturned }: { mail: Mail | null; onClose: () => void; onChanged: (m: Mail) => void; onReturned?: (id: number) => void }) {
   const { t, lang, hint } = useI18n();
@@ -110,7 +115,7 @@ export default function MailDrawer({ mail: row, onClose, onChanged, onReturned }
         <Col xs={24} lg={wide ? 11 : 24}>
           <Typography.Title level={2} style={{ fontSize: 24, marginTop: 0 }}>{mail.number}</Typography.Title>
           <Descriptions column={1} size="small" style={{ marginBottom: 16 }}>
-            <Descriptions.Item label={t('common.status')}><Tag color={mail.status === 'annule' ? 'default' : 'blue'}>{t(`mail.status.${mail.status}`)}</Tag></Descriptions.Item>
+            <Descriptions.Item label={t('common.status')}><Tag color={STATUS_COLOR[mail.status]}>{t(`mail.status.${mail.status}`)}</Tag></Descriptions.Item>
             <Descriptions.Item label={t('mail.received_date')}>{dayjs(mail.received_date).format('L')}</Descriptions.Item>
             <Descriptions.Item label={t('mail.registered_at')}>{dayjs.utc(mail.registered_at).local().format('L LT')}</Descriptions.Item>
             <Descriptions.Item label={t('mail.registered_by')}>{mail.created_by_first_name} {mail.created_by_last_name}</Descriptions.Item>
@@ -120,6 +125,7 @@ export default function MailDrawer({ mail: row, onClose, onChanged, onReturned }
           </Descriptions>
           {!wide && files}
           <AttributionCard mail={mail as Mail & MailAttribution} onChanged={(m) => changed(m as Mail)} onReturned={returned} />
+          {full && mail.id === full.id && <TraitementCard mail={mail as Mail & MailTreatment} onChanged={(m) => changed(m as Mail)} />}
           {mail.status !== 'annule' && full && !canEdit && (
             <>
               <Alert type="info" showIcon style={{ marginBottom: 12 }} message={t('mail.readonly')} />

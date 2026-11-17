@@ -3,7 +3,7 @@
  * Lecture : toute personne connectée (listes de l'interface). Écriture : administrateur.
  * Le préfixe et le nombre de chiffres d'un registre ne changent plus dès qu'un numéro a été attribué (registre sans trou).
  */
-const { getDb, safeBuildUpdate } = require('../database');
+const { getDb, safeBuildUpdate, seedCloseReasons } = require('../database');
 const { AppError } = require('../envelope');
 const { logAudit } = require('../audit');
 const { assertAdmin } = require('../rights');
@@ -36,6 +36,7 @@ function createEntity(user, data, channel = 'api') {
   if (db.prepare('SELECT 1 FROM entities WHERE code = ?').get(data.code)) throw new AppError(409, 'CODE_USED');
   const r = db.prepare('INSERT INTO entities (code, name_fr, name_nl, created_by, updated_by) VALUES (?, ?, ?, ?, ?)')
     .run(data.code, data.name_fr, data.name_nl, user.id, user.id);
+  seedCloseReasons(db, r.lastInsertRowid);
   logAudit(user.id, 'entity.create', 'entity', r.lastInsertRowid, data, channel);
   return loadEntity(r.lastInsertRowid);
 }

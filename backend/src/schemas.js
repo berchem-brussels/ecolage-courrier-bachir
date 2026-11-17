@@ -104,9 +104,9 @@ module.exports = {
   }),
 
   mailList: listQuery({
-    entity_id: T.int(1), status: T.en('enregistre', 'annule'), year: T.int(2000, 2999), channel: T.en('courrier', 'recommande', 'colis', 'guichet'),
+    entity_id: T.int(1), status: T.en('enregistre', 'en_traitement', 'clos', 'annule'), year: T.int(2000, 2999), channel: T.en('courrier', 'recommande', 'colis', 'guichet'),
     // Bannette (CE-120) : sans ce paramètre, le registre de l'entité.
-    box: T.en('a_attribuer', 'mon_service', 'moi', 'en_copie'),
+    box: T.en('a_attribuer', 'mon_service', 'moi', 'en_copie', 'clos'),
   }),
   mailCounts: obj({ entity_id: T.int(1) }),
   // Attribution (CE-060, CE-061) : service traitant, agent nommé facultatif, services en copie facultatifs ; motif si le service change.
@@ -116,6 +116,14 @@ module.exports = {
   }, ['service_id']),
   mailAgent: obj({ agent_id: { type: ['integer', 'null'], minimum: 1 } }, ['agent_id']),
   mailReturn: obj({ reason: T.reqStr(500) }, ['reason']),
+  // Traitement (0.4.0) : prise en charge sans corps ; clôture avec motif de la liste de l'entité et note facultative ;
+  // réouverture avec motif ; commentaire visible du service traitant ou de toute l'entité.
+  mailClose: obj({ close_reason_id: T.int(1), note: T.str(1000) }, ['close_reason_id']),
+  mailReopen: obj({ reason: T.reqStr(500) }, ['reason']),
+  mailComment: obj({ scope: T.en('service', 'entity'), body: T.reqStr(2000) }, ['scope', 'body']),
+  closeReasonList: listQuery({ entity_id: T.int(1), is_active: { type: 'integer', enum: [0, 1] } }),
+  closeReasonCreate: obj({ entity_id: T.int(1), label_fr: T.reqStr(200), label_nl: T.str(200), sort_order: T.int(0, 999) }, ['entity_id', 'label_fr']),
+  closeReasonUpdate: obj({ label_fr: T.reqStr(200), label_nl: T.str(200), sort_order: T.int(0, 999) }),
   serviceMembers: obj({ entity_id: T.int(1) }),
   notificationList: listQuery({ unread: { type: 'boolean' } }),
   notificationRead: obj({ ids: { type: 'array', items: T.int(1), maxItems: 200, uniqueItems: true } }),

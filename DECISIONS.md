@@ -1,6 +1,6 @@
 # Décisions et actions
 
-Application courrier · version 0.3.1 · journal au 17/11/2026 (version livrée, non installée)
+Application courrier · version 0.4.0 · journal au 17/11/2026 (version livrée, non installée)
 
 Ce fichier réunit les décisions prises pendant le développement, les règles de travail convenues avec le conducteur du projet et les actions à faire. Les décisions de périmètre du 13/10/2026 (A1 à A12) sont dans le cahier des charges, section 2.
 
@@ -89,6 +89,18 @@ Ce fichier réunit les décisions prises pendant le développement, les règles 
 | 17/11/2026 | Installation et recette de la 0.3.0 sur NIXUS | Installée le 17/11/2026 (45 sauvegardes, migration 009 appliquée, API 0.3.0, construction en 8 min 19 s) ; script `recette.mjs` sur le PC du conducteur : 38 contrôles conformes, dont « À enregistrer (1) » et « À attribuer (6) » et aucune remarque de Chrome sur 13 écrans et fenêtres | Conducteur du projet |
 | 17/11/2026 | Contrôle manuel dans le navigateur remplacé par des scripts | Le conducteur demande que Claude joue lui-même les tests : Claude ne peut pas atteindre NIXUS, il écrit des scripts lancés sur le PC du conducteur (`recette.mjs`, `recette-agent.mjs`) | Conducteur du projet |
 | 17/11/2026 | Version 0.3.1 | Le script d'agent a trouvé qu'un courrier renvoyé ne pouvait pas être réattribué au service qui l'avait en copie (409) : correction livrée en 0.3.1 qui remplace la 0.3.0 non publiée (précédents : 0.2.3 et 0.2.4, 0.2.8 et 0.2.9) ; une seule demande de fusion GitHub portera les deux | Conducteur du projet (« go » du 17/11/2026, recommandation de Claude retenue) |
+| 17/11/2026 | Installation et recette de la 0.3.1 sur NIXUS | Installée le 17/11/2026 (46 sauvegardes, construction en 2 min 15 s, aucune migration, API 0.3.1) ; `recette.mjs` : 38 contrôles conformes ; `recette-agent.mjs` : 46 contrôles conformes avec trois comptes de test et un courrier fictif, nettoyés à la fin | Conducteur du projet |
+| 17/11/2026 | Installation de GitHub CLI | `gh` 2.104.0 installé sur le PC (winget), connecté par le navigateur au compte `Bachir-404` : la demande de fusion et la publication se font depuis PowerShell, sans jeton dans la conversation | Conducteur du projet (« on installe alors ! ») |
+| 17/11/2026 | Outils d'archive contre outils du dépôt (E43, E49) | Le dépôt garde ses versions de `demo-server.cjs` (même chemin contrôlé, réponse 400 sur une adresse mal formée) et de `recette-faq.mjs` (reprise de l'appel d'API, nettoyage des questions d'essai) ; `recette.mjs` de l'archive est publié ; décision prise après lecture des différences | Conducteur du projet, recommandation de Claude |
+| 17/11/2026 | Publication de la 0.3.1 | Branche `version/v0.3.1`, demande de fusion n° 9 (commit `661ad9b`), quatre contrôles verts, fusion `f766f1e`, étiquette `v0.3.1`, publication avec l'archive ; empreinte SHA-256 identique sur le PC, sur NIXUS, sur GitHub et dans l'archive de Claude ; la 0.3.0 n'a jamais été publiée | Conducteur du projet |
+| 17/11/2026 | Étape 4 (0.4.0), réponses du conducteur | Prise en charge : l'agent nommé seulement. Clôture : l'agent nommé et le responsable du service ; réouverture : secrétariat et gestionnaire avec motif (proposition de Claude retenue). La 0.4.0 est livrée en une seule version complète, « Continuer » valant « go » | Conducteur du projet |
+| 17/11/2026 | Outils du dépôt (action 29, E49) | « À toi de me dire la meilleure solution » : Claude les a récupérés lui-même dans le dépôt public (étiquette `v0.3.1`, HTTP 200) au lieu de les faire joindre ; `demo-server.cjs` et `recette-faq.mjs` du dépôt gardés, `recette.mjs` identique | Conducteur du projet, Claude |
+| 17/11/2026 | Modèle de statut | Statut stocké inchangé, colonne `processing`, statut effectif calculé par l'API ; évite la reconstruction de la table des courriers (E50) | Claude |
+| 17/11/2026 | Droits de commentaire et visibilité | Commentent : registre, membres du service traitant, agent nommé ; un service en copie lit sans écrire ; portée « service » lue par le service et le registre, « entité » par qui voit le courrier ; consultations dans l'historique pour le registre seulement ; à confirmer à la recette (E51, E55) | Claude, proposition |
+| 17/11/2026 | Bannette « Clos » et retour à « attribué » | Onglet « Clos » pour agents et responsables ; changement d'agent ou de service et renvoi remettent à « attribué » ; un courrier clos refuse l'attribution tant qu'il n'est pas rouvert (E52, E54) | Claude, proposition |
+| 17/11/2026 | Contrôle SQL statique | Tolère la constante `STATUS_SQL` ; rien d'autre n'est assoupli (E53) | Claude |
+| 17/11/2026 | Preuves d'échec de la 0.4.0 | Serveur 24 sur 24 détectés, interface 15 sur 15 ; un contournement d'interface (motif de réouverture) n'était d'abord pas détecté : test ajouté (motif fait d'espaces) | Claude |
+| 17/11/2026 | Scripts de recette | `recette-agent.mjs` étendu au traitement (69 contrôles sur la démonstration) ; deux contrôles faux corrigés : seul un membre du service peut désormais commenter, et un motif de renvoi contient légitimement le mot « recette » | Claude |
 
 ## 2. Règles de travail convenues
 
@@ -110,6 +122,10 @@ Elles s'ajoutent aux règles du standard (section 2).
 14. L'espace de travail de Claude peut être réinitialisé entre deux sessions : repartir de l'archive jointe, vérifier que son numéro est celui d'ETAT.md, rejouer toutes les suites avant toute modification.
 15. Une livraison n'est annoncée qu'une fois les fichiers affichés dans la conversation (présentés), avec leur taille et leur empreinte SHA-256.
 16. Une phrase de Claude qui se termine par un point ne se copie pas avec la commande : le conducteur copie seulement le bloc de code (incident du 17/11/2026, `-3.`).
+
+17. Recette : Claude joue lui-même les tests par des scripts que le conducteur lance sur son PC (`recette.mjs`, `recette-faq.mjs`, `recette-agent.mjs`) au lieu de lui demander des contrôles manuels dans le navigateur (demande du 17/11/2026). Le script d'agent écrit sur l'instance (comptes de test, courrier fictif annulé) et nettoie en fin de passage.
+18. Les commandes `git diff` se tapent avec `git --no-pager` : le lecteur paginé reste ouvert sinon (`(END)`, touche `q`).
+19. Les commandes GitHub passent par `gh` (installé) : `gh pr create`, `gh pr checks <n> --watch`, `gh pr merge <n> --merge --delete-branch`, `gh release create`, `gh release download` pour vérifier l'empreinte.
 
 ## 3. Actions à faire
 
@@ -139,7 +155,12 @@ Elles s'ajoutent aux règles du standard (section 2).
 | 22 | Informer Renaud de l'écart E43 (outils hors image corrigés après l'archive publiée) | Conducteur du projet | Avec les autres écarts de l'action 19 |
 | 23 | Informer Renaud de l'étape 3 : les agents et responsables lisent maintenant le courrier de leurs services (périmètre de lecture élargi, lecture seule) ; écarts E44 à E48 | Conducteur du projet | Avant la mise en production, avec l'action 19 |
 | 24 | Rattacher chaque agent et responsable à ses services (Administration › Utilisateurs › Modifier les rôles) : sans service, les bannettes restent vides | Conducteur du projet | Avant la recette de l'étape 3 |
-| 25 | Comparer `recette-faq.mjs`, `recette.mjs` et `demo-server.cjs` de l'archive 0.3.1 avec ceux du dépôt (commit `82ca4fa`) : `git diff` doit montrer ces trois fichiers modifiés, aucun supprimé (E43) | Conducteur du projet | Au dépôt de la 0.3.0 |
+| 25 | Comparer `recette-faq.mjs`, `recette.mjs` et `demo-server.cjs` de l'archive avec ceux du dépôt | Conducteur du projet | Fait le 17/11/2026 : dépôt gardé pour deux fichiers (E49) |
 | 26 | Soumettre à Renaud les 3 alertes modérées de l'audit complet de l'interface (chaîne `eslint`, E34) avec l'alerte Dependabot n° 29 | Conducteur du projet | Avec l'action 21 |
 | 27 | Obtenir de l'utilisatrice clé de l'AC la confirmation du circuit (D-16), le sens de « Mon service », la hiérarchie des services (E46) et l'onglet « À enregistrer » (E44) | Conducteur du projet, Julie Schmitz | À la recette de l'étape 3 |
-| 28 | Lancer `recette-agent.mjs` sur NIXUS après l'installation de la 0.3.1 : il crée puis désactive trois comptes de test et annule un courrier fictif, dont le numéro reste au registre marqué « annulé » | Conducteur du projet | Après l'installation de la 0.3.1 |
+| 28 | Lancer `recette-agent.mjs` sur NIXUS après l'installation de la 0.3.1 | Conducteur du projet | Fait le 17/11/2026 : 46 contrôles conformes ; trois comptes de test désactivés (« Recette agentA », « agentB », « chefA ») et un courrier fictif annulé de l'AC |
+| 29 | Joindre au début de la 0.4.0 les versions du dépôt de `frontend/help-capture/demo-server.cjs`, `recette-faq.mjs` et `recette.mjs` (E49) | Conducteur du projet | Fait le 17/11/2026 : Claude les a récupérés dans le dépôt public (E49 clos) |
+| 30 | Examiner l'alerte Dependabot n° 30 (1 modérée, branche principale) et la nouvelle branche `dependabot/npm_and_yarn/frontend/multi-…` : ne rien fusionner sans l'accord de Renaud (E34, E38) | Conducteur du projet, Renaud | Avec les actions 21 et 26 |
+| 31 | Confirmer avec l'utilisatrice clé le circuit de traitement : motifs de clôture réels (quatre par défaut), portée des commentaires, prise en charge par l'agent nommé seulement, bannette « Clos », retour à « attribué » après un changement d'agent (E51, E52, E54, E55) | Conducteur du projet, utilisatrice clé de l'AC | À la recette de l'étape 4 |
+| 32 | Informer Renaud de l'étape 4 : les agents et responsables écrivent maintenant (commentaires, prise en charge, clôture) ; écarts E50 à E55 dont le contrôle SQL statique assoupli (E53) | Conducteur du projet | Avec l'action 23 |
+| 33 | Installer la 0.4.0 sur NIXUS (la migration 010 s'applique au démarrage), puis lancer `recette.mjs`, `recette-agent.mjs` et `recette-faq.mjs` sur le PC | Conducteur du projet | Après la livraison |

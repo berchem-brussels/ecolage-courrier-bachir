@@ -38,7 +38,7 @@ const mailDetail = { ...mails[0], copies: [], attributions: [], rights, files_co
 const tickets = [{ id: 1, reference: 'TCK-2026-00001', type: 'question', title: 'Comment annuler ?', queue: 'business', entity_id: 1, entity_code: 'AC', priority: 'P2', status: 'new', wish_status: null,
   fixed_version: null, screen: 'register', requester_id: 1, assignee_id: null, due_resolution_at: '2026-11-10 08:00:00', created_at: '2026-11-03 08:00:00', updated_at: '2026-11-03 08:00:00', has_screenshot: 0, overdue: 0, requester_name: 'Ada Admin', assignee_name: null }];
 const ticketSettings = { sla: { P1: [1, 8], P2: [4, 24], P3: [8, 72], P4: [24, 240] }, reopen_days: 14, business_roles: ['gestionnaire'], it_roles: ['admin'], role_codes: ['admin', 'agent', 'chef_service', 'secretariat', 'gestionnaire', 'auditeur'] };
-const LISTS: Record<string, unknown[]> = { '/api/pieces': pieces, '/api/tickets': tickets, '/api/consultations': [], '/api/mails': mails, '/api/entities': entities, '/api/mail-types': types, '/api/services': services, '/api/contacts': contacts, '/api/registers': registers };
+const LISTS: Record<string, unknown[]> = { '/api/pieces': pieces, '/api/tickets': tickets, '/api/consultations': [], '/api/mails': mails, '/api/entities': entities, '/api/mail-types': types, '/api/close-reasons': [{ id: 1, entity_id: 1, label_fr: 'Répondu', label_nl: 'Beantwoord', is_active: 1 }], '/api/services': services, '/api/contacts': contacts, '/api/registers': registers };
 
 beforeEach(() => {
   vi.stubGlobal('fetch', vi.fn(async (url: string, init?: { method?: string; body?: unknown }) => (init?.method === 'POST' && url === '/api/pieces' && init.body instanceof FormData && init.body.get('mail_id') ? {

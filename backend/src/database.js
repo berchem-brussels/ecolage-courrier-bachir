@@ -463,6 +463,70 @@ const MIGRATIONS = [
     );
     CREATE INDEX idx_notifications_user ON notifications(user_id, read_at)
   `],
+  // Version 0.4.0 : traitement (CDC CE-070, CE-071, CE-073, CE-079). Le statut stocké reste « enregistre » ou « annule » :
+  // l'avancement du traitement est dans `processing` et l'API rend le statut effectif (enregistre, en_traitement, clos, annule),
+  // ce qui évite de reconstruire la table des courriers (clés étrangères RESTRICT). `notifications` n'est référencée par personne : reconstruite.
+  ['010_traitement', `
+    CREATE TABLE close_reasons (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      entity_id INTEGER NOT NULL REFERENCES entities(id) ON DELETE RESTRICT,
+      label_fr TEXT NOT NULL,
+      label_nl TEXT,
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      is_active INTEGER NOT NULL DEFAULT 1,
+      cancel_reason TEXT,
+      created_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+      updated_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+    CREATE INDEX idx_close_reasons_entity ON close_reasons(entity_id, is_active);
+    INSERT INTO close_reasons (entity_id, label_fr, label_nl, sort_order) SELECT id, 'Répondu', 'Beantwoord', 1 FROM entities;
+    INSERT INTO close_reasons (entity_id, label_fr, label_nl, sort_order) SELECT id, 'Traité sans réponse', 'Behandeld zonder antwoord', 2 FROM entities;
+    INSERT INTO close_reasons (entity_id, label_fr, label_nl, sort_order) SELECT id, 'Transmis à l''extérieur', 'Doorgestuurd naar buiten', 3 FROM entities;
+    INSERT INTO close_reasons (entity_id, label_fr, label_nl, sort_order) SELECT id, 'Classé sans suite', 'Zonder gevolg geklasseerd', 4 FROM entities;
+    ALTER TABLE mails ADD COLUMN processing TEXT NOT NULL DEFAULT 'none' CHECK (processing IN ('none', 'en_traitement', 'clos'));
+    ALTER TABLE mails ADD COLUMN taken_by INTEGER REFERENCES users(id) ON DELETE SET NULL;
+    ALTER TABLE mails ADD COLUMN taken_at TEXT;
+    ALTER TABLE mails ADD COLUMN closed_by INTEGER REFERENCES users(id) ON DELETE SET NULL;
+    ALTER TABLE mails ADD COLUMN closed_at TEXT;
+    ALTER TABLE mails ADD COLUMN close_reason_id INTEGER REFERENCES close_reasons(id) ON DELETE RESTRICT;
+    ALTER TABLE mails ADD COLUMN close_note TEXT;
+    CREATE TABLE mail_events (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      mail_id INTEGER NOT NULL REFERENCES mails(id) ON DELETE RESTRICT,
+      kind TEXT NOT NULL CHECK (kind IN ('prise_en_charge', 'cloture', 'reouverture')),
+      close_reason_id INTEGER REFERENCES close_reasons(id) ON DELETE RESTRICT,
+      note TEXT,
+      author_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+    CREATE INDEX idx_mail_events_mail ON mail_events(mail_id);
+    CREATE TABLE mail_comments (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      mail_id INTEGER NOT NULL REFERENCES mails(id) ON DELETE RESTRICT,
+      scope TEXT NOT NULL CHECK (scope IN ('service', 'entity')),
+      service_id INTEGER REFERENCES org_services(id) ON DELETE RESTRICT,
+      body TEXT NOT NULL,
+      author_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      CHECK ((scope = 'service') = (service_id IS NOT NULL))
+    );
+    CREATE INDEX idx_mail_comments_mail ON mail_comments(mail_id);
+    CREATE TABLE notifications_new (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      mail_id INTEGER NOT NULL REFERENCES mails(id) ON DELETE RESTRICT,
+      kind TEXT NOT NULL CHECK (kind IN ('attribue', 'service', 'copie', 'renvoye', 'commente', 'clos', 'rouvert')),
+      author_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      read_at TEXT
+    );
+    INSERT INTO notifications_new (id, user_id, mail_id, kind, author_id, created_at, read_at) SELECT id, user_id, mail_id, kind, author_id, created_at, read_at FROM notifications;
+    DROP TABLE notifications;
+    ALTER TABLE notifications_new RENAME TO notifications;
+    CREATE INDEX idx_notifications_user ON notifications(user_id, read_at)
+  `],
 ];
 
 function migrate() {
@@ -481,6 +545,18 @@ function migrate() {
   saveNow();
 }
 
+/** Motifs de clôture par défaut d'une entité (CDC CE-073) ; modifiables ensuite par le gestionnaire du registre. */
+const DEFAULT_CLOSE_REASONS = [
+  ['Répondu', 'Beantwoord'], ['Traité sans réponse', 'Behandeld zonder antwoord'],
+  ["Transmis à l'extérieur", 'Doorgestuurd naar buiten'], ['Classé sans suite', 'Zonder gevolg geklasseerd'],
+];
+
+function seedCloseReasons(db, entityId) {
+  DEFAULT_CLOSE_REASONS.forEach(([fr, nl], i) => {
+    db.prepare('INSERT INTO close_reasons (entity_id, label_fr, label_nl, sort_order) VALUES (?, ?, ?, ?)').run(entityId, fr, nl, i + 1);
+  });
+}
+
 /**
  * Données de référence livrées dans config/registres.defaut.json : entités et registres, chargés une seule fois
  * dans une base vide. Ensuite, l'administration les modifie (standard v3.2, sections 7.2 et 11.4).
@@ -495,6 +571,7 @@ function seedReference(db) {
       for (const g of e.registers) {
         db.prepare('INSERT INTO registers (entity_id, direction, prefix, digits) VALUES (?, ?, ?, ?)').run(r.lastInsertRowid, g.direction, g.prefix, g.digits);
       }
+      seedCloseReasons(db, r.lastInsertRowid);
     }
   })();
   console.log('[DB] Entités et registres de référence chargés');
@@ -516,4 +593,4 @@ function safeBuildUpdate(body, excludeKeys = ['id']) {
   return { sets, params };
 }
 
-module.exports = { initDb, getDb, saveNow, safeBuildUpdate, MIGRATIONS };
+module.exports = { initDb, getDb, saveNow, safeBuildUpdate, seedCloseReasons, MIGRATIONS };

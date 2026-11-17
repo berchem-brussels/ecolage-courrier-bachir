@@ -248,3 +248,56 @@ Interface (`attribution.test.tsx`) : 8 contournements sur 8 détectés.
 | Services envoyés pour tous les rôles | 2 |
 | Onglet « À attribuer » montré aux agents | 2 |
 | Objet du courrier dans une notification | 1 |
+
+## Preuves d'échec des contrôles de la 0.4.0
+
+Chaque contrôle a été contourné sur une copie, la suite concernée rejouée, l'original jamais touché. Un contournement d'interface (motif de réouverture) n'était d'abord pas détecté : un test sur un motif fait d'espaces a été ajouté, puis il l'est. Le contrôle SQL statique du serveur tolère désormais la constante `STATUS_SQL` (écart E53) ; aucune autre interpolation n'est permise.
+
+Serveur (`traitement.test.js`) : 24 contournements sur 24 détectés.
+
+| Contournement | Tests en échec |
+| --- | --- |
+| Prise en charge ouverte à tout membre du service | 3 |
+| Prise en charge d'un courrier non attribué ou déjà pris | 1 |
+| Clôture sans contrôle du droit | 1 |
+| Clôture depuis un autre état que « en traitement » | 1 |
+| Motif de clôture d'une autre entité accepté | 2 |
+| Motif de clôture désactivé accepté | 1 |
+| Réouverture sans rôle de registre | 2 |
+| Réouverture sans motif | 1 |
+| Réouverture d'un courrier qui n'est pas clos | 1 |
+| Attribution d'un courrier clos | 1 |
+| Changement d'agent d'un courrier clos | 1 |
+| Renvoi d'un courrier clos | 1 |
+| Changement d'agent sans retour à « attribué » | 1 |
+| Renvoi sans retour à « enregistré » | 1 |
+| Commentaire de service lisible de toute personne qui voit le courrier | 1 |
+| Commentaire permis à un service en copie | 1 |
+| Texte du commentaire écrit au journal d'audit | 1 |
+| Consultations montrées à tout lecteur de l'historique | 1 |
+| Filtre de statut sans l'avancement du traitement | 3 |
+| Courriers clos encore dans « Mon service » | 1 |
+| Motifs de clôture gérés sans droit de gestionnaire | 1 |
+| Entité nouvelle sans motifs par défaut | 1 |
+| Lecture du courrier d'une autre entité pour le traitement | 3 |
+| Commentaire permis sur un courrier annulé | 1 |
+
+Interface (`traitement.test.tsx`) : 15 contournements sur 15 détectés.
+
+| Contournement | Tests en échec |
+| --- | --- |
+| Prise en charge proposée sans droit | 1 |
+| Clôture proposée sans droit | 3 |
+| Réouverture proposée sans droit | 1 |
+| Formulaire de commentaire sans droit | 1 |
+| Portée du commentaire non obligatoire | 1 |
+| Motif de clôture non obligatoire | 1 |
+| Motif de réouverture non obligatoire | 1 (après ajout du test du motif fait d'espaces) |
+| Texte du commentaire envoyé sans nettoyage | 1 |
+| Historique montré dans l'ordre inverse | 1 |
+| Bouton de modification d'un commentaire | 1 |
+| Onglet « Clos » montré au secrétariat | 1 |
+| Désactivation d'un motif sans motif exigé | 1 |
+| Texte de la cloche absent pour « clos » | 1 |
+| Texte néerlandais de la prise en charge manquant | 1 |
+| Note de clôture non envoyée | 1 |

@@ -4,8 +4,7 @@
  * le serveur recontrôle chaque appel.
  */
 import { useEffect, useMemo, useState } from 'react';
-import { Alert, Button, Card, Descriptions, Form, Input, List, Popconfirm, Select, Space, Tag, Typography, message } from 'antd';
-import dayjs from 'dayjs';
+import { Alert, Button, Card, Descriptions, Form, Input, Popconfirm, Select, Space, Tag, Typography, message } from 'antd';
 import api, { ApiError, qs } from '../api';
 import { useI18n } from '../contexts/I18nContext';
 import { pick } from '../labels';
@@ -19,13 +18,13 @@ export interface Attribution {
   copies: number[] | null; reason: string | null; author_first_name: string | null; author_last_name: string | null; created_at: string;
 }
 export interface MailAttribution {
-  id: number; entity_id: number; status: 'enregistre' | 'annule';
+  id: number; entity_id: number; status: 'enregistre' | 'en_traitement' | 'clos' | 'annule';
   service_id: number | null; service_name_fr: string | null; service_name_nl: string | null;
   agent_id: number | null; agent_first_name: string | null; agent_last_name: string | null;
   return_reason: string | null; returned_at: string | null;
   copies?: { service_id: number; name_fr: string; name_nl: string | null }[];
   attributions?: Attribution[];
-  rights?: { edit: boolean; cancel: boolean; attribute: boolean; set_agent: boolean; return_to_secretariat: boolean };
+  rights?: { edit: boolean; cancel: boolean; attribute: boolean; set_agent: boolean; return_to_secretariat: boolean; take?: boolean; close?: boolean; reopen?: boolean; comment?: boolean };
 }
 interface Service { id: number; name_fr: string; name_nl: string | null }
 interface Member { id: number; first_name: string; last_name: string; role: string }
@@ -95,17 +94,6 @@ export default function AttributionCard<M extends MailAttribution>({ mail, onCha
   const svcName = (m: { service_name_fr: string | null; service_name_nl: string | null }) => pick({ x_fr: m.service_name_fr, x_nl: m.service_name_nl }, 'x', lang);
   const agentName = fullName(mail.agent_first_name, mail.agent_last_name);
 
-  const eventText = (h: Attribution) => {
-    const svc = pick({ x_fr: h.service_name_fr, x_nl: h.service_name_nl }, 'x', lang);
-    const from = pick({ x_fr: h.from_service_name_fr, x_nl: h.from_service_name_nl }, 'x', lang);
-    const agent = fullName(h.agent_first_name, h.agent_last_name);
-    if (h.kind === 'attribution') return `${svc}${agent ? ` · ${agent}` : ''}`;
-    if (h.kind === 'reattribution') return `${svc}${from ? ` (${t('attr.event.from')} ${from})` : ''}${agent ? ` · ${agent}` : ''}`;
-    if (h.kind === 'agent') return agent || t('attr.event.agent_removed');
-    if (h.kind === 'renvoi') return from;
-    return (h.copies || []).length === 0 ? t('attr.event.copies_none') : '';
-  };
-
   return (
     <Card size="small" title={t('attr.title')} style={{ marginBottom: 16 }}>
       {mail.return_reason && !mail.service_id && (
@@ -162,18 +150,6 @@ export default function AttributionCard<M extends MailAttribution>({ mail, onCha
         </div>
       )}
 
-      {(mail.attributions || []).length > 0 && (
-        <div style={{ marginTop: 16 }}>
-          <Typography.Text strong>{t('attr.history')}</Typography.Text>
-          <List size="small" dataSource={mail.attributions} renderItem={(h) => (
-            <List.Item key={h.id} style={{ display: 'block' }}>
-              <Typography.Text type="secondary">{dayjs.utc(h.created_at).local().format('L LT')} · {t('attr.event.by')} {fullName(h.author_first_name, h.author_last_name)}</Typography.Text>
-              <div><strong>{t(`attr.event.${h.kind}`)}</strong>{eventText(h) ? ` : ${eventText(h)}` : ''}</div>
-              {h.reason && <div><Typography.Text type="secondary">{h.reason}</Typography.Text></div>}
-            </List.Item>
-          )} />
-        </div>
-      )}
     </Card>
   );
 }

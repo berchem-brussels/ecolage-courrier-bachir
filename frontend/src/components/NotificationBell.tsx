@@ -10,7 +10,7 @@ import dayjs from 'dayjs';
 import api from '../api';
 import { useI18n } from '../contexts/I18nContext';
 
-interface Notification { id: number; kind: 'attribue' | 'service' | 'copie' | 'renvoye'; mail_id: number; mail_number: string; entity_code: string; created_at: string; read_at: string | null }
+interface Notification { id: number; kind: 'attribue' | 'service' | 'copie' | 'renvoye' | 'commente' | 'clos' | 'rouvert'; mail_id: number; mail_number: string; entity_code: string; created_at: string; read_at: string | null }
 
 export default function NotificationBell({ compact = false }: { compact?: boolean }) {
   const { t } = useI18n();

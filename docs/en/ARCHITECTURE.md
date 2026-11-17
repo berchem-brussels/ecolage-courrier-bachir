@@ -1,4 +1,4 @@
-# Architecture, version 0.3.1
+# Architecture, version 0.4.0
 
 The French text is authoritative. This translation was made by Claude and still needs review (gap E13).
 
@@ -78,4 +78,15 @@ New in 0.2.9: « sheet against real screen » audit (`frontend/help-capture/audi
 - **Assignment**: the secretariat assigns (handling service, optional named agent, optional services in copy; reason required when the service changes); the service head changes the agent of their service; any member of the handling service returns the mail to the secretariat with a reason. Every change goes to the history and the audit log, without subject or sender.
 - **Mailboxes**: `GET /api/mails?box=` and `GET /api/mails/counts`, same right as the mail record, cancelled mail excluded.
 - **Notifications**: number and nature only; hidden when the mail can no longer be read.
-- **Routes**: 84 in total, 77 MCP tools exposed.
+- **Routes**: 95 in total, 89 MCP tools exposed (84 and 77 up to 0.3.1).
+
+## Mail processing (0.4.0)
+
+- **Effective status**: the `mails` table keeps `status` (`enregistre`, `annule`); progress is in `processing` (`none`, `en_traitement`, `clos`). The API returns the effective status through the `STATUS_SQL` expression (`services/access.js`): `enregistre`, `en_traitement`, `clos`, `annule` (deviation E50).
+- **Service** `services/processing.js`: `take`, `close`, `reopen`, `addComment`, `comments`, `timeline`, `history`. Rights come from `access.mailRights` (`take`, `close`, `reopen`, `comment`) and the server rechecks them on every call; the screen only shows what the record allows. Forbidden transitions answer 409 (`TRANSITION`, `CLOSED`).
+- **Tables** (migration 010): `close_reasons` (reasons per entity), `mail_events` (taking charge, closing, reopening), `mail_comments` (scope `service` or `entity`, never edited), processing columns of `mails`, `notifications` rebuilt for the kinds `commente`, `clos`, `rouvert`.
+- **Routes**: `/api/mails/:id/take`, `close`, `reopen`, `comments` (GET, POST), `history` (`routes/mail-processing.js`) and `/api/close-reasons`. Every route has its MCP tool.
+- **Audit log**: number, scope and identifiers only; never the text of a comment, the subject or the sender.
+- **Interface**: `components/TraitementCard.tsx` (record panel), `components/CloseReasonsCard.tsx` (types page), the "Clos" tab of `BannettesPage`.
+
+95 routes in total, 89 MCP tools exposed (78 tools, including those that take two calls).

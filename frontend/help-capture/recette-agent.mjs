@@ -1,12 +1,13 @@
 /**
- * Recette de l'attribution (version 0.3.0) avec de vrais comptes d'agent, de responsable et de secrétariat, à lancer depuis un poste
+ * Recette de l'attribution (0.3.0) et du traitement (0.4.0) avec de vrais comptes d'agent, de responsable et de secrétariat, à lancer depuis un poste
  * qui atteint l'instance. Variables d'environnement de la fenêtre PowerShell, jamais écrites dans le script :
  *   RECETTE_URL, RECETTE_USER, RECETTE_PASSWORD  comme recette.mjs ; le compte doit tenir le registre de l'entité AC
  *   RECETTE_HEADLESS  1 pour ne pas afficher le navigateur
  * Ce que le script écrit sur l'instance d'acceptance, et défait à la fin même en cas d'échec :
  *   - trois comptes de test (agent du service A, agent du service B, responsable du service A), mot de passe aléatoire jamais affiché,
  *     désactivés à la fin ;
- *   - un courrier fictif, attribué, renvoyé, réattribué, puis annulé avec un motif : son numéro reste au registre, marqué « annulé ».
+ *   - un courrier fictif, attribué, renvoyé, réattribué, pris en charge, commenté, clos, rouvert, puis annulé avec un motif :
+ *     son numéro reste au registre, marqué « annulé ».
  * Résultat : une ligne OK ou ÉCHEC par contrôle et un rapport rapport-agent.txt.
  */
 import { chromium } from 'playwright';
@@ -117,13 +118,13 @@ try {
     await A.page.goto(`${BASE}/`); await A.page.waitForSelector('h1'); await pause(1200);
     ok('3. Un agent arrive sur les Bannettes', /\/bannettes/.test(A.page.url()), A.page.url().replace(BASE, ''));
     const tabs = await A.page.locator('[role=tab]').allInnerTexts();
-    ok('3. Onglets de l’agent : Mon service, Moi, En copie ; aucun onglet du secrétariat', tabs.length === 3 && /Mon service/.test(tabs[0]) && /Moi/.test(tabs[1]) && /En copie/.test(tabs[2]) && !tabs.some((t) => /attribuer|enregistrer/i.test(t)), tabs.join(' | '));
+    ok('3. Onglets de l’agent : Mon service, Moi, En copie, Clos ; aucun onglet du secrétariat', tabs.length === 4 && /Mon service/.test(tabs[0]) && /Moi/.test(tabs[1]) && /En copie/.test(tabs[2]) && /Clos/.test(tabs[3]) && !tabs.some((t) => /attribuer|enregistrer/i.test(t)), tabs.join(' | '));
     ok('3. Le courrier est dans « Mon service »', (await text(A.page)).includes(mailNumber));
     ok('3. Le menu de l’agent n’affiche ni registre ni file « À enregistrer »', !/Registre des entrées|À enregistrer/.test(await A.page.locator('nav').innerText()));
     await A.page.locator('.ant-table-row', { hasText: mailNumber }).click();
     await A.page.waitForSelector('.ant-drawer:visible'); await pause(1500);
     const d = await A.page.locator('.ant-drawer').innerText();
-    ok('3. Fiche en lecture seule : message, objet lisible, aucun bouton de correction ni d’annulation', /Vous pouvez lire ce courrier/.test(d) && d.includes(`recette automatique ${TAG}`) && (await A.page.locator('.ant-drawer button:has-text("Annuler cet enregistrement")').count()) === 0 && (await A.page.locator('.ant-drawer button[type=submit]').count()) === 0);
+    ok('3. Fiche en lecture seule : message, objet lisible, aucun bouton de correction ni d’annulation (seul le commentaire du service reste permis)', /Vous pouvez lire ce courrier/.test(d) && d.includes(`recette automatique ${TAG}`) && (await A.page.locator('.ant-drawer button:has-text("Annuler cet enregistrement")').count()) === 0 && (await A.page.locator('.ant-drawer button[type=submit]:not(:has-text("Ajouter le commentaire"))').count()) === 0);
     ok('3. Cadre « Attribution » : service traitant, service en copie ; aucun formulaire d’attribution', d.includes(svcA.name_fr) && d.includes(svcB.name_fr) && !/Attribuer\b/.test(await A.page.locator('.ant-drawer button').allInnerTexts().then((t) => t.join('|'))));
     ok('3. Le bouton « Renvoyer au secrétariat » est proposé', (await A.page.locator('.ant-drawer button:has-text("Renvoyer au secrétariat")').count()) === 1);
     await A.page.screenshot({ path: 'agent-fiche.png' });
@@ -184,6 +185,53 @@ try {
     ok('6. L’agent B voit le courrier dans « Moi »', (await B.api('GET', '/api/mails?box=moi')).body.data.some((m) => m.id === mailId));
     const aud = await admin.api('GET', '/api/consultations?limit=5');
     ok('6. Le journal des consultations répond selon le rôle (refusé sans rôle d’auditeur)', [200, 403].includes(aud.status), `HTTP ${aud.status}`);
+  });
+
+  // ------------------------------------------------------------------ traitement (0.4.0)
+  await step('Traitement', async () => {
+    const reasons = (await B.api('GET', `/api/close-reasons?entity_id=${ac.id}&is_active=1&limit=200`)).body.data;
+    ok('9. Les motifs de clôture de l’entité sont lisibles par un agent', reasons.length >= 4, `${reasons.length} motifs`);
+    const early = await B.api('POST', `/api/mails/${mailId}/close`, { close_reason_id: reasons[0].id });
+    ok('9. Clôture avant la prise en charge refusée (409)', early.status === 409, `HTTP ${early.status}`);
+    ok('9. Un agent d’un autre service ne prend pas en charge (403)', (await A.api('POST', `/api/mails/${mailId}/take`, {})).status === 403);
+    ok('9. Le responsable d’un autre service ne prend pas en charge (403)', (await C.api('POST', `/api/mails/${mailId}/take`, {})).status === 403);
+    ok('9. Le secrétariat ne prend pas en charge à la place du service (403)', (await admin.api('POST', `/api/mails/${mailId}/take`, {})).status === 403);
+
+    await B.page.goto(`${BASE}/bannettes`); await B.page.waitForSelector('h1'); await pause(1500);
+    await B.page.locator('.ant-table-row', { hasText: mailNumber }).click();
+    await B.page.waitForSelector('.ant-drawer:visible'); await pause(1500);
+    const d = await B.page.locator('.ant-drawer').innerText();
+    ok('9. Fiche : cadre « Traitement », bouton « Prendre en charge », aucun bouton de clôture', /Traitement/.test(d) && (await B.page.locator('.ant-drawer button:has-text("Prendre en charge")').count()) === 1 && (await B.page.locator('.ant-drawer button:has-text("Clore le courrier")').count()) === 0);
+    await B.page.locator('.ant-drawer button:has-text("Prendre en charge")').click(); await pause(1800);
+    const taken = await B.api('GET', `/api/mails/${mailId}`);
+    ok('9. Après le clic : « en traitement », avec le nom de l’agent', taken.body.data.status === 'en_traitement' && taken.body.data.taken_by === accounts.agentB.id);
+    ok('9. Le bouton de clôture apparaît, celui de prise en charge disparaît', (await B.page.locator('.ant-drawer button:has-text("Clore le courrier")').count()) === 1 && (await B.page.locator('.ant-drawer button:has-text("Prendre en charge")').count()) === 0);
+    await B.page.screenshot({ path: 'agent-traitement.png' });
+    await B.page.keyboard.press('Escape'); await pause(300);
+
+    const own = await B.api('POST', `/api/mails/${mailId}/comments`, { scope: 'service', body: `Commentaire fictif du service ${TAG}` });
+    ok('9. L’agent nommé commente pour son service', own.status === 201, `HTTP ${own.status}`);
+    ok('9. Un commentaire pour toute l’entité', (await B.api('POST', `/api/mails/${mailId}/comments`, { scope: 'entity', body: `Commentaire fictif de l’entité ${TAG}` })).status === 201);
+    ok('9. Le service A, étranger au courrier, ne lit ni la fiche ni les commentaires (403)', (await A.api('GET', `/api/mails/${mailId}/comments`)).status === 403);
+    const seen = (await admin.api('GET', `/api/mails/${mailId}/comments`)).body.data;
+    ok('9. Le secrétariat lit les deux commentaires', seen.length === 2);
+    const noEdit = await B.api('PUT', `/api/mails/${mailId}/comments/${own.body.data.id}`, { body: 'Modifié' });
+    ok('9. Un commentaire ne se modifie pas (404)', noEdit.status === 404, `HTTP ${noEdit.status}`);
+
+    ok('9. Un collègue non nommé ne clôt pas (403)', (await C.api('POST', `/api/mails/${mailId}/close`, { close_reason_id: reasons[0].id })).status === 403);
+    const cl = await B.api('POST', `/api/mails/${mailId}/close`, { close_reason_id: reasons[0].id, note: 'Clôture fictive de recette' });
+    ok('9. L’agent nommé clôt avec un motif de la liste', cl.status === 200 && cl.body.data.status === 'clos', `HTTP ${cl.status}`);
+    ok('9. Le courrier a quitté « Moi » et se trouve dans « Clos »', !(await B.api('GET', '/api/mails?box=moi&limit=200')).body.data.some((m) => m.id === mailId) && (await B.api('GET', '/api/mails?box=clos&limit=200')).body.data.some((m) => m.id === mailId));
+    ok('9. Le secrétariat reçoit la notification « clos »', (await admin.api('GET', '/api/notifications?unread=true')).body.data.some((n) => n.mail_id === mailId && n.kind === 'clos'));
+    ok('9. Un courrier clos refuse l’attribution (409)', (await admin.api('PUT', `/api/mails/${mailId}/attribution`, { service_id: svcA.id, reason: 'essai' })).status === 409);
+    ok('9. L’agent ne rouvre pas (403)', (await B.api('POST', `/api/mails/${mailId}/reopen`, { reason: 'essai' })).status === 403);
+    ok('9. Réouverture sans motif refusée (400)', (await admin.api('POST', `/api/mails/${mailId}/reopen`, {})).status === 400);
+    const re = await admin.api('POST', `/api/mails/${mailId}/reopen`, { reason: 'Réouverture fictive de recette' });
+    ok('9. Le secrétariat rouvre avec un motif : retour « en traitement »', re.status === 200 && re.body.data.status === 'en_traitement', `HTTP ${re.status}`);
+    ok('9. L’agent nommé reçoit la notification « rouvert »', (await B.api('GET', '/api/notifications?unread=true')).body.data.some((n) => n.mail_id === mailId && n.kind === 'rouvert'));
+    const h = (await admin.api('GET', `/api/mails/${mailId}/history`)).body.data;
+    ok('9. L’historique réunit enregistrement, attribution, prise en charge, commentaire, clôture et réouverture', ['enregistrement', 'attribution', 'prise_en_charge', 'commentaire', 'cloture', 'reouverture'].every((k) => h.some((e) => e.type === k)));
+    ok('9. Ni objet ni expéditeur dans l’historique', !JSON.stringify(h).includes(`Courrier fictif de recette automatique ${TAG}`));
   });
 
   // ------------------------------------------------------------------ cloisonnement par l'autre entité

@@ -21,18 +21,23 @@ const attribution = require('./attribution');
 const { todayInInstance } = require('../instance');
 const pieces = require('./pieces');
 const consultations = require('./consultations');
+const processing = require('./processing');
 
 const COLUMNS = `m.id, m.number, m.entity_id, e.code AS entity_code, m.register_id, m.year, m.seq, m.received_date, m.registered_at,
   m.channel, m.tracking_number, m.sender_contact_id, c.kind AS sender_kind, c.name AS sender_name, c.first_name AS sender_first_name,
   c.organisation AS sender_organisation, c.is_demo AS sender_is_demo, m.addressee_name, m.subject, m.type_id,
   t.label_fr AS type_label_fr, t.label_nl AS type_label_nl, m.lang, m.urgency, m.sender_reference, m.document_date, m.pieces_count,
-  m.notes, m.status, m.cancel_reason, m.service_id, sv.name_fr AS service_name_fr, sv.name_nl AS service_name_nl,
+  m.notes, ${access.STATUS_SQL} AS status, m.cancel_reason, m.service_id, sv.name_fr AS service_name_fr, sv.name_nl AS service_name_nl,
   m.agent_id, ag.first_name AS agent_first_name, ag.last_name AS agent_last_name, m.attributed_at, m.return_reason, m.returned_at,
   (SELECT COUNT(*) FROM pieces p WHERE p.mail_id = m.id AND p.status = 'rattachee') AS files_count, m.created_by, u.first_name AS created_by_first_name, u.last_name AS created_by_last_name,
+  m.processing, m.taken_by, tk.first_name AS taken_by_first_name, tk.last_name AS taken_by_last_name, m.taken_at,
+  m.closed_by, cb.first_name AS closed_by_first_name, cb.last_name AS closed_by_last_name, m.closed_at, m.close_reason_id,
+  cr.label_fr AS close_reason_label_fr, cr.label_nl AS close_reason_label_nl, m.close_note,
   m.created_at, m.updated_at`;
 const FROM = `FROM mails m JOIN entities e ON e.id = m.entity_id JOIN contacts c ON c.id = m.sender_contact_id
   JOIN mail_types t ON t.id = m.type_id LEFT JOIN users u ON u.id = m.created_by
-  LEFT JOIN org_services sv ON sv.id = m.service_id LEFT JOIN users ag ON ag.id = m.agent_id`;
+  LEFT JOIN org_services sv ON sv.id = m.service_id LEFT JOIN users ag ON ag.id = m.agent_id
+  LEFT JOIN users tk ON tk.id = m.taken_by LEFT JOIN users cb ON cb.id = m.closed_by LEFT JOIN close_reasons cr ON cr.id = m.close_reason_id`;
 
 function load(id) {
   const m = getDb().prepare(`SELECT ${COLUMNS} ${FROM} WHERE m.id = ?`).get(id);
@@ -56,7 +61,7 @@ function list(user, { limit = 50, offset = 0, q, entity_id, status, year, channe
     where.push(`m.entity_id IN (${entities.map(() => '?').join(', ')})`);
     params.push(...entities);
   }
-  if (status) { where.push('m.status = ?'); params.push(status); }
+  if (status) { where.push(`${access.STATUS_SQL} = ?`); params.push(status); }
   if (year) { where.push('m.year = ?'); params.push(year); }
   if (channel) { where.push('m.channel = ?'); params.push(channel); }
   if (q) {
@@ -86,7 +91,8 @@ function readable(user, id) {
 
 /** Courrier avec ses services en copie, son historique d'attribution et les actions permises à la personne. */
 function withAttribution(user, m) {
-  return { ...m, copies: attribution.copiesOf(m.id), attributions: attribution.history(m.id), rights: access.mailRights(user, m) };
+  return { ...m, copies: attribution.copiesOf(m.id), attributions: attribution.history(m.id), rights: access.mailRights(user, m),
+    comments: processing.commentsOf(user, m), timeline: processing.timeline(user, m) };
 }
 
 /** Vue de la fiche sans inscription au journal : sert après une écriture (attribution, renvoi). */
@@ -179,4 +185,4 @@ function cancel(user, id, reason, channel = 'api') {
   return withAttribution(user, load(id));
 }
 
-module.exports = { list, get, view, create, update, cancel };
+module.exports = { list, get, view, create, update, cancel, loadRow: load };

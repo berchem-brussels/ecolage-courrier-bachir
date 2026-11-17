@@ -1,4 +1,4 @@
-# Architectuur, versie 0.3.1
+# Architectuur, versie 0.4.0
 
 De Franse tekst is rechtsgeldig. Deze vertaling werd door Claude gemaakt en moet nog worden nagelezen (afwijking E13).
 
@@ -78,4 +78,15 @@ Nieuw in 0.2.9: audit « fiche tegenover echt scherm » (`frontend/help-capture/
 - **Toewijzing**: het secretariaat wijst toe (behandelende dienst, optionele bediende, optionele diensten in kopie; reden verplicht als de dienst wijzigt); het diensthoofd wijzigt de bediende van zijn dienst; elk lid van de behandelende dienst stuurt met een reden terug naar het secretariaat. Elke wijziging komt in de geschiedenis en in het auditlogboek, zonder onderwerp of afzender.
 - **Postbakken**: `GET /api/mails?box=` en `GET /api/mails/counts`, hetzelfde recht als de fiche, geannuleerde brieven uitgesloten.
 - **Meldingen**: nummer en aard enkel; weggelaten als de brief niet meer leesbaar is.
-- **Routes**: 84 in totaal, 77 MCP-tools beschikbaar.
+- **Routes**: 95 in totaal, 89 MCP-tools beschikbaar (84 en 77 tot 0.3.1).
+
+## Verwerking van de post (0.4.0)
+
+- **Effectieve status**: de tabel `mails` bewaart `status` (`enregistre`, `annule`); de vordering zit in `processing` (`none`, `en_traitement`, `clos`). De API geeft de effectieve status via de uitdrukking `STATUS_SQL` (`services/access.js`): `enregistre`, `en_traitement`, `clos`, `annule` (afwijking E50).
+- **Dienst** `services/processing.js`: `take`, `close`, `reopen`, `addComment`, `comments`, `timeline`, `history`. De rechten komen van `access.mailRights` (`take`, `close`, `reopen`, `comment`) en de server controleert ze bij elke oproep opnieuw; het scherm toont enkel wat het dossier toelaat. Verboden overgangen antwoorden 409 (`TRANSITION`, `CLOSED`).
+- **Tabellen** (migratie 010): `close_reasons` (redenen per entiteit), `mail_events` (in behandeling nemen, afsluiten, heropenen), `mail_comments` (bereik `service` of `entity`, nooit gewijzigd), verwerkingskolommen van `mails`, `notifications` herbouwd voor de soorten `commente`, `clos`, `rouvert`.
+- **Routes**: `/api/mails/:id/take`, `close`, `reopen`, `comments` (GET, POST), `history` (`routes/mail-processing.js`) en `/api/close-reasons`. Elke route heeft haar MCP-tool.
+- **Auditlogboek**: enkel nummer, bereik en identificatoren; nooit de tekst van een opmerking, het onderwerp of de afzender.
+- **Interface**: `components/TraitementCard.tsx` (kader van het dossier), `components/CloseReasonsCard.tsx` (pagina van de soorten), het tabblad « Clos » van `BannettesPage`.
+
+95 routes in totaal, 89 MCP-tools beschikbaar (78 tools, waaronder die met twee oproepen).

@@ -8,6 +8,7 @@ const topic: HelpTopic = {
     { fr: "[[2]] La liste montre le courrier de la bannette choisie. Un clic sur une ligne ouvre la fiche du courrier, avec son attribution.", nl: "[[2]] De lijst toont de post van het gekozen bakje. Een klik op een rij opent de fiche van de brief, met zijn toewijzing." },
     { fr: "Si vous avez un rôle dans les deux entités, des boutons au-dessus de la liste choisissent l'entité dont vous voyez les bannettes.", nl: "Als u een rol in beide entiteiten hebt, kiezen knoppen boven de lijst van welke entiteit u de bakjes ziet." },
     { fr: "Un clic sur {{box.a_enregistrer}} ouvre la file des fichiers déposés, à enregistrer.", nl: "Een klik op {{box.a_enregistrer}} opent de wachtrij van de neergelegde bestanden, die geregistreerd moeten worden." },
+    { fr: "Les agents et les responsables voient aussi l'onglet {{box.clos}} : il garde les courriers clos de leur service, qui ne figurent plus dans les autres onglets.", nl: "Bedienden en diensthoofden zien ook het tabblad {{box.clos}}: daarin staan de afgesloten brieven van hun dienst, die niet meer in de andere tabbladen staan." },
   ],
   overviewShot: "bannettes-overview",
   procedures: [
@@ -73,6 +74,35 @@ const topic: HelpTopic = {
         { fr: "Cliquez sur {{notif.mark_all}} pour vider le compteur sans ouvrir chaque courrier.", nl: "Klik op {{notif.mark_all}} om de teller te legen zonder elke brief te openen." },
       ],
       result: { fr: "Une notification donne seulement la nature de l'événement et le numéro du courrier, jamais son objet. Une notification d'un courrier que vous ne pouvez plus lire disparaît.", nl: "Een melding geeft enkel de aard van de gebeurtenis en het nummer van de brief, nooit het onderwerp. Een melding van een brief die u niet meer kunt lezen verdwijnt." },
+    },
+    {
+      title: { fr: "Prendre un courrier en charge et le clore", nl: "Een brief in behandeling nemen en afsluiten" },
+      when: { fr: "Quand un courrier vous est confié personnellement et que vous le traitez. La prise en charge revient à la personne nommée pour le courrier ; la clôture revient à cette personne ou au responsable du service.", nl: "Wanneer een brief u persoonlijk is toevertrouwd en u hem behandelt. De inbehandelingname komt toe aan de persoon die voor de brief is aangeduid; de afsluiting aan die persoon of aan het diensthoofd." },
+      steps: [
+        { fr: "Ouvrez {{nav.bannettes}} dans le menu, puis l'onglet {{box.moi}}.", nl: "Open {{nav.bannettes}} in het menu en daarna het tabblad {{box.moi}}." },
+        { fr: "Cliquez sur la ligne du courrier : la fiche s'ouvre à droite.", nl: "Klik op de rij van de brief: de fiche opent rechts." },
+        { fr: "Dans le cadre {{treat.title}}, cliquez sur {{treat.take}}. Votre nom apparaît sur la fiche et le courrier passe en traitement.", nl: "Klik in het kader {{treat.title}} op {{treat.take}}. Uw naam verschijnt op de fiche en de brief gaat in behandeling." },
+        { fr: "Quand le traitement est terminé, choisissez le {{treat.close_reason}}, ajoutez si vous le souhaitez une {{treat.close.note}}, puis cliquez sur {{treat.close}}.", nl: "Wanneer de behandeling afgerond is, kiest u de {{treat.close_reason}}, voegt u desgewenst een {{treat.close.note}} toe en klikt u op {{treat.close}}." },
+      ],
+      result: { fr: "Le courrier est clos. Il quitte les onglets {{box.mon_service}} et {{box.moi}} et se retrouve dans l'onglet {{box.clos}}. Le secrétariat reçoit une notification, et chaque étape est inscrite à l'historique complet de la fiche.", nl: "De brief is afgesloten. Hij verlaat de tabbladen {{box.mon_service}} en {{box.moi}} en staat in het tabblad {{box.clos}}. Het secretariaat ontvangt een melding en elke stap staat in de volledige geschiedenis van de fiche." },
+      errors: [
+        { problem: { fr: "Je ne vois pas le bouton de prise en charge.", nl: "Ik zie de knop om in behandeling te nemen niet." }, solution: { fr: "Seule la personne nommée pour ce courrier peut le prendre en charge. Demandez au responsable du service ou au secrétariat de vous nommer dans le cadre {{attr.title}}.", nl: "Enkel de voor deze brief aangeduide persoon kan hem in behandeling nemen. Vraag het diensthoofd of het secretariaat u aan te duiden in het kader {{attr.title}}." } },
+        { problem: { fr: "Je veux modifier le courrier alors qu'il est clos.", nl: "Ik wil de brief wijzigen terwijl hij afgesloten is." }, solution: { fr: "Un courrier clos se rouvre d'abord : cette action revient au secrétariat et au gestionnaire du registre, avec un motif.", nl: "Een afgesloten brief wordt eerst heropend: dat komt toe aan het secretariaat en aan de beheerder van het register, met een reden." } },
+      ],
+      roles: ["agent", "chef_service"],
+    },
+    {
+      title: { fr: "Commenter un courrier", nl: "Een opmerking bij een brief plaatsen" },
+      when: { fr: "Quand vous voulez laisser une remarque sur le traitement : une précision pour votre service, ou une information pour toute l'entité.", nl: "Wanneer u een opmerking over de behandeling wilt achterlaten: een toelichting voor uw dienst of een mededeling voor de hele entiteit." },
+      steps: [
+        { fr: "Ouvrez la fiche du courrier depuis {{nav.bannettes}}.", nl: "Open de fiche van de brief via {{nav.bannettes}}." },
+        { fr: "Dans le cadre {{treat.title}}, sous {{treat.comments}}, choisissez {{treat.comment.scope}} : {{treat.scope.service}} ou {{treat.scope.entity}}. Le choix est à refaire à chaque commentaire.", nl: "Kies in het kader {{treat.title}}, onder {{treat.comments}}, {{treat.comment.scope}}: {{treat.scope.service}} of {{treat.scope.entity}}. De keuze moet bij elke opmerking opnieuw gemaakt worden." },
+        { fr: "Écrivez {{treat.comment.body}}, puis cliquez sur {{treat.comment.add}}.", nl: "Schrijf {{treat.comment.body}} en klik daarna op {{treat.comment.add}}." },
+      ],
+      result: { fr: "Le commentaire apparaît dans la liste et dans l'historique. Il ne se modifie pas et ne se supprime pas : on le complète par un autre. L'agent nommé reçoit une notification, sans le texte du commentaire.", nl: "De opmerking verschijnt in de lijst en in de geschiedenis. Ze kan niet gewijzigd of gewist worden: men vult ze aan met een andere. De aangeduide bediende ontvangt een melding, zonder de tekst van de opmerking." },
+      errors: [
+        { problem: { fr: "Un collègue d'un autre service ne voit pas mon commentaire.", nl: "Een collega van een andere dienst ziet mijn opmerking niet." }, solution: { fr: "Un commentaire réservé au service traitant n'est lu que par ce service et par le registre. Choisissez {{treat.scope.entity}} pour qu'il soit lu de toutes les personnes qui voient le courrier.", nl: "Een opmerking voor de behandelende dienst wordt enkel door die dienst en het register gelezen. Kies {{treat.scope.entity}} zodat ze gelezen wordt door iedereen die de brief ziet." } },
+      ],
     },
   ],
   faq: [

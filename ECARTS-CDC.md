@@ -1,6 +1,6 @@
 # Écarts mesurés
 
-Application courrier · version 0.3.1 · écarts au 17/11/2026 (version livrée, non installée)
+Application courrier · version 0.4.0 · écarts au 17/11/2026 (version livrée, non installée)
 
 Écarts entre le code livré, le cahier des charges (CDC, version 0.10) et le standard v3.2. Numérotation continue d'une version à l'autre ; un écart clos reste dans la liste avec sa date.
 
@@ -39,12 +39,19 @@ Application courrier · version 0.3.1 · écarts au 17/11/2026 (version livrée,
 | E46 | CDC section 5 (service parent) | La hiérarchie des services n'est pas appliquée : un agent d'un service parent ne voit pas le courrier de ses sous-services ; un service n'a pas de responsable désigné autrement que par le rôle de responsable de ses membres | À trancher avec le secrétariat (le parent voit-il les sous-services ?) avant l'étape 5 |
 | E47 | CDC CE-062 | Le responsable de service change l'agent dans son service mais ne peut pas déplacer le courrier vers un autre service (il le renvoie au secrétariat) ; c'est la lecture stricte de CE-062, à confirmer | Recette avec l'utilisatrice clé |
 | E48 | Standard 6.2 (droits remplaçables par l'application Droits) | Le rattachement des personnes aux services (`user_services`) est tenu dans l'application, comme les rôles par entité ; il se lit par `services/access.js` seulement | Remplacement avec l'application Droits |
+| E50 | CDC 6.1 (statuts), CE-010 | Le statut stocké reste `enregistre` ou `annule` ; l'avancement du traitement est dans la colonne `processing` et l'API rend le statut effectif (`enregistre`, `en_traitement`, `clos`, `annule`). « Attribué » n'est pas un statut propre : c'est un courrier enregistré qui a un service traitant. Choix pour ne pas reconstruire la table des courriers (clés étrangères RESTRICT, sql.js) | Statut propre au passage à PostgreSQL (étape 8) |
+| E51 | CDC CE-079 | Les consultations de la fiche n'apparaissent dans l'historique que pour le secrétariat et le gestionnaire du registre, pas pour les agents ; 50 au plus | À confirmer avec l'utilisatrice clé (action 31) |
+| E52 | CDC 6.1 (En traitement → Attribué) | Le retour à « attribué » n'a pas d'action propre : il vient d'un renvoi, d'une réattribution ou d'un changement d'agent, qui effacent la prise en charge | À confirmer à la recette |
+| E53 | Standard 8, tests statiques | Le contrôle de la requête SQL sans interpolation de valeur tolère désormais `STATUS_SQL` (expression constante du statut effectif, sans valeur venue de l'extérieur) ; les autres interpolations restent limitées à la liste blanche | À signaler à Renaud avec l'action 32 |
+| E54 | CDC CE-120 | Bannette « Clos » ajoutée pour les agents et responsables : sans elle un courrier clos n'est plus retrouvable que par le registre. Non prévue par CE-120 | À confirmer avec l'utilisatrice clé |
+| E55 | CDC CE-070, CE-071 | Seul l'agent nommé prend en charge (réponse du conducteur du 17/11/2026) : sans agent nommé, personne ne le fait ; un commentaire de service est lu par le service traitant et par le registre de l'entité | À confirmer avec l'utilisatrice clé |
 
 ## 2. Écarts clos
 
 | # | Exigence | Écart | Clôture |
 | --- | --- | --- | --- |
-| E43 | GITHUB.md, section 4 (archive publiée = archive installée) | Après l'archive de la 0.2.9, un correctif de trois fichiers d'outils hors image (`demo-server.cjs`, `recette.mjs`, `recette-faq.mjs`) a été versé au dépôt (commit `82ca4fa`) ; le code de l'étiquette `v0.2.9` différait donc de l'archive publiée | 17/11/2026, 0.3.0 : les trois fichiers sont dans l'archive ; `demo-server.cjs` corrigé (chemin vérifié, 6 adresses d'attaque essayées), `recette.mjs` et `recette-faq.mjs` reconstruits car l'archive de départ ne contenait pas la version du dépôt (titre d'essai unique, attente après la connexion) : à comparer avec le dépôt avant la fusion |
+| E49 | GITHUB.md, section 4 (archive publiée = archive installée) | Le code de l'étiquette `v0.3.1` différait de l'archive publiée par deux fichiers d'outils hors image (`demo-server.cjs`, `recette-faq.mjs`), laissés dans leur version du dépôt | 17/11/2026, 0.4.0 : Claude a récupéré les trois fichiers dans le dépôt public (étiquette `v0.3.1`) et les a mis dans l'archive ; `demo-server.cjs` et `recette-faq.mjs` identiques au dépôt, `recette.mjs` identique aussi avant la seule mise à jour de sa version attendue (0.4.0) |
+| E43 | GITHUB.md, section 4 (archive publiée = archive installée) | Après l'archive de la 0.2.9, un correctif de trois fichiers d'outils hors image (`demo-server.cjs`, `recette.mjs`, `recette-faq.mjs`) a été versé au dépôt (commit `82ca4fa`) ; le code de l'étiquette `v0.2.9` différait donc de l'archive publiée | 17/11/2026, 0.3.0 : les trois fichiers sont dans l'archive ; `demo-server.cjs` corrigé (chemin vérifié, 6 adresses d'attaque essayées), `recette.mjs` et `recette-faq.mjs` reconstruits car l'archive de départ ne contenait pas la version du dépôt (titre d'essai unique, attente après la connexion) : comparés avec le dépôt avant la fusion : le dépôt a gardé ses versions de `demo-server.cjs` et de `recette-faq.mjs` (voir E49) |
 | E4 | CL-003 | Noms NL des services proposés par Claude et marqués « à valider » | 13/10/2026 : noms validés tels quels par le conducteur du projet ; mention retirée en 0.1.1 |
 | E8 | Standard 4.3 et 10.2 | `npm audit` de l'interface : 3 vulnérabilités modérées dans `react-router-dom` 6 | 13/10/2026 : accord de Renaud ; `react-router-dom` 7.18.4 en 0.1.1, 0 vulnérabilité. Écart au stack consigné : la section 4.3 du standard cite `^6.28.0` |
 | E11 | CE-020, CE-025, CE-124, CG-003, CG-005 | Aucune pièce, pas de file « À enregistrer », pas de journal des consultations | 20/10/2026 : livrés en 0.2.0 |

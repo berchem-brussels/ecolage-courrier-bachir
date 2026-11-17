@@ -1,15 +1,34 @@
 # Historique des versions
 
-Application courrier · version 0.3.1 · historique au 17/11/2026
+Application courrier · version 0.4.0 · historique au 17/11/2026
 
-## 0.3.1 du 17/11/2026, livrée, à installer et recetter sur NIXUS
+## 0.4.0 du 17/11/2026, livrée, à installer et recetter sur NIXUS
+
+Étape 4 du planning : traitement (CE-070, CE-071, CE-073, CE-079). Migration 010, aucune dépendance changée, construction sans `--no-cache`.
+
+- **Prise en charge** : l'agent nommé du courrier la fait en un clic ; son nom apparaît sur la fiche et dans les listes. Un collègue, le responsable, le secrétariat, l'auditeur ou l'administrateur reçoivent 403 ; un courrier non attribué, annulé ou déjà pris reçoit 409.
+- **Clôture** : l'agent nommé ou le responsable du service, depuis « en traitement » seulement, avec un motif actif de l'entité du courrier et une note facultative ; le secrétariat et le gestionnaire du registre sont notifiés. **Réouverture** : secrétariat et gestionnaire avec un motif obligatoire ; le courrier revient « en traitement » chez la personne qui l'avait pris en charge, qui est notifiée.
+- **Motifs de clôture** : table `close_reasons` par entité, quatre motifs par défaut (répondu, traité sans réponse, transmis à l'extérieur, classé sans suite) posés par la migration et à la création d'une entité ; gérés par le gestionnaire du registre ou l'administrateur dans Administration › Types de courrier ; un motif désactivé reste lisible sur les courriers déjà clos.
+- **Commentaires** : portée « service traitant » ou « entité » choisie à chaque commentaire, sans valeur par défaut ; ni modification ni suppression ; le texte n'entre jamais au journal d'audit ni dans la cloche.
+- **Historique complet** : enregistrement, attributions, prise en charge, commentaires lisibles par la personne, clôtures, réouvertures, consultations (registre seulement). L'historique d'attribution a quitté le cadre « Attribution » pour le cadre « Traitement ».
+- **Attribution et traitement** : un changement d'agent ou de service, ou un renvoi, remet le courrier à « attribué » ; un courrier clos refuse l'attribution, le changement d'agent et le renvoi (409 `CLOSED`).
+- **Statut** : l'API rend `enregistre`, `en_traitement`, `clos` ou `annule` ; le filtre de statut du registre les connaît (E50). Bannette « Clos » pour les agents et responsables (E54) ; la cloche gagne les natures « commentaire », « clos » et « rouvert ».
+- **Interface** : cadre « Traitement » dans la fiche (`TraitementCard`), motifs de clôture dans la page des types (`CloseReasonsCard`), couleurs de statut communes (`STATUS_COLOR`), textes FR et NL, sept explications de champs, trois procédures d'aide (Bannettes : prendre en charge et clore, commenter ; Registre : rouvrir ; Types : motifs de clôture).
+- **API et MCP** : 11 routes (`POST /api/mails/:id/take`, `close`, `reopen`, `GET` et `POST /api/mails/:id/comments`, `GET /api/mails/:id/history`, cinq routes de `/api/close-reasons`), 11 outils MCP (95 routes, 89 outils exposés).
+- **Tests** : `traitement.test.js` (25 tests : droits, transitions, motifs, commentaires, historique, filtre, cloisonnement, MCP, migration 010 sur une base de la 0.3.1) ; `traitement.test.tsx` (16 tests). Trois tests existants adaptés : compteurs avec la clé `clos`, parité des routes avec `close-reasons`, historique d'attribution déplacé ; le contrôle SQL statique tolère `STATUS_SQL` (E53).
+- **Scripts de recette** : `recette-agent.mjs` joue aussi le traitement (69 contrôles sur la démonstration, deux contrôles faux corrigés pendant la mise au point) ; `recette.mjs` attend la version 0.4.0 ; `audit-fiches.spec.ts` connaît l'absence de l'onglet « Clos » chez le compte de démonstration.
+- **Décomptes** : serveur 174 tests, 0 échec ; écrans 160 réussis et 1 test strict ignoré, 0 échec ; `help:check` 22 ; typage, accessibilité statique et construction à 0 erreur ; `npm audit --omit=dev` à 0 dans les deux dossiers ; `help:audit` réussi ; sur la démonstration : `recette.mjs` 38 contrôles, `recette-faq.mjs` 5 (deux passages), `recette-agent.mjs` 69 ; preuves d'échec 24 sur 24 (serveur) et 15 sur 15 (interface).
+- **Écarts** : E50 à E55 ouverts, E49 clos (`ECARTS-CDC.md`).
+
+## 0.3.1 du 17/11/2026, installée sur NIXUS, recettée par script et publiée sur GitHub le 17/11/2026
 
 Correction d'un cas de réattribution trouvé en jouant l'attribution avec de vrais comptes (`recette-agent.mjs`, sur l'instance de démonstration) après l'installation de la 0.3.0. Aucune migration, aucune dépendance changée, aucun changement d'écran ni d'aide : l'archive reprend la 0.3.0 et en diffère par cinq fichiers de code, de test et d'outil, plus les numéros de version et les documents.
 
 - **Réattribution au service qui était en copie** : le secrétariat renvoyait un courrier du service A au service B, qui l'avait en copie, et le serveur refusait (409 `SERVICE_INVALID`) parce qu'un service ne peut être traitant et en copie à la fois. Désormais, sans liste de copies donnée, le nouveau service traitant quitte la liste des copies ; une liste donnée qui le contient reste refusée. Cas courant : un service renvoie, le secrétariat réattribue à celui qui était informé.
 - **Nouveau test** (`attribution.test.js`, 31 tests dans le fichier) : réattribution au service en copie avec et sans liste, puis après un renvoi. Il échoue quand on retire la correction (preuve jouée : 1 test en échec).
 - **Nouveau script de recette** `frontend/help-capture/recette-agent.mjs` : crée trois comptes de test (agent du service A, agent du service B, responsable du service A, mot de passe aléatoire jamais affiché) et un courrier fictif, joue le parcours avec chacune de ces identités et celle du secrétariat (rien de lisible avant l'attribution, lecture seule de l'agent, nomination par le responsable, notifications et cloche, renvoi avec motif depuis l'écran, réattribution, cloisonnement de l'autre entité), puis annule le courrier avec un motif et désactive les comptes, même en cas d'échec. 45 contrôles conformes sur la démonstration ; il a trouvé le défaut ci-dessus.
-- **Décomptes** : serveur 149 tests, écrans 144 réussis et 1 test strict ignoré, `help:check` 22, `help:audit` réussi, `recette.mjs` 38 contrôles, `recette-faq.mjs` 5, `recette-agent.mjs` 45 ; preuves d'échec : 18 sur 18 (serveur), 8 sur 8 (interface).
+- **Décomptes** : serveur 149 tests, écrans 144 réussis et 1 test strict ignoré, `help:check` 22, `help:audit` réussi, `recette-faq.mjs` 5, preuves d'échec 18 sur 18 (serveur) et 8 sur 8 (interface). Sur la démonstration : `recette.mjs` 38 contrôles, `recette-agent.mjs` 45. **Sur NIXUS** : `recette.mjs` 38 contrôles conformes (dont aucune remarque de Chrome sur 13 écrans et fenêtres) et `recette-agent.mjs` 46 contrôles conformes, comptes de test désactivés et courrier fictif annulé à la fin.
+- **Publication** : demande de fusion n° 9 (commit `661ad9b`, 95 fichiers : 20 `A`, 75 `M`, aucun `D`), quatre contrôles verts (`tests` en 1 min 36 s, CodeQL), fusion `f766f1e`, étiquette `v0.3.1`, publication avec `courrier-v0_3_1.tar.gz` ; empreinte SHA-256 `249e5636…6b81` identique sur le PC, sur NIXUS, dans la publication et dans l'archive de Claude. Deux fichiers d'outils gardent dans le dépôt leur version validée par CodeQL, différente de celle de l'archive : voir l'écart E49.
 
 ## 0.3.0 du 17/11/2026, installée sur NIXUS le 17/11/2026, non publiée, remplacée par la 0.3.1
 
