@@ -1,6 +1,6 @@
 # Après déploiement
 
-Application courrier · version 0.2.7 · journal des déploiements au 03/11/2026
+Application courrier · version 0.2.9 · journal des déploiements au 17/11/2026
 
 Ce fichier reprend en tête les procédures sur NIXUS, puis un bloc par version déployée, la plus récente d'abord. Les commandes se donnent une à une dans la conversation, avec leur résultat attendu, et la suivante n'arrive qu'après le résultat de la précédente. Chaque commande dit sur quelle machine elle s'exécute.
 
@@ -46,19 +46,48 @@ Retour arrière : rejouer les étapes 3 à 11 avec l'archive précédente, rest�
 
 Faite le 13/10/2026 (bloc 0.1.0). La procédure complète est dans `NOTES_LIVRAISON_v0.1.0.md` de l'archive. Elle ne se rejoue pas : le dossier, le `.env`, les volumes et la tâche de sauvegarde existent.
 
-## 2. Version 0.2.7, préparée le 03/11/2026, à déployer
+## 2. Version 0.2.9, préparée le 17/11/2026, à déployer
 
 | Étape | Résultat relevé |
 | --- | --- |
-| Archive | `courrier-v0_2_7.tar.gz` : taille et empreinte annoncées dans le message de livraison |
+| Archive | `courrier-v0_2_9.tar.gz` : taille et empreinte annoncées dans le message de livraison |
 | Sauvegarde avant mise à jour | À relever |
-| Construction | `docker compose build` sans `--no-cache` (aucune dépendance changée) ; durée à relever |
-| Démarrage | Aucune migration ; `courrier-api Healthy`, version `0.2.7` |
-| Liste de contrôle à l'écran | À relever : voir `NOTES_LIVRAISON_v0.2.7.md` |
-| Remarques de Chrome (E23) | À relever : F12, onglet Issues |
-| Dépôt GitHub | À faire après la recette : branche `version/v0.2.7` |
+| Construction | `docker compose build` sans `--no-cache` ; durée à relever |
+| Démarrage | Aucune migration nouvelle ; `courrier-api Healthy`, version `0.2.9` |
+| Script de recette | À relever : `node recette-0.2.9.mjs`, 0 échec attendu |
+| Dépôt GitHub | À faire après la recette : branche `version/v0.2.9` depuis `main` (0.2.7), qui reprend aussi la 0.2.8 non publiée |
 
-## 3. Version 0.2.6, déployée, recettée et publiée le 03/11/2026
+## 3. Version 0.2.8, déployée le 17/11/2026, non publiée, remplacée par la 0.2.9
+
+| Étape | Résultat relevé |
+| --- | --- |
+| Archive | `courrier-v0_2_8.tar.gz`, 2 880 241 octets, même taille sur NIXUS (déposée par File Station) ; SHA-256 `f0075b6be949f678b484b3f23a6fc901ced8c4652fa245ecf3f69f4c81baca26` |
+| Sauvegarde avant mise à jour | `sauvegarde terminée, 43 sauvegardes conservées.` à 12:24:22 |
+| Construction | `docker compose build` sans `--no-cache` : 30 étapes sur 30, sans erreur ; 12:25:17 à 12:28:03, soit 2 min 46 s (164,6 s) ; contexte du frontend 2,80 Mo (captures) |
+| Migration et démarrage | `[DB] Migration 008_faq_locale appliquée`, `[APP] API 0.2.8 sur le port 3001` ; `courrier-api Healthy` en 61,6 s, `courrier-web Started` en 52,9 s ; les deux conteneurs `(healthy)` |
+| Version | `{"data":{"version":"0.2.8"},"meta":{"envelope":1,"version":"0.2.8"}}` |
+| Recette à la main | Conformes : `v0.2.8` et courriers conservés ; panneau du registre avec capture annotée, trois repères numérotés, marge des puces ; `/help#help-register` ; néerlandais ; `/help` sans redirection (nginx) ; FAQ : fenêtre d'ajout avec cinq champs expliqués, enregistrement, affichage dans le panneau du registre. Remarques de Chrome : « No issues detected » sur Enregistrer un courrier, Utilisateurs › Créer, Paramètres et Tickets › Signaler ; 1 erreur sur Services › Nouveau service |
+| Script de recette (PC du conducteur, Node v24.11.1, Chrome du poste) | 16 contrôles conformes sur 21 : version, panneau, marges, nginx (HTTP 200 pour `/help` et l'image JPEG), néerlandais, FAQ (création, correction, retrait sans suppression, disparition du panneau), clés brutes, parcours avec `#` (14 puis 9 fiches). En échec : image de « Créer un compte » (mauvaise procédure, corrigée en 0.2.9), Contacts › Nouveau contact (2 champs sans identifiant ni nom), Services › Nouveau service (`for="entity_ids"`), Entités et registres (aucun bouton « Modifier » : erreur de l'aide, corrigée en 0.2.9), Registre › fiche d'un courrier (3 champs sans identifiant ni nom) |
+| Dépôt GitHub | Non publiée : remplacée par la 0.2.9 |
+| Incidents de procédure | Mes fichiers de travail ont été réinitialisés entre deux sessions : reconstruits à partir de l'archive livrée, identique à celle installée (même taille) ; Claude ne peut pas atteindre l'adresse interne de NIXUS |
+
+## 4. Version 0.2.7, déployée, recettée et publiée le 03/11/2026
+
+| Étape | Résultat relevé |
+| --- | --- |
+| Archive | `courrier-v0_2_7.tar.gz`, 1 373 653 octets, identique au fichier livré ; même taille sur NIXUS ; SHA-256 `0876e9f5376f77326f7071d0d25c8e73b34a6471ff89528bd05d796e1b37d646` identique sur le PC (dans `Téléchargements`), sur GitHub et dans l'archive de Claude |
+| Sauvegarde avant mise à jour | `sauvegarde terminée, 33 sauvegardes conservées.` à 16:10:43 |
+| Construction | `docker compose build` sans `--no-cache` : 30 étapes sur 30, sans erreur ; 16:12:27 à 16:16:50, soit 4 min 23 s (260,7 s) |
+| Démarrage | Aucune migration ; `[APP] API 0.2.7 sur le port 3001` ; `courrier-api Healthy` en 81,1 s, `courrier-web Started` en 66,2 s ; les deux conteneurs `(healthy)` |
+| Version | `{"data":{"version":"0.2.7"},"meta":{"envelope":1,"version":"0.2.7"}}` |
+| Liste de contrôle à l'écran | 10 points sur 10 conformes : `v0.2.7`, bouton « Aide » à gauche de « Signaler » ; panneau « Mode d'emploi et FAQ » du registre (étiquettes de rôle, zones, quatre procédures, quatre questions) ; procédure « Retrouver un courrier » dépliée avec « Résultat » et « Si ça ne marche pas » ; « Mode d'emploi complet » mène à `/help#help-register` ; parcours « Administrateur » (neuf fiches) puis « Secrétariat » (sept fiches) ; recherche « recommandé » et « zzzzzz » ; impression ; explications de champs ; néerlandais. Les points 7, 8 et 10 sont confirmés oralement, sans capture |
+| Remarques de Chrome (E23) | Sur « Enregistrer un courrier » : 4 remarques « No label associated with a form field » ; plus aucune « autocomplete » ni « id or name » |
+| Défauts constatés | Clé brute `{{nav.registration}}` dans une question de la fiche « À enregistrer » ; puces des zones collées au bord ; choix « Parcours » écrasé quand l'adresse porte `#help-…` ; tous corrigés en 0.2.8 |
+| Dépôt GitHub | Branche `version/v0.2.7` (commit `ea9cf42`, 56 fichiers : 23 `A`, 33 `M`, aucun `D`), demande de fusion n° 6, travail « tests » réussi, fusion `11ac1a6`, branche supprimée, étiquette `v0.2.7`, publication `v0.2.7` immuable « Latest » avec `courrier-v0_2_7.tar.gz` |
+| Constats | Alerte Dependabot n° 29 (1 modérée) toujours signalée à l'envoi, non examinée (E38) |
+| Incidents de procédure | Une sortie de commande (« Started 66.2s ») collée dans le terminal : refusée par le NAS, sans effet |
+
+## 5. Version 0.2.6, déployée, recettée et publiée le 03/11/2026
 
 | Étape | Résultat relevé |
 | --- | --- |
@@ -73,7 +102,7 @@ Faite le 13/10/2026 (bloc 0.1.0). La procédure complète est dans `NOTES_LIVRAI
 | Constats | À l'envoi, GitHub signale une alerte Dependabot n° 29 (1 modérée, branche principale), non examinée (E38) |
 | Incidents de procédure | Archive rangée par le navigateur dans un dossier OneDrive (`files1427`) : retrouvée par `Get-ChildItem`, copiée dans `Téléchargements`, empreinte vérifiée avant l'extraction (règle 9) |
 
-## 4. Version 0.2.5, déployée, recettée et publiée le 03/11/2026
+## 6. Version 0.2.5, déployée, recettée et publiée le 03/11/2026
 
 | Étape | Résultat relevé |
 | --- | --- |
@@ -88,7 +117,7 @@ Faite le 13/10/2026 (bloc 0.1.0). La procédure complète est dans `NOTES_LIVRAI
 | Constats | Code scanning : 10 alertes ouvertes, toutes sur `pieces.js` (E25), 1 fermée (`ci.yml`, E28) |
 | Incidents de procédure | `cd C:\dev\...` tapé dans la session SSH de NIXUS : sans effet, règle 9 ajoutée ; archive rangée par le navigateur dans un dossier OneDrive et non dans `Téléchargements` : copiée avant la section 5 |
 
-## 5. Version 0.2.4, déployée, recettée et publiée le 27/10/2026
+## 7. Version 0.2.4, déployée, recettée et publiée le 27/10/2026
 
 | Étape | Résultat relevé |
 | --- | --- |
@@ -101,7 +130,7 @@ Faite le 13/10/2026 (bloc 0.1.0). La procédure complète est dans `NOTES_LIVRAI
 | Dépôt GitHub | Branche `version/v0.2.4` (commit `8cbd53c`), demande de fusion #3, travail « tests » réussi en 49 s, fusion `0415b2f`, branche supprimée, étiquette `v0.2.4`, publication `v0.2.4` immuable « Latest » avec `courrier-v0_2_4.tar.gz` ; empreinte SHA-256 `e79cdfaa6f087dbe88f3d8e50633def06ca5845dd61f57ca6dccf8ad4b4cfaf5` identique sur le PC et sur GitHub (début relevé à l'écran) |
 | Constats | Demandes de fusion ouvertes : 0 (3 fermées dont #1 et #2 de Dependabot) ; alertes Dependabot : 28 fermées, 0 ouverte ; Code scanning : 11 ouvertes, soit les 10 de `pieces.js` (E25) et une nouvelle « Workflow does not contain permissions » (gravité moyenne, `ci.yml` ligne 8, E28) |
 
-## 6. Version 0.2.3, déployée le 27/10/2026, défaut relevé à la recette, remplacée par la 0.2.4
+## 8. Version 0.2.3, déployée le 27/10/2026, défaut relevé à la recette, remplacée par la 0.2.4
 
 | Étape | Résultat relevé |
 | --- | --- |
@@ -114,7 +143,7 @@ Faite le 13/10/2026 (bloc 0.1.0). La procédure complète est dans `NOTES_LIVRAI
 | Dépôt GitHub | Non publiée : le défaut a été relevé avant l'envoi |
 | Fichier laissé dans la file | `Pièce fictive.pdf` déposé pendant la recette, non enregistré : il reste dans la file « À enregistrer » de l'entité AC |
 
-## 7. Version 0.2.2, déployée et recettée le 27/10/2026
+## 9. Version 0.2.2, déployée et recettée le 27/10/2026
 
 | Étape | Résultat relevé |
 | --- | --- |
@@ -129,7 +158,7 @@ Faite le 13/10/2026 (bloc 0.1.0). La procédure complète est dans `NOTES_LIVRAI
 | Constats | Dependabot a ouvert deux demandes de fusion (#1 `@vitest/mocker` et `vitest`, #2 `vite`) et CodeQL s'est configuré tout seul ; l'onglet « Security and quality » affiche 38 signalements : 0 secret, 28 Dependabot (10 hautes sur `multer`, 15 sur `vite`, `launch-editor`, `vitest`, `esbuild`), 10 CodeQL sur `pieces.js` ; rien n'est fermé |
 | Protection de `main` | Règle `protection-main` créée et active : demande de fusion, travail « tests » obligatoire, suppression et `--force` interdits, liste de contournement vide, cible `main` |
 
-## 8. Version 0.2.1, déployée le 20/10/2026, recettée le 27/10/2026
+## 10. Version 0.2.1, déployée le 20/10/2026, recettée le 27/10/2026
 
 | Étape | Résultat relevé |
 | --- | --- |
@@ -140,7 +169,7 @@ Faite le 13/10/2026 (bloc 0.1.0). La procédure complète est dans `NOTES_LIVRAI
 | Version et compte | `{"data":{"version":"0.2.1"},"meta":{"envelope":1,"version":"0.2.1"}}` ; `id -u` = `10001` |
 | Liste de contrôle à l'écran (27/10/2026) | 6 points sur 6 conformes : version et données conservées ; TIFF glissé refusé avec « Fichier TIFF refusé : réglez le copieur pour produire des PDF. » ; enregistrement depuis la file (`AC-2026-000004`, puis `AC-2026-000005`) et grande barre verte effacée au dépôt suivant ; trombone de `AC-2026-000004` passé à « 2 » sans rechargement ; onglet « Issues » de Chrome à 0 erreur et 0 avertissement (20 remarques d'information, écart E23) ; mention « Valeur livrée » présente après enregistrement |
 
-## 9. Version 0.2.0, déployée le 20/10/2026
+## 11. Version 0.2.0, déployée le 20/10/2026
 
 | Étape | Résultat relevé |
 | --- | --- |
@@ -156,7 +185,7 @@ Faite le 13/10/2026 (bloc 0.1.0). La procédure complète est dans `NOTES_LIVRAI
 | Liste de contrôle à l'écran | 12 points conformes sur 13 : version et menus, données conservées, aperçu PDF lisible dans Chrome, enregistrement depuis la file (`AC-2026-000003`), rejet avec motif, registre et fiche (téléchargement de 668 octets, identique), ajout d'un fichier à `AC-2026-000002`, journal de l'auditeur, taille maximale réglable (refus à 1 Mo), néerlandais, thème sombre, affichage étroit (501 px). Non conforme : point 5 (TIFF écarté sans message). Relevé en marge du point 8 : trombone du registre non mis à jour sans F5. Console : huit signalements d'étiquettes. Corrigés en 0.2.1 |
 | Comptes | « Test Auditeur » (AC · Auditeur) créé pour le point 9, puis désactivé ; son mot de passe est passé dans la conversation |
 
-## 10. Version 0.1.1, déployée le 20/10/2026
+## 12. Version 0.1.1, déployée le 20/10/2026
 
 | Étape | Résultat relevé |
 | --- | --- |
@@ -170,7 +199,7 @@ Faite le 13/10/2026 (bloc 0.1.0). La procédure complète est dans `NOTES_LIVRAI
 | Liste de contrôle à l'écran | 8 points sur 8 conformes : onglet « Courrier » et « Briefwisseling », nom de l'administration sur deux lignes, v0.1.1, cadre « Entités », services sans « NL à valider » avec RD et SCAD renommés, seul « Fermer » après création d'un compte, menu mis à jour sans F5, « Inkomende post » entier, données conservées |
 | Comptes | « Version Essai » créé pour le test, puis désactivé |
 
-## 11. Version 0.1.0, installée le 13/10/2026
+## 13. Version 0.1.0, installée le 13/10/2026
 
 | Étape | Résultat relevé |
 | --- | --- |

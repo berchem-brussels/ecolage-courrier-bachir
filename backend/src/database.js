@@ -395,6 +395,23 @@ const MIGRATIONS = [
     );
     CREATE INDEX idx_ticket_messages_ticket ON ticket_messages(ticket_id)
   `],
+  // FAQ locale (standard v3.3, section 13.1) : questions ajoutées par l'administrateur et les gestionnaires du registre, sans livraison.
+  ['008_faq_locale', `
+    CREATE TABLE help_faq (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      topic_id TEXT,
+      question_fr TEXT NOT NULL,
+      question_nl TEXT NOT NULL,
+      answer_fr TEXT NOT NULL,
+      answer_nl TEXT NOT NULL,
+      is_active INTEGER NOT NULL DEFAULT 1,
+      created_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+      updated_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+    CREATE INDEX idx_help_faq_topic ON help_faq(topic_id)
+  `],
 ];
 
 function migrate() {

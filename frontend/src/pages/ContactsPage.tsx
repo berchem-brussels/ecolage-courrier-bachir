@@ -47,7 +47,7 @@ export default function ContactsPage() {
       </div>
       <Card>
         <Space wrap style={{ marginBottom: 16 }}>
-          <Input.Search allowClear aria-label={t('common.search')} placeholder={t('contact.search')} defaultValue={q} onSearch={(v) => setFilter('q', v)} style={{ width: 300 }} />
+          <Input.Search allowClear name="q" aria-label={t('common.search')} placeholder={t('contact.search')} defaultValue={q} onSearch={(v) => setFilter('q', v)} style={{ width: 300 }} />
           <Radio.Group optionType="button" aria-label={t('common.status')} value={active} onChange={(e) => setFilter('actif', e.target.value === '1' ? '' : e.target.value)}
             options={[{ value: '1', label: t('common.active') }, { value: '0', label: t('common.inactive') }, { value: 'tous', label: t('common.all') }]} />
         </Space>
@@ -62,7 +62,7 @@ export default function ContactsPage() {
             { title: t('common.actions'), key: 'actions', render: (_, c) => (c.is_active ? (
               <Space>
                 <Button size="small" onClick={() => setEditing(c)}>{t('common.edit')}</Button>
-                <Popconfirm title={<Input autoComplete="off" aria-label={t('common.reason')} placeholder={t('common.reason')} value={reason} onChange={(e) => setReason(e.target.value)} />}
+                <Popconfirm title={<Input autoComplete="off" name="reason" aria-label={t('common.reason')} placeholder={t('common.reason')} value={reason} onChange={(e) => setReason(e.target.value)} />}
                   okText={t('common.deactivate')} cancelText={t('common.cancel')} onConfirm={() => deactivate(c)} okButtonProps={{ disabled: !reason.trim() }}>
                   <Button size="small" danger>{t('common.deactivate')}</Button>
                 </Popconfirm>

@@ -1,4 +1,4 @@
-# Architecture, version 0.2.7
+# Architecture, version 0.2.9
 
 Le français fait foi. Les versions néerlandaise et anglaise sont des traductions de Claude à faire relire (écart E13).
 
@@ -89,7 +89,7 @@ Toute lecture du contenu et toute ouverture de fiche (`GET /api/mails/:id`) s'in
 | `/api/tickets` (0.2.6) | `GET /`, `GET /stats`, `GET /to-handle`, `GET /:id`, `GET /:id/screenshot`, `POST /`, `PUT /:id`, `POST /:id/status`, `POST /:id/messages` | `list_tickets`, `ticket_stats`, `list_tickets_to_handle`, `get_ticket`, `get_ticket_screenshot`, `create_ticket`, `update_ticket`, `prepare_change_ticket_status`, `confirm_change_ticket_status`, `add_ticket_message` |
 | `/api/settings/tickets` (0.2.6) | `GET`, `PUT` : administrateur seul | `get_ticket_settings`, `update_ticket_settings` |
 
-72 routes au total, 64 outils MCP exposés. Contrat OpenAPI généré sur `GET /api/openapi.json` ; le dépôt y est décrit en `multipart/form-data`.
+(72 routes et 64 outils MCP en 0.2.6) Contrat OpenAPI généré sur `GET /api/openapi.json` ; le dépôt y est décrit en `multipart/form-data`.
 
 ## Tickets (0.2.6)
 
@@ -98,3 +98,17 @@ Un ticket porte l'entité de son demandeur (`tickets.entity_id`) : celle de son 
 ## Aide par écran (0.2.7)
 
 Une fiche par écran dans `frontend/src/help/topics/`, au schéma `HelpTopic` (`help/types.ts`) : identifiant, adresse, groupe du menu, rôles, rôle de l'écran, zones, procédures (cas d'usage, étapes, résultat, erreurs et solutions), questions, renvois ; FR et NL côte à côte. Un bouton ou un menu se cite par sa clé de traduction (`{{clé}}`) : `RichText` affiche le libellé réel. `PATHS` (même fichier) donne le parcours de lecture de chaque rôle. `help/HelpButton.tsx` ouvre la fiche de l'écran dans un panneau latéral ; `pages/HelpPage.tsx` est le centre d'aide (parcours, recherche, impression). Les identifiants et adresses des fiches sont ceux de `frontend/src/screens.ts`, que les tickets utilisent aussi : un test les compare. L'explication de chaque champ est dans `frontend/src/hints.ts` (une clé par concept, appelée par `tooltip={hint('clé')}`). Aucune donnée en base, aucune route : l'aide est du code livré avec l'interface ; la FAQ locale en base arrive en 0.2.8. Le texte passe par React, jamais par `innerHTML`.
+
+## FAQ locale, captures et groupes de boutons (0.2.8)
+
+- **FAQ locale** : table `help_faq` (migration 008), routes `/api/faq` (5), outils MCP `list_faq`, `get_faq`, `create_faq`, `update_faq`, `deactivate_faq` (retrait en deux appels). Lecture par toute personne connectée ; écriture par l'administrateur et par les gestionnaires du registre (`canManage`, `services/faq.js`) ; désactivation logique ; `created_by` et `updated_by` ; journal d'audit sans le texte. Commune aux deux entités. Affichée par le panneau de chaque écran (`?topic_id=`) et par le centre d'aide ; « Proposer pour la FAQ » dans le tiroir d'un ticket résolu.
+- **Captures de l'aide** : `frontend/help-capture/capture.spec.ts` (Playwright, `npm run help:capture`) lit les captures décrites dans les fiches (`shots`) et écrit `frontend/public/help/<langue>/<id>.jpg`. `npm run help:demo` démarre une instance éphémère sur `backend/instance/atelier.exemple.json` avec un compte de démonstration : jamais de donnée réelle. Un bouton se vise par sa clé de traduction. Les repères `[[n]]` du texte des zones sont ceux de la capture d'ensemble : un test les compare, vérifie que chaque capture existe en FR et en NL, qu'elle est un JPEG de moins de 400 Ko et qu'aucune n'est inutilisée. nginx : `absolute_redirect off` et `try_files $uri /index.html` pour que `/help` reste l'écran du centre d'aide malgré le dossier des captures.
+- **Groupes de boutons** : `components/GroupItem.tsx` remplace `Form.Item` pour les champs à boutons ou à cases : le titre est le nom du groupe (`role="group"`, `aria-labelledby`), pas un `<label>` orphelin.
+
+77 routes au total, 70 outils MCP exposés.
+
+## Audit des fiches et script de recette (0.2.9)
+
+- **Audit « fiche contre écran réel »** : `frontend/help-capture/audit-fiches.spec.ts` (`npm run help:audit`, sur l'instance de démonstration). Pour chaque fiche, tout libellé `{{clé}}` cité dans la liste des zones doit se retrouver à l'écran de la fiche ; les absences normales (état conditionnel, titre de fenêtre) sont listées avec leur raison dans `KNOWN_ABSENT`. Les libellés cités par les étapes sont listés « non vus à l'écran » à relire à la main (ils sont souvent dans une fenêtre). Une fiche décrite sans vérification contre l'écran est une erreur en puissance.
+- **Script de recette** : `frontend/help-capture/recette.mjs`, à lancer depuis un poste qui atteint l'instance (`RECETTE_URL`, `RECETTE_USER`, `RECETTE_PASSWORD` dans la fenêtre de commande, jamais dans le fichier) avec Node et le paquet `playwright` ; il pilote le Chrome du poste. Il rejoue la version affichée, le panneau et ses captures, nginx, le néerlandais, la FAQ (création, correction, retrait), les clés brutes, le parcours avec `#`, l'image de création d'un compte, puis relève les remarques de Chrome (avec l'élément visé) et les étiquettes mal reliées ou les champs sans identifiant ni nom sur 11 écrans et fenêtres. Il modifie l'instance : une question de FAQ d'essai (retirée ensuite) et la langue du compte (remise en français).
+- **Champs** : les zones de recherche et les champs de motif hors `Form.Item` portent un `name` ; les titres de groupes de boutons ou de cases passent par `GroupItem`.

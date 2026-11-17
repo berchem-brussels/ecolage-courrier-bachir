@@ -1,8 +1,40 @@
 # Historique des versions
 
-Application courrier · version 0.2.7 · historique au 03/11/2026
+Application courrier · version 0.2.9 · historique au 17/11/2026
 
-## 0.2.7 du 03/11/2026, préparée, à installer et à recetter sur NIXUS
+## 0.2.9 du 17/11/2026, préparée, à installer et à recetter sur NIXUS
+
+Corrections constatées à la recette de la 0.2.8, qui n'est pas publiée : l'archive 0.2.9 reprend tout le contenu de la 0.2.8. Sans migration autre que la 008 de la 0.2.8, aucune dépendance changée depuis la 0.2.8.
+
+- **Erreur de l'aide, écran « Entités et registres »** : la fiche disait de cliquer sur un bouton « Modifier » qui n'existe pas ; sur cet écran, un clic sur une ligne du tableau ouvre la fenêtre de modification. Zones et procédures réécrites d'après l'écran, y compris « Numéros attribués », texte de la fenêtre du registre et non colonne du tableau. Constatée par le script de recette (le bouton introuvable) et confirmée dans le code.
+- **Audit « fiche contre écran réel »** (`npm run help:audit`, `help-capture/audit-fiches.spec.ts`) : pour chaque fiche, tout libellé cité dans la liste des zones doit exister à l'écran de la fiche ; les absences normales (états conditionnels, titres de fenêtre) sont listées avec leur raison. Il a signalé l'erreur ci-dessus avant correction et passe sur les 14 fiches.
+- **Capture de « Créer un compte »** : elle était rattachée à la procédure « Modifier les rôles d'un compte » (reste d'une modification de ma part dans la fiche) ; remise sur la bonne procédure. Nouveau test : chaque capture de procédure illustre la bonne procédure.
+- **Titre « Entités » de la fenêtre « Nouveau service »** : `for="entity_ids"` visait un élément absent (erreur de Chrome) ; composant `GroupItem`, 22 champs au total.
+- **Champs sans identifiant ni nom** (information de Chrome sur Contacts et sur la fiche d'un courrier) : zones « Rechercher » du registre, des contacts et des consultations, champs de motif d'annulation et de désactivation, champ de l'assistant : `name` ajouté. Test statique et test sur le rendu des écrans et des fenêtres.
+- **Tests étendus** aux fenêtres des services, des types, des entités et des registres : étiquettes bien reliées, aucune étiquette orpheline, champs nommés (cases à cocher exclues, Chrome ne les signale pas).
+- **File « À enregistrer » de démonstration** : un fichier fictif (image générée par le script, aucun contenu réel) y est déposé ; la capture montre le fichier, le formulaire, les boutons de la file et « Rejeter ce fichier », avec 4 repères numérotés. Les repères peuvent maintenant viser un bouton par son libellé.
+- **Script de recette** `frontend/help-capture/recette.mjs` (Playwright, Chrome du poste, `RECETTE_URL`, `RECETTE_USER`, `RECETTE_PASSWORD`, jamais dans le script) : rejoue sur n'importe quelle instance la version affichée, le panneau et les captures, nginx, le néerlandais, la FAQ (création, correction, retrait), les clés brutes, le parcours avec `#`, l'image de création d'un compte, puis les remarques de Chrome (avec l'élément visé) et les étiquettes mal reliées sur 11 écrans et fenêtres. Écrit `rapport.txt` et des captures. Il a trouvé en 3 minutes ce que mes tests et vos essais manuels n'avaient pas vu.
+- Captures régénérées (versions affichées 0.2.9) : 36 images, 2,3 Mo.
+
+Suites : serveur 118 tests, écrans 117 tests (un test strict ignoré hors `help:check`), 0 échec ; `help:check` 22 tests ; audit des fiches réussi ; recette locale du script sur l'instance de démonstration : 3 relances sur 3 conformes (une remarque intermittente de Chrome vue une fois sur quatre essais, non reproduite) ; 5 contrôles contournés un à un, tous détectés ; `npm audit --omit=dev` à 0 dans les deux parties.
+
+## 0.2.8 du 03/11/2026, installée sur NIXUS le 17/11/2026, non publiée, remplacée par la 0.2.9
+
+Aide par écran, seconde moitié (standard v3.3, section 13.1), reprise du gabarit 1.3.0 et adaptée à courrier. Fin du lot « connexion, tickets, aide ». Migration 008. Une dépendance de développement ajoutée : `@playwright/test` (plage `^1.61.1` du standard, version 1.64.1 installée).
+
+- Captures annotées FR et NL : script Playwright (`frontend/help-capture/capture.spec.ts`, `npm run help:capture`) sur une instance de démonstration éphémère (`npm run help:demo`) chargée avec le jeu fictif `atelier.exemple.json`, un compte de démonstration et quelques courriers et tickets fictifs ; jamais à la main, aucun nom de service réel. 18 captures par langue (36 images, 2,2 Mo) livrées dans `frontend/public/help/`. Un bouton se vise par sa clé de traduction. La zone découpée et les repères sont mesurés au même instant.
+- Repères numérotés `[[n]]` dans la liste des zones de chaque fiche, reliés aux repères de la capture d'ensemble ; 4 captures de fenêtres ou de tiroir (fiche d'un courrier, création d'un contact, d'un compte, signalement) reliées aux procédures.
+- Contrôles bloquants nouveaux : chaque fiche a une capture d'ensemble ; repères du texte égaux à ceux de la capture ; aucune capture inutilisée ni sans fiche ; chaque capture existe en FR et en NL, en JPEG, sous 400 Ko (dans `npm test`, donc en CI) ; `npm run help:check` reste le contrôle strict.
+- FAQ locale en base (migration 008, `help_faq`) : lecture par toute personne connectée ; ajout, correction et retrait par l'administrateur et par les gestionnaires du registre (décision du 03/11/2026, E40) ; désactivation logique ; auteur enregistré ; journal d'audit sans le texte. 5 routes, 5 outils MCP (`list_faq`, `get_faq`, `create_faq`, `update_faq`, `deactivate_faq` en deux appels). Affichée dans le panneau de chaque écran et dans le centre d'aide, avec boutons « Ajouter une question », « Modifier » et « Retirer » pour ceux qui la gèrent.
+- « Proposer pour la FAQ » depuis un ticket résolu (traitant qui gère la FAQ) : le titre et la résolution préremplissent le français, le néerlandais reste à écrire, avertissement sur les données personnelles.
+- Défauts constatés à la recette de la 0.2.7, corrigés avec un test chacun : clé brute dans les titres de procédure et les questions (affichage par `RichText`) ; puces collées au bord (marge de 22 pixels) ; parcours du centre d'aide écrasé par le lien `#help-…` (élargissement une seule fois, au changement de lien).
+- E23 : les titres de groupes de boutons (« Arrivé par », « Type de courrier », « Langue du courrier », « Urgence », rôles, mode de connexion, files de tickets) ne sont plus des éléments `<label>` orphelins : composant `GroupItem` (`role="group"`, `aria-labelledby`, même aspect que `Form.Item`), 21 champs convertis ; test sur le rendu de tous les écrans et des fenêtres ; Chromium confirme 0 étiquette orpheline sur 7 écrans. Le relevé de Chrome (F12, Issues) reste à refaire pour clore l'écart.
+- nginx : `absolute_redirect off` et `try_files $uri /index.html` : `/help` reste l'écran du centre d'aide malgré le dossier des captures `/help/<langue>/` ; test du contenu.
+- Vitest ne lit plus le script de captures (`include: src/**/*.test.*`).
+
+Suites : serveur 118 tests, écrans 114 tests (un test de captures strict ignoré hors `help:check`), 0 échec ; contrôle réel dans Chromium : 12 contrôles conformes (FAQ ajout, correction et retrait ; ticket résolu proposé pour la FAQ ; parcours avec `#` ; marge ; clés brutes ; étiquettes sur 7 écrans) ; 14 contrôles contournés un à un, tous détectés ; `npm audit --omit=dev` à 0 dans les deux parties.
+
+## 0.2.7 du 03/11/2026, installée sur NIXUS et publiée sur GitHub le 03/11/2026
 
 Aide par écran, première moitié (standard v3.3, section 13.1), reprise du gabarit 1.3.0 et adaptée aux rôles par entité. Troisième version du lot « connexion, tickets, aide ». Sans migration, aucune dépendance changée. Les repères numérotés et les captures annotées arrivent en 0.2.8 (E39).
 

@@ -4,10 +4,11 @@ const topic: HelpTopic = {
   id: "home", path: "/accueil", group: "main", titleKey: "nav.home", roles: ["agent", "chef_service", "auditeur", "admin"],
   purpose: { fr: "Cet écran vous accueille quand votre rôle ne donne pas accès au registre. Il liste vos rôles dans chaque entité. Le courrier attribué à votre service s'affichera ici quand cette fonction sera disponible.", nl: "Dit scherm onthaalt u wanneer uw rol geen toegang tot het register geeft. Het toont uw rollen in elke entiteit. De post die aan uw dienst is toegewezen, verschijnt hier zodra deze functie beschikbaar is." },
   layout: [
-    { fr: "La liste {{home.roles}} indique, pour chaque entité, le rôle que l'administrateur de l'application vous a donné.", nl: "De lijst {{home.roles}} toont voor elke entiteit de rol die de beheerder van de toepassing u gegeven heeft." },
+    { fr: "[[1]] La liste {{home.roles}} indique, pour chaque entité, le rôle que l'administrateur de l'application vous a donné.", nl: "[[1]] De lijst {{home.roles}} toont voor elke entiteit de rol die de beheerder van de toepassing u gegeven heeft." },
     { fr: "Si la liste est vide, un message vous le dit : vous n'avez encore aucun rôle dans une entité.", nl: "Als de lijst leeg is, meldt een bericht dat u nog geen enkele rol in een entiteit hebt." },
     { fr: "Le bouton {{tickets.report}}, en haut de l'écran, ouvre le formulaire pour poser une question ou signaler un problème.", nl: "De knop {{tickets.report}} bovenaan het scherm opent het formulier om een vraag te stellen of een probleem te melden." },
   ],
+  overviewShot: "home-overview",
   procedures: [
     {
       title: { fr: "Vérifier vos rôles", nl: "Uw rollen controleren" },
@@ -39,6 +40,8 @@ const topic: HelpTopic = {
     { q: { fr: "Un rôle à l'administration communale me donne-t-il accès au CPAS ?", nl: "Geeft een rol bij het gemeentebestuur mij toegang tot het OCMW?" }, a: { fr: "Non. Un rôle ne vaut que pour l'entité où il est donné. Chaque entité a son propre registre.", nl: "Nee. Een rol geldt enkel voor de entiteit waarin hij gegeven is. Elke entiteit heeft haar eigen register." } },
   ],
   seeAlso: ["tickets", "help"],
-  shots: [],
+  shots: [
+    { id: "home-overview", path: "/accueil", marks: [{ sel: ".ant-card" }], caption: { fr: "Écran d'accueil", nl: "Startscherm" } },
+  ],
 };
 export default topic;

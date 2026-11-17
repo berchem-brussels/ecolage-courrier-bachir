@@ -6,8 +6,9 @@ import { useEffect, useRef, useState } from 'react';
 import { Button, Form, Input, Modal, Radio, Select, Space, Tag, message } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import api, { ApiError, qs } from '../api';
+import GroupItem from './GroupItem';
 import { useI18n } from '../contexts/I18nContext';
-import { contactLabel, NO_FOR } from '../labels';
+import { contactLabel } from '../labels';
 
 export interface Contact {
   id: number; kind: 'personne' | 'organisation'; name: string; first_name: string | null; organisation: string | null; email: string | null;
@@ -35,9 +36,9 @@ export function ContactFormModal({ open, contact, onClose, onSaved }: {
     <Modal open={open} title={contact ? t('contact.edit') : t('contact.new')} okText={t('common.save')} cancelText={t('common.cancel')}
       onOk={() => form.submit()} onCancel={onClose} destroyOnClose>
       <Form form={form} layout="vertical" onFinish={save}>
-        <Form.Item {...NO_FOR} name="kind" tooltip={hint('contact.kind')} label={t('contact.kind')}>
+        <GroupItem name="kind" tooltip={hint('contact.kind')} label={t('contact.kind')}>
           <Radio.Group aria-label={t('contact.kind')} optionType="button" options={[{ value: 'personne', label: t('contact.kind.personne') }, { value: 'organisation', label: t('contact.kind.organisation') }]} />
-        </Form.Item>
+        </GroupItem>
         <Form.Item name="name" tooltip={hint('contact.name')} label={kind === 'organisation' ? t('contact.name.organisation') : t('contact.name')} rules={[{ required: true, max: 200 }]}><Input autoComplete="off" /></Form.Item>
         {kind !== 'organisation' && (
           <Space wrap style={{ width: '100%' }}>
@@ -45,9 +46,9 @@ export function ContactFormModal({ open, contact, onClose, onSaved }: {
             <Form.Item name="organisation" tooltip={hint('contact.organisation')} label={t('contact.organisation')} rules={[{ max: 200 }]}><Input autoComplete="off" /></Form.Item>
           </Space>
         )}
-        <Form.Item {...NO_FOR} name="lang" tooltip={hint('contact.lang')} label={t('contact.lang')}>
+        <GroupItem name="lang" tooltip={hint('contact.lang')} label={t('contact.lang')}>
           <Radio.Group aria-label={t('contact.lang')} optionType="button" options={(['fr', 'nl', 'autre'] as const).map((l) => ({ value: l, label: t(`mail.lang.${l}`) }))} />
-        </Form.Item>
+        </GroupItem>
         <Space wrap style={{ width: '100%' }}>
           <Form.Item name="email" tooltip={hint('contact.email')} label={t('contact.email')} rules={[{ type: 'email', max: 200 }]}><Input autoComplete="off" /></Form.Item>
           <Form.Item name="phone" tooltip={hint('contact.phone')} label={t('contact.phone')} rules={[{ max: 50 }]}><Input autoComplete="off" /></Form.Item>

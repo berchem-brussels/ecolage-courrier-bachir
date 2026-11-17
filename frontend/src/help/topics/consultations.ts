@@ -4,9 +4,10 @@ const topic: HelpTopic = {
   id: "consultations", path: "/consultations", group: "main", titleKey: "nav.consultations", roles: ["auditeur"],
   purpose: { fr: "Cet écran est le journal des consultations, réservé à l'auditeur d'une entité. Il montre qui a ouvert la fiche d'un courrier ou lu un fichier, avec la date et l'heure. Il ne montre jamais le contenu des courriers.", nl: "Dit scherm is het raadplegingslogboek, voorbehouden aan de auditor van een entiteit. Het toont wie de fiche van een brief geopend of een bestand gelezen heeft, met datum en uur. Het toont nooit de inhoud van de brieven." },
   layout: [
-    { fr: "Les filtres {{consult.number}} et {{consult.period}} limitent le journal.", nl: "De filters {{consult.number}} en {{consult.period}} beperken het logboek." },
-    { fr: "Le tableau donne {{consult.when}}, {{consult.who}}, {{consult.what}}, le numéro du courrier et le {{consult.channel}} utilisé.", nl: "De tabel geeft {{consult.when}}, {{consult.who}}, {{consult.what}}, het nummer van de brief en het gebruikte {{consult.channel}}." },
+    { fr: "[[1]] Les filtres {{consult.number}} et {{consult.period}} limitent le journal.", nl: "[[1]] De filters {{consult.number}} en {{consult.period}} beperken het logboek." },
+    { fr: "[[2]] Le tableau donne {{consult.when}}, {{consult.who}}, {{consult.what}}, le numéro du courrier et le {{consult.channel}} utilisé.", nl: "[[2]] De tabel geeft {{consult.when}}, {{consult.who}}, {{consult.what}}, het nummer van de brief en het gebruikte {{consult.channel}}." },
   ],
+  overviewShot: "consultations-overview",
   procedures: [
     {
       title: { fr: "Retrouver qui a ouvert un courrier", nl: "Nagaan wie een brief geopend heeft" },
@@ -35,6 +36,8 @@ const topic: HelpTopic = {
     { q: { fr: "Le journal montre-t-il le contenu des courriers ?", nl: "Toont het logboek de inhoud van de brieven?" }, a: { fr: "Non. Il montre seulement qui a consulté quoi, quand et par quel canal. L'auditeur ne lit pas les courriers.", nl: "Nee. Het toont enkel wie wat wanneer en via welk kanaal geraadpleegd heeft. De auditor leest de brieven niet." } },
   ],
   seeAlso: ["register"],
-  shots: [],
+  shots: [
+    { id: "consultations-overview", path: "/consultations", marks: [{ sel: ".ant-input-search" }, { sel: ".ant-table" }], caption: { fr: "Journal des consultations", nl: "Raadplegingslogboek" } },
+  ],
 };
 export default topic;

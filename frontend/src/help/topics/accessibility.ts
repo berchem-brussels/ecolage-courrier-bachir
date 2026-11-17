@@ -4,9 +4,10 @@ const topic: HelpTopic = {
   id: "accessibility", path: "/accessibility", group: "help", titleKey: "nav.accessibility", roles: ["agent", "chef_service", "secretariat", "gestionnaire", "auditeur", "admin"],
   purpose: { fr: "Cet écran est la déclaration d'accessibilité de l'application : le niveau visé, la façon dont il est contrôlé et où lire les limites connues.", nl: "Dit scherm is de toegankelijkheidsverklaring van de toepassing: het beoogde niveau, de manier waarop het gecontroleerd wordt en waar u de bekende beperkingen leest." },
   layout: [
-    { fr: "Le texte donne le niveau visé : AA des règles d'accessibilité WCAG 2.1, contrôlé à chaque version.", nl: "De tekst geeft het beoogde niveau: AA van de toegankelijkheidsregels WCAG 2.1, bij elke versie gecontroleerd." },
+    { fr: "[[1]] Le texte donne le niveau visé : AA des règles d'accessibilité WCAG 2.1, contrôlé à chaque version.", nl: "[[1]] De tekst geeft het beoogde niveau: AA van de toegankelijkheidsregels WCAG 2.1, bij elke versie gecontroleerd." },
     { fr: "Au clavier, le lien {{layout.skip}} apparaît en premier : il mène directement au contenu.", nl: "Met het toetsenbord verschijnt de link {{layout.skip}} als eerste: hij leidt rechtstreeks naar de inhoud." },
   ],
+  overviewShot: "accessibility-overview",
   procedures: [
     {
       title: { fr: "Utiliser l'application au clavier", nl: "De toepassing met het toetsenbord gebruiken" },
@@ -33,6 +34,8 @@ const topic: HelpTopic = {
     { q: { fr: "Où lire les limites connues ?", nl: "Waar kan ik de bekende beperkingen lezen?" }, a: { fr: "Dans la documentation de l'application, qui décrit les limites connues. Le support indiqué dans {{help.contact}} peut vous la fournir.", nl: "In de documentatie van de toepassing, die de bekende beperkingen beschrijft. De ondersteuning die onder {{help.contact}} staat, kan ze u bezorgen." } },
   ],
   seeAlso: ["help", "tickets"],
-  shots: [],
+  shots: [
+    { id: "accessibility-overview", path: "/accessibility", marks: [{ sel: ".ant-card" }], caption: { fr: "Déclaration d'accessibilité", nl: "Toegankelijkheidsverklaring" } },
+  ],
 };
 export default topic;

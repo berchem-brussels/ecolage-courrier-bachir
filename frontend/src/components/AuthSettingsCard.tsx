@@ -5,7 +5,8 @@
 import { useEffect, useState } from 'react';
 import { Alert, Button, Card, Form, Input, Radio, Space, Typography, message } from 'antd';
 import api, { ApiError } from '../api';
-import { NO_FOR } from '../labels';
+
+import GroupItem from './GroupItem';
 import { useI18n } from '../contexts/I18nContext';
 
 interface AuthSettings { mode: 'local' | 'sso' | 'sso_optional'; tenant: string; client_id: string; public_url: string; domains: string; secret_set: boolean; redirect_uri: string | null }
@@ -39,9 +40,9 @@ export default function AuthSettingsCard() {
     <Card title={t('settings.auth')} style={{ maxWidth: 720, marginTop: 16 }}>
       <Alert type="info" showIcon style={{ marginBottom: 16 }} message={t('settings.auth.help')} />
       <Form form={form} layout="vertical" onFinish={save}>
-        <Form.Item {...NO_FOR} name="mode" label={t('settings.mode')} tooltip={hint('settings.mode')}>
+        <GroupItem name="mode" label={t('settings.mode')} tooltip={hint('settings.mode')}>
           <Radio.Group aria-label={t('settings.mode')} optionType="button" options={(['local', 'sso_optional', 'sso'] as const).map((m) => ({ value: m, label: t(`settings.mode.${m}`) }))} />
-        </Form.Item>
+        </GroupItem>
         <Form.Item name="tenant" label={t('settings.tenant')} tooltip={hint('settings.tenant')}><Input autoComplete="off" /></Form.Item>
         <Form.Item name="client_id" label={t('settings.client_id')} tooltip={hint('settings.client_id')}><Input autoComplete="off" /></Form.Item>
         <Form.Item name="client_secret" label={t('settings.client_secret')} tooltip={hint('settings.client_secret')} extra={data?.secret_set ? t('settings.secret_set') : undefined}>

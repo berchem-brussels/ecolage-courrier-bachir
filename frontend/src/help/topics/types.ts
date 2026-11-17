@@ -4,10 +4,11 @@ const topic: HelpTopic = {
   id: "types", path: "/admin/types", group: "admin", titleKey: "nav.types", roles: ["gestionnaire", "admin"],
   purpose: { fr: "Cet écran tient la liste des types de courrier d'une entité : demande d'un citoyen, plainte, candidature spontanée et autres. Le gestionnaire du registre et l'administrateur l'adaptent sans livraison de l'application.", nl: "Dit scherm houdt de lijst van de soorten brieven van een entiteit bij: aanvraag van een burger, klacht, spontane sollicitatie en andere. De registerbeheerder en de beheerder passen ze aan zonder nieuwe versie van de toepassing." },
   layout: [
-    { fr: "Le bouton {{type.new}}, en haut à droite, ouvre le formulaire de création.", nl: "De knop {{type.new}} rechtsboven opent het aanmaakformulier." },
+    { fr: "[[1]] Le bouton {{type.new}}, en haut à droite, ouvre le formulaire de création.", nl: "[[1]] De knop {{type.new}} rechtsboven opent het aanmaakformulier." },
     { fr: "Si vous avez un rôle dans les deux entités, des boutons choisissent l'entité dont vous tenez les types.", nl: "Als u een rol in beide entiteiten hebt, kiezen knoppen van welke entiteit u de soorten beheert." },
-    { fr: "La liste donne le libellé en français et en néerlandais, le statut ({{common.active}} ou {{common.inactive}}) et les boutons {{common.edit}} et {{common.deactivate}}.", nl: "De lijst geeft het label in het Frans en in het Nederlands, de status ({{common.active}} of {{common.inactive}}) en de knoppen {{common.edit}} en {{common.deactivate}}." },
+    { fr: "[[2]] La liste donne le libellé en français et en néerlandais, le statut ({{common.active}} ou {{common.inactive}}) et les boutons {{common.edit}} et {{common.deactivate}}.", nl: "[[2]] De lijst geeft het label in het Frans en in het Nederlands, de status ({{common.active}} of {{common.inactive}}) en de knoppen {{common.edit}} en {{common.deactivate}}." },
   ],
+  overviewShot: "types-overview",
   procedures: [
     {
       title: { fr: "Ajouter un type de courrier", nl: "Een soort brief toevoegen" },
@@ -37,6 +38,8 @@ const topic: HelpTopic = {
     { q: { fr: "Pourquoi ne puis-je pas enregistrer de courrier ?", nl: "Waarom kan ik geen brief inschrijven?" }, a: { fr: "Si aucun type n'est défini pour l'entité, le formulaire d'enregistrement l'indique. Créez au moins un type ici.", nl: "Als voor de entiteit geen soort gedefinieerd is, meldt het inschrijvingsformulier dat. Maak hier minstens een soort aan." } },
   ],
   seeAlso: ["registration", "settings"],
-  shots: [],
+  shots: [
+    { id: "types-overview", path: "/admin/types", marks: [{ sel: ".page-header button" }, { sel: ".ant-table" }], caption: { fr: "Types de courrier", nl: "Soorten brieven" } },
+  ],
 };
 export default topic;

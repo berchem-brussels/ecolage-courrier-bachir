@@ -1,43 +1,39 @@
-# Manifeste, version 0.2.7 du 03/11/2026
+# Manifeste, version 0.2.9 du 17/11/2026
 
-Archive `courrier-v0_2_7.tar.gz`, un seul dossier `courrier/`. Point de départ : la version 0.2.6, publiée sur GitHub. La 0.2.7 reprend du gabarit 1.3.0 l'aide par écran (standard v3.3, section 13.1), adaptée aux rôles par entité ; troisième version du lot « connexion, tickets, aide par écran ». Sans migration.
+Archive `courrier-v0_2_9.tar.gz`, un seul dossier `courrier/`. La 0.2.9 corrige les défauts relevés à la recette de la 0.2.8 (installée sur NIXUS, non publiée) et en reprend tout le contenu. **Dernière version publiée sur GitHub : 0.2.7** : la demande de fusion de la 0.2.9 porte donc les changements des deux versions ; le manifeste de la 0.2.8 (45 fichiers nouveaux, 57 modifiés par rapport à la 0.2.7, voir l'historique du dépôt et `NOTES_LIVRAISON_v0.2.8.md`) s'ajoute à celui-ci.
 
 ## Dépendances
 
-Aucune dépendance ajoutée, changée ni montée de génération ; les deux verrous ne changent que par le numéro de version. Les deux numéros de version passent à 0.2.7.
+Aucun changement depuis la 0.2.8. Par rapport à la 0.2.7 publiée : une dépendance de développement (`@playwright/test`, plage `^1.61.1`, 1.64.1 installée). Les numéros de version passent à 0.2.9.
 
-## Suites jouées le 03/11/2026 (Node 22.22.2, bac à sable, npm 10.9.7)
+## Suites jouées le 17/11/2026 (Node 22.22.2, bac à sable, npm 10.9.7)
 
 | Suite | Commande | Résultat recopié de la sortie |
 | --- | --- | --- |
-| Serveur | `cd backend && npm test` | tests 110, pass 110, fail 0, skipped 0 |
-| Écrans, axe-core FR et NL, traductions, étiquettes, imports, connexion, tickets, aide | `cd frontend && npm test` | Test Files 7 passed, Tests 101 passed, 1 skipped (contrôle strict des captures, 0.2.8) |
-| Typage | `cd frontend && npx tsc -b` | 0 erreur |
-| Accessibilité statique | `cd frontend && npm run a11y` | 0 erreur |
-| Construction | `cd frontend && npm run build` | built, 0 erreur |
+| Serveur | `cd backend && npm test` | tests 118, pass 118, fail 0, skipped 0 |
+| Écrans, axe-core FR et NL, traductions, étiquettes, champs nommés, connexion, tickets, aide, FAQ, captures | `cd frontend && npm test` | Test Files 7 passed, Tests 117 passed, 1 skipped (contrôle strict joué par `help:check`) |
+| Contrôle strict des captures | `cd frontend && npm run help:check` | Tests 22 passed |
+| Typage, accessibilité statique, construction | `npx tsc -b`, `npm run a11y`, `npm run build` | 0 erreur, 0 erreur, built |
 | Audit serveur et interface | `npm audit --omit=dev` dans les deux dossiers | found 0 vulnerabilities |
-| Parcours réel | Interface construite, serveur réel, Chromium : gestionnaire du registre | 7 contrôles sur 7 : panneau d'aide du registre, libellés réels sans clé brute, lien vers le mode d'emploi complet, parcours de 8 fiches, recherche, 12 explications de champ sur l'écran d'enregistrement |
-| Preuves d'échec | Dix contrôles de l'aide contournés un à un, `help.test.ts` rejoué, fichiers restaurés | Voir `docs/SECURITE.md` : tous détectés |
-| Remarques de Chrome (E23) | Protocole d'audit de Chromium sur 8 écrans | Aucune remarque, y compris sur la 0.2.6 qui en avait 20 sur votre poste : l'instrument ne reproduit pas les remarques, la vérification se fait dans Chrome (voir E23) |
-| Premier envoi simulé | Procédure de la section 5 de GITHUB.md sur une copie du dépôt de la 0.2.6 | Voir le message de livraison |
+| Captures | `npm run help:demo` puis `npm run help:capture` | 1 test réussi : 18 captures par langue (36 images) |
+| Audit des fiches | `npm run help:audit` sur l'instance de démonstration | 1 test réussi |
+| Script de recette | `recette.mjs` sur l'instance de démonstration (navigateur sans affichage) | Trois relances sur trois : « Tous les contrôles sont conformes » ; une remarque intermittente de Chrome vue une fois sur quatre essais, non reproduite |
+| Preuves d'échec | Cinq contrôles contournés un à un | Voir `docs/SECURITE.md` : tous détectés |
 
-## Fichiers nouveaux (23)
+## Fichiers nouveaux depuis la 0.2.8 (3)
 
-- `frontend/src/help/` : `types.ts`, `index.ts`, `RichText.tsx`, `TopicView.tsx`, `HelpButton.tsx` et 14 fiches dans `topics/` (`home`, `register`, `inbox`, `registration`, `contacts`, `consultations`, `users`, `entities`, `services`, `types`, `settings`, `tickets`, `help`, `accessibility`)
-- `frontend/src/test/help.test.ts`, `frontend/src/test/aide.test.tsx`
-- `docs/fonctionnel/aide.md`
-- `NOTES_LIVRAISON_v0.2.7.md`
+`frontend/help-capture/audit-fiches.spec.ts`, `frontend/help-capture/recette.mjs`, `NOTES_LIVRAISON_v0.2.9.md`
 
-## Fichiers modifiés (33)
+## Fichiers modifiés depuis la 0.2.8
 
-- Interface : `frontend/src/hints.ts` (79 explications), `i18n.ts`, `index.css`, `components/AppLayout.tsx` (bouton « Aide »), `Chatbot.tsx`, `ContactForm.tsx`, `MailDrawer.tsx`, `PasswordModal.tsx`, `PieceUpload.tsx`, `RegistrationForm.tsx`, `pages/ContactsPage.tsx`, `EntitiesPage.tsx`, `HelpPage.tsx` (centre d'aide), `InboxPage.tsx`, `ServicesPage.tsx`, `SettingsPage.tsx`, `TypesPage.tsx`, `UsersPage.tsx` ; `frontend/package.json`, `frontend/package-lock.json` (numéro)
-- Serveur : `backend/package.json`, `backend/package-lock.json` (numéro seulement)
+- Interface : `frontend/src/help/topics/entities.ts`, `inbox.ts`, `users.ts`, `help/types.ts` ; `pages/ConsultationsPage.tsx`, `ContactsPage.tsx`, `InboxPage.tsx`, `RegisterPage.tsx`, `ServicesPage.tsx`, `TypesPage.tsx` ; `components/Chatbot.tsx`, `MailDrawer.tsx` ; `test/help.test.ts`, `pages.test.tsx` ; les 36 images `frontend/public/help/fr|nl/*.jpg` (régénérées)
+- Captures et outils : `frontend/help-capture/capture.spec.ts`, `demo-server.cjs`, `playwright.help.config.ts` ; `frontend/package.json`, `package-lock.json` (script `help:audit`, numéro) ; `backend/package.json`, `package-lock.json` (numéro)
 - Documents : `CHANGELOG.md`, `DECISIONS.md`, `ECARTS-CDC.md`, `ETAT.md`, `MANIFESTE.md`, `README.md`, `docs/APRES-DEPLOIEMENT.md`, `docs/SECURITE.md`, `docs/fr|nl|en/ARCHITECTURE.md`
 
 ## Fichiers retirés
 
-Aucun (l'ancien contenu écrit en dur de la page d'aide est remplacé dans `HelpPage.tsx` ; ses textes de guide et de questions ont été repris dans les fiches).
+Aucun.
 
 ## Ce qui est simulé ou incomplet
 
-Aucun repère numéroté ni capture annotée, et pas de script Playwright : ils arrivent en 0.2.8 (E39). Pas de FAQ locale en base (0.2.8). E23 partiellement corrigée : les 10 remarques sur les titres de groupes de boutons restent, et le relevé de Chrome reste à faire. Les textes néerlandais sont rédigés par Claude et à relire par un traducteur.
+Le dépôt GitHub est à la 0.2.7 : le décompte exact des fichiers de la demande de fusion n'a pas été simulé ici (je ne dispose plus de l'archive 0.2.7), il s'affiche avec `git status` ; il doit montrer des fichiers nouveaux et modifiés, aucun supprimé, et rien de `.env`, `node_modules`, `data/`, `.db` ni `report-`. Les remarques de Chrome se relèvent par le script sur l'instance d'acceptance : mon Chromium ne les produit qu'en partie. Textes néerlandais rédigés par Claude, à relire par un traducteur.

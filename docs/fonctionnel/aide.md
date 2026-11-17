@@ -1,6 +1,6 @@
 # Aide
 
-Version 0.2.7. Ce document décrit ce que voit et fait chaque personne ; le détail technique est dans `docs/fr/ARCHITECTURE.md`.
+Version 0.2.8. Ce document décrit ce que voit et fait chaque personne ; le détail technique est dans `docs/fr/ARCHITECTURE.md`.
 
 ## L'aide de l'écran
 
@@ -18,6 +18,13 @@ Menu Aide › « Mode d'emploi et FAQ » :
 - « Imprimer le mode d'emploi » ouvre le mode d'emploi complet, procédures dépliées, prêt à imprimer ou à enregistrer en PDF.
 - Le contact en bas de page est celui du support, réglé dans les paramètres de l'application.
 
-## Ce qui n'est pas encore là
+## Les repères et les captures
 
-Les repères numérotés et les captures annotées des écrans, et la FAQ locale que l'administrateur complète sans nouvelle version, arrivent en 0.2.8.
+Chaque fiche montre une capture de l'écran avec des repères numérotés : le numéro dans le texte des zones est celui du cadre rouge sur la capture. Les captures sont produites par un script sur des données fictives, en français et en néerlandais ; elles se refont à chaque version qui change un écran (`npm run help:capture`, voir `docs/fr/ARCHITECTURE.md`).
+
+## La FAQ locale
+
+Sous les questions du mode d'emploi, l'application montre les questions ajoutées par l'équipe : dans le panneau de l'écran concerné et dans le centre d'aide (« Questions générales » pour celles qui ne concernent aucun écran).
+- L'administrateur et les gestionnaires du registre ajoutent une question avec « Ajouter une question » (centre d'aide), la corrigent avec « Modifier » et la retirent avec « Retirer ». Une question retirée n'est pas supprimée : elle reste visible de ceux qui gèrent la FAQ, avec la mention « Retirée ».
+- La question et la réponse s'écrivent en français et en néerlandais, sans nom, adresse ni donnée de courrier : toutes les personnes connectées, des deux entités, les lisent.
+- Depuis un ticket résolu, « Proposer pour la FAQ » ouvre la même fenêtre, avec le titre du ticket et sa résolution déjà écrits en français ; il reste à écrire le néerlandais et à relire le texte pour en retirer toute donnée personnelle.

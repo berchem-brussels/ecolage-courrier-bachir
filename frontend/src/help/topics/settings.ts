@@ -4,10 +4,11 @@ const topic: HelpTopic = {
   id: "settings", path: "/admin/parametres", group: "admin", titleKey: "nav.settings", roles: ["admin"],
   purpose: { fr: "Cet écran, réservé à l'administrateur, règle l'application sans livraison : la taille des fichiers déposés, les files et les délais des tickets, et la connexion. Chaque changement s'inscrit au journal de l'application.", nl: "Dit scherm, voorbehouden aan de beheerder, stelt de toepassing in zonder nieuwe versie: de grootte van de geplaatste bestanden, de wachtrijen en termijnen van de tickets en de aanmelding. Elke wijziging wordt in het logboek van de toepassing genoteerd." },
   layout: [
-    { fr: "La carte {{settings.pieces}} règle la taille maximale d'un fichier déposé et celle d'un fichier lu par un assistant.", nl: "De kaart {{settings.pieces}} stelt de maximale grootte van een geplaatst bestand en van een door een assistent gelezen bestand in." },
-    { fr: "La carte {{settings.tickets}} règle les rôles de chaque file, les délais par priorité et le délai de réouverture.", nl: "De kaart {{settings.tickets}} stelt de rollen van elke wachtrij, de termijnen per prioriteit en de heropeningstermijn in." },
-    { fr: "La carte {{settings.auth}} règle le mode de connexion et l'inscription de l'application chez Microsoft.", nl: "De kaart {{settings.auth}} stelt de aanmeldmodus en de registratie van de toepassing bij Microsoft in." },
+    { fr: "[[1]] La carte {{settings.pieces}} règle la taille maximale d'un fichier déposé et celle d'un fichier lu par un assistant.", nl: "[[1]] De kaart {{settings.pieces}} stelt de maximale grootte van een geplaatst bestand en van een door een assistent gelezen bestand in." },
+    { fr: "[[2]] La carte {{settings.tickets}} règle les rôles de chaque file, les délais par priorité et le délai de réouverture.", nl: "[[2]] De kaart {{settings.tickets}} stelt de rollen van elke wachtrij, de termijnen per prioriteit en de heropeningstermijn in." },
+    { fr: "[[3]] La carte {{settings.auth}} règle le mode de connexion et l'inscription de l'application chez Microsoft.", nl: "[[3]] De kaart {{settings.auth}} stelt de aanmeldmodus en de registratie van de toepassing bij Microsoft in." },
   ],
+  overviewShot: "settings-overview",
   procedures: [
     {
       title: { fr: "Régler la taille des fichiers", nl: "De grootte van de bestanden instellen" },
@@ -55,6 +56,8 @@ const topic: HelpTopic = {
     { q: { fr: "Où donner le secret de l'inscription ?", nl: "Waar geef ik het geheim van de registratie op?" }, a: { fr: "Uniquement dans cet écran. Ne l'écrivez jamais dans un message, un ticket ou un fichier.", nl: "Enkel in dit scherm. Schrijf het nooit in een bericht, een ticket of een bestand." } },
   ],
   seeAlso: ["users", "tickets"],
-  shots: [],
+  shots: [
+    { id: "settings-overview", path: "/admin/parametres", marks: [{ sel: ".ant-card" }, { sel: ".ant-card ~ .ant-card" }, { sel: ".ant-card ~ .ant-card ~ .ant-card" }], caption: { fr: "Paramètres", nl: "Instellingen" } },
+  ],
 };
 export default topic;

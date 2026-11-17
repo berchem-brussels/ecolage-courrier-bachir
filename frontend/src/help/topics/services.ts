@@ -4,10 +4,11 @@ const topic: HelpTopic = {
   id: "services", path: "/admin/services", group: "admin", titleKey: "nav.services", roles: ["admin"],
   purpose: { fr: "Cet écran, réservé à l'administrateur, tient la liste des services de l'administration communale et du CPAS. Un service peut appartenir à une entité ou être commun aux deux ; il peut dépendre d'un département.", nl: "Dit scherm, voorbehouden aan de beheerder, houdt de lijst van de diensten van het gemeentebestuur en het OCMW bij. Een dienst kan tot een entiteit behoren of gemeenschappelijk zijn voor beide; hij kan van een departement afhangen." },
   layout: [
-    { fr: "Le bouton {{service.new}}, en haut à droite, ouvre le formulaire de création.", nl: "De knop {{service.new}} rechtsboven opent het aanmaakformulier." },
-    { fr: "Les boutons de {{common.entity}} limitent la liste à une entité ; {{common.all}} montre tout.", nl: "De knoppen van {{common.entity}} beperken de lijst tot een entiteit; {{common.all}} toont alles." },
-    { fr: "Les mentions {{common.nl.validate}} et {{common.nl.missing}} signalent un nom néerlandais à contrôler ou absent.", nl: "De vermeldingen {{common.nl.validate}} en {{common.nl.missing}} wijzen op een Nederlandse naam die gecontroleerd moet worden of ontbreekt." },
+    { fr: "[[1]] Le bouton {{service.new}}, en haut à droite, ouvre le formulaire de création.", nl: "[[1]] De knop {{service.new}} rechtsboven opent het aanmaakformulier." },
+    { fr: "[[2]] Les boutons de {{common.entity}} limitent la liste à une entité ; {{common.all}} montre tout.", nl: "[[2]] De knoppen van {{common.entity}} beperken de lijst tot een entiteit; {{common.all}} toont alles." },
+    { fr: "[[3]] Les mentions {{common.nl.validate}} et {{common.nl.missing}} signalent un nom néerlandais à contrôler ou absent.", nl: "[[3]] De vermeldingen {{common.nl.validate}} en {{common.nl.missing}} wijzen op een Nederlandse naam die gecontroleerd moet worden of ontbreekt." },
   ],
+  overviewShot: "services-overview",
   procedures: [
     {
       title: { fr: "Ajouter un service", nl: "Een dienst toevoegen" },
@@ -47,6 +48,8 @@ const topic: HelpTopic = {
     { q: { fr: "D'où vient la liste des services ?", nl: "Waar komt de lijst van de diensten vandaan?" }, a: { fr: "L'organigramme de Microsoft 365 fait foi, pas l'annuaire des comptes. En cas de doute, demandez-le au support en paramètre de l'application.", nl: "Het organigram van Microsoft 365 is bepalend, niet de accountmap. Bij twijfel vraagt u het aan de ondersteuning die in de parameters van de toepassing staat." } },
   ],
   seeAlso: ["entities", "users"],
-  shots: [],
+  shots: [
+    { id: "services-overview", path: "/admin/services", marks: [{ sel: ".page-header button" }, { sel: ".ant-radio-group" }, { sel: ".ant-table" }], caption: { fr: "Liste des services", nl: "Lijst van diensten" } },
+  ],
 };
 export default topic;

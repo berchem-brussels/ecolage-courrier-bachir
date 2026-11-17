@@ -69,7 +69,7 @@ export default function TypesPage() {
             { title: t('common.actions'), key: 'actions', render: (_, ty) => (ty.is_active ? (
               <Space>
                 <Button size="small" onClick={() => setEditing(ty)}>{t('common.edit')}</Button>
-                <Popconfirm title={<Input autoComplete="off" aria-label={t('common.reason')} placeholder={t('common.reason')} value={reason} onChange={(e) => setReason(e.target.value)} />}
+                <Popconfirm title={<Input autoComplete="off" name="reason" aria-label={t('common.reason')} placeholder={t('common.reason')} value={reason} onChange={(e) => setReason(e.target.value)} />}
                   okText={t('common.deactivate')} cancelText={t('common.cancel')} onConfirm={() => deactivate(ty)} okButtonProps={{ disabled: !reason.trim() }}>
                   <Button size="small" danger>{t('common.deactivate')}</Button>
                 </Popconfirm>

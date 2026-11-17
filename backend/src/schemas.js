@@ -59,6 +59,10 @@ module.exports = {
     return obj({ sla: obj({ P1: hours, P2: hours, P3: hours, P4: hours }, ['P1', 'P2', 'P3', 'P4']), reopen_days: T.int(1, 90), business_roles: roles, it_roles: roles });
   })(),
 
+  faqList: listQuery({ topic_id: { type: 'string', maxLength: 60, pattern: '^[a-z-]+$' } }),
+  faqCreate: obj({ topic_id: { type: 'string', maxLength: 60, pattern: '^[a-z-]*$' }, question_fr: T.reqStr(300), question_nl: T.reqStr(300), answer_fr: T.reqStr(4000), answer_nl: T.reqStr(4000) }, ['question_fr', 'question_nl', 'answer_fr', 'answer_nl']),
+  faqUpdate: obj({ topic_id: { type: 'string', maxLength: 60, pattern: '^[a-z-]*$' }, question_fr: T.reqStr(300), question_nl: T.reqStr(300), answer_fr: T.reqStr(4000), answer_nl: T.reqStr(4000), is_active: { type: 'integer', enum: [0, 1] } }),
+
   entityList: listQuery({ is_active: { type: 'integer', enum: [0, 1] } }),
   entityCreate: obj({ code: { type: 'string', pattern: '^[A-Z0-9-]{1,20}$' }, name_fr: T.reqStr(200), name_nl: T.reqStr(200) }, ['code', 'name_fr', 'name_nl']),
   entityUpdate: obj({ name_fr: T.reqStr(200), name_nl: T.reqStr(200), is_active: { type: 'integer', enum: [0, 1] } }),

@@ -3,10 +3,11 @@ import { useCallback, useEffect, useState } from 'react';
 import { Alert, Button, Card, Checkbox, Form, Input, Modal, Popconfirm, Radio, Space, Switch, Table, Tag, Typography, message } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import api, { ApiError, qs } from '../api';
+import GroupItem from '../components/GroupItem';
 import { useI18n } from '../contexts/I18nContext';
 import { useAuth, type EntityRole } from '../contexts/AuthContext';
 import { useEntities } from '../hooks';
-import { NO_FOR, pick, type Entity } from '../labels';
+import { pick, type Entity } from '../labels';
 
 interface U { id: number; email: string; first_name: string; last_name: string; user_role: 'agent' | 'admin'; preferred_lang: 'fr' | 'nl'; is_active: number; is_admin_local: number; microsoft_linked: number; entity_roles: EntityRole[] }
 type RoleChoice = EntityRole['role'] | '';
@@ -126,13 +127,13 @@ export default function UsersPage() {
             <Form.Item name="email" tooltip={hint('users.email')} label={t('users.field.email')} rules={[{ required: true, type: 'email' }]}><Input autoComplete="off" /></Form.Item>
             <Form.Item name="first_name" tooltip={hint('users.first_name')} label={t('users.field.first_name')} rules={[{ required: true }]}><Input autoComplete="off" /></Form.Item>
             <Form.Item name="last_name" tooltip={hint('users.last_name')} label={t('users.field.last_name')} rules={[{ required: true }]}><Input autoComplete="off" /></Form.Item>
-            <Form.Item {...NO_FOR} name="roles" tooltip={hint('users.entity_roles')} label={t('users.entity_roles')} extra={t('users.entity_roles.help')}><EntityRolesInput entities={entities} /></Form.Item>
-            <Form.Item {...NO_FOR} name="user_role" tooltip={hint('users.app_role')} label={t('users.app_role')}><Radio.Group aria-label={t('users.app_role')} optionType="button" options={roleOptions} /></Form.Item>
-            <Form.Item {...NO_FOR} name="preferred_lang" tooltip={hint('users.lang')} label={t('users.field.lang')}><Radio.Group aria-label={t('users.field.lang')} optionType="button" options={[{ value: 'fr', label: 'FR' }, { value: 'nl', label: 'NL' }]} /></Form.Item>
+            <GroupItem name="roles" tooltip={hint('users.entity_roles')} label={t('users.entity_roles')} extra={t('users.entity_roles.help')}><EntityRolesInput entities={entities} /></GroupItem>
+            <GroupItem name="user_role" tooltip={hint('users.app_role')} label={t('users.app_role')}><Radio.Group aria-label={t('users.app_role')} optionType="button" options={roleOptions} /></GroupItem>
+            <GroupItem name="preferred_lang" tooltip={hint('users.lang')} label={t('users.field.lang')}><Radio.Group aria-label={t('users.field.lang')} optionType="button" options={[{ value: 'fr', label: 'FR' }, { value: 'nl', label: 'NL' }]} /></GroupItem>
             {/* Modèle Microsoft 365 (standard v3.2, section 8.1) */}
-            <Form.Item {...NO_FOR} name="password_mode" tooltip={hint('users.password_mode')} label={t('users.password.mode')}>
+            <GroupItem name="password_mode" tooltip={hint('users.password_mode')} label={t('users.password.mode')}>
               <Radio.Group aria-label={t('users.password.mode')} optionType="button" options={[{ value: 'generated', label: t('users.password.generated') }, { value: 'manual', label: t('users.password.manual') }]} />
-            </Form.Item>
+            </GroupItem>
             {mode === 'manual' && (
               <Form.Item name="password" tooltip={hint('users.password')} label={t('users.password.value')} rules={[{ required: true, min: 8 }]}><Input.Password autoComplete="new-password" /></Form.Item>
             )}
