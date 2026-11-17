@@ -1,18 +1,19 @@
 /** Affichage d'une fiche d'aide : rôle de l'écran, zones, capture, procédures, questions (code et FAQ locale). */
+import type { ReactNode } from 'react';
 import { Collapse, Space, Tag, Typography } from 'antd';
 import { roleKey, type HelpTopic, type L } from './types';
 import RichText from './RichText';
 import { useI18n } from '../contexts/I18nContext';
 
-export interface LocalFaq { id: number; question_fr: string; question_nl: string; answer_fr: string; answer_nl: string }
+export interface LocalFaq { id: number; topic_id?: string | null; question_fr: string; question_nl: string; answer_fr: string; answer_nl: string; is_active?: number }
 
-export default function TopicView({ topic, localFaq = [], expanded = false, anchor = true }: { topic: HelpTopic; localFaq?: LocalFaq[]; expanded?: boolean; anchor?: boolean }) {
+export default function TopicView({ topic, localFaq = [], expanded = false, anchor = true, faqActions }: { topic: HelpTopic; localFaq?: LocalFaq[]; expanded?: boolean; anchor?: boolean; faqActions?: (f: LocalFaq) => ReactNode }) {
   const { t, lang } = useI18n();
   const tx = (l: L) => l[lang] || l.fr;
   const shotSrc = (id: string) => `/help/${lang}/${id}.jpg`;
   const procItems = topic.procedures.map((p, i) => ({
     key: String(i),
-    label: tx(p.title),
+    label: <RichText text={tx(p.title)} />,
     children: (
       <div>
         <Typography.Paragraph type="secondary"><RichText text={tx(p.when)} /></Typography.Paragraph>
@@ -26,8 +27,8 @@ export default function TopicView({ topic, localFaq = [], expanded = false, anch
     ),
   }));
   const faq = [
-    ...topic.faq.map((f, i) => ({ key: `c${i}`, label: tx(f.q), children: <RichText text={tx(f.a)} /> })),
-    ...localFaq.map((f) => ({ key: `l${f.id}`, label: lang === 'nl' ? f.question_nl : f.question_fr, children: lang === 'nl' ? f.answer_nl : f.answer_fr })),
+    ...topic.faq.map((f, i) => ({ key: `c${i}`, label: <RichText text={tx(f.q)} />, children: <RichText text={tx(f.a)} /> })),
+    ...localFaq.map((f) => ({ key: `l${f.id}`, label: lang === 'nl' ? f.question_nl : f.question_fr, children: <Space direction="vertical"><span style={{ whiteSpace: 'pre-wrap' }}>{lang === 'nl' ? f.answer_nl : f.answer_fr}</span>{faqActions?.(f)}</Space> })),
   ];
   return (
     <div className="help-topic" id={anchor ? `help-${topic.id}` : undefined}>

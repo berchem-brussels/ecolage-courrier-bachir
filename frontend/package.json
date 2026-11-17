@@ -1,6 +1,6 @@
 {
   "name": "courrier-frontend",
-  "version": "0.2.7",
+  "version": "0.2.9",
   "private": true,
   "license": "EUPL-1.2",
   "type": "module",
@@ -8,6 +8,10 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "test": "vitest run",
+    "help:demo": "node help-capture/demo-server.cjs",
+    "help:capture": "playwright test -c help-capture/playwright.help.config.ts capture.spec.ts",
+    "help:audit": "playwright test -c help-capture/playwright.help.config.ts audit-fiches.spec.ts",
+    "help:check": "HELP_STRICT=1 vitest run src/test/help.test.ts",
     "a11y": "eslint -c .eslintrc.a11y.json --no-eslintrc --ext .tsx src"
   },
   "dependencies": {
@@ -20,6 +24,7 @@
     "react-router-dom": "^7.18.4"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.1",
     "@testing-library/jest-dom": "^7.0.0",
     "@testing-library/react": "^16.3.2",
     "@types/node": "^26.1.1",

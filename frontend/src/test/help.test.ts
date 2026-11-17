@@ -52,10 +52,10 @@ describe('aide par écran', () => {
     }
   });
 
-  it('rédaction : aucune abréviation, aucune personne nommée', () => {
+  it('rédaction : aucune abréviation, aucune personne nommée (ni titre de civilité suivi d\'un nom, ni adresse électronique)', () => {
     for (const tp of TOPICS) for (const l of allTexts(tp)) for (const s of texts(l)) {
       expect(s, `${tp.id} : ${s.slice(0, 50)}`).not.toMatch(/\betc\b|\bex\.|\bp\. ?ex|\bn°|\bcf\.|\bi\.e\./i);
-      expect(s, `${tp.id}`).not.toMatch(/Schmitz|Ziegler|El Madani|Bachir|Renaud|Julie/);
+      expect(s, `${tp.id} : personne nommée`).not.toMatch(/\b(Monsieur|Madame|Mme|Mevrouw|Mijnheer)\s+[A-ZÉ]|@(?!exemple|voorbeeld)[a-z0-9-]+\./);
     }
   });
 
@@ -74,6 +74,32 @@ describe('aide par écran', () => {
     }
   });
 
+  it('repères : chaque fiche a une capture d\'ensemble, ses repères [[n]] vont de 1 au nombre de repères de la capture, chaque capture est utilisée', () => {
+    for (const tp of TOPICS) {
+      const shots = new Map(tp.shots.map((s) => [s.id, s]));
+      expect(tp.overviewShot, `${tp.id} : capture d'ensemble`).toBeTruthy();
+      const over = shots.get(tp.overviewShot as string);
+      expect(over, `${tp.id} : ${tp.overviewShot}`).toBeTruthy();
+      const used = new Set<string>([tp.overviewShot as string]);
+      for (const p of tp.procedures) for (const id of p.shots || []) { expect(shots.has(id), `${tp.id} : ${id}`).toBe(true); used.add(id); }
+      for (const s of tp.shots) expect(used.has(s.id), `${tp.id} : capture ${s.id} jamais utilisée`).toBe(true);
+      const nums = [...new Set(tp.layout.flatMap((l) => [...l.fr.matchAll(/\[\[(\d+)\]\]/g)].map((m) => Number(m[1]))))].sort((a, b) => a - b);
+      expect(nums, `${tp.id} : repères du texte`).toEqual((over?.marks || []).map((_, i) => i + 1));
+      for (const l of tp.layout) expect([...l.fr.matchAll(/\[\[(\d+)\]\]/g)].map((m) => m[1]), `${tp.id} : repères FR et NL différents`).toEqual([...l.nl.matchAll(/\[\[(\d+)\]\]/g)].map((m) => m[1]));
+      for (const s of tp.shots) { expect(s.path.startsWith('/'), s.id).toBe(true); expect(s.marks?.length ?? 0, `${tp.id} : ${s.id} sans repère`).toBeGreaterThan(0); }
+    }
+  });
+
+  it('chaque capture de procédure illustre la bonne procédure (la capture de la création d\'un compte était sur une autre procédure en 0.2.8)', () => {
+    const EXPECTED: Record<string, string[]> = {
+      'users-create': ['Créer un compte'], 'contacts-create': ['Créer un contact'], 'tickets-report': ['Signaler un problème ou poser une question'],
+      'register-fiche': ['Corriger un courrier enregistré', 'Annuler un enregistrement'],
+    };
+    const seen: Record<string, string[]> = {};
+    for (const tp of TOPICS) for (const p of tp.procedures) for (const id of p.shots || []) (seen[id] ||= []).push(p.title.fr);
+    expect(seen).toEqual(EXPECTED);
+  });
+
   it('identifiants de capture uniques et légendes FR et NL', () => {
     const ids = TOPICS.flatMap((tp) => tp.shots.map((s) => s.id));
     expect(new Set(ids).size).toBe(ids.length);
@@ -89,6 +115,19 @@ describe('captures présentes (npm run help:check, après npm run help:capture, 
   });
 });
 
+describe('présentation de l\'aide', () => {
+  it('les listes des fiches ont une marge à gauche : les puces ne collent pas au bord (défaut constaté à la recette de la 0.2.7)', () => {
+    const css = fs.readFileSync(path.join(SRC, 'index.css'), 'utf8');
+    expect(css).toMatch(/\.help-topic ul, \.help-topic ol \{[^}]*padding-left: 2\d+px/);
+  });
+
+  it('titres de procédure et questions passent par l\'affichage qui remplace les clés par les libellés (défaut constaté à la recette de la 0.2.7)', () => {
+    const view = fs.readFileSync(path.join(SRC, 'help', 'TopicView.tsx'), 'utf8');
+    expect(view).toMatch(/label: <RichText text=\{tx\(p\.title\)\} \/>/);
+    expect(view).toMatch(/label: <RichText text=\{tx\(f\.q\)\} \/>/);
+  });
+});
+
 describe('sécurité du texte d\'aide', () => {
   it('aucun HTML interprété : le texte des fiches passe par React, jamais par dangerouslySetInnerHTML ni innerHTML', () => {
     for (const f of tsx(SRC)) expect(fs.readFileSync(f, 'utf8'), path.basename(f)).not.toMatch(/dangerouslySetInnerHTML|\.innerHTML\s*=/);
@@ -101,11 +140,19 @@ describe('sécurité du texte d\'aide', () => {
 });
 
 describe('explication de chaque champ', () => {
-  it('tout Form.Item nommé porte une infobulle', () => {
+  it('tout Form.Item nommé et tout GroupItem porte une infobulle', () => {
     for (const f of tsx(SRC)) {
       const src = fs.readFileSync(f, 'utf8');
-      for (const m of src.matchAll(/<Form\.Item\b[^>]*\bname=[^>]*>/g)) expect(m[0], `${path.basename(f)} : ${m[0].slice(0, 80)}`).toMatch(/tooltip=/);
+      // GroupItem.tsx est l'enveloppe qui reçoit l'infobulle de ses appelants : elle est contrôlée à leur appel.
+      if (!f.endsWith('GroupItem.tsx')) for (const m of src.matchAll(/<Form\.Item\b[^>]*\bname=[^>]*>/g)) expect(m[0], `${path.basename(f)} : ${m[0].slice(0, 80)}`).toMatch(/tooltip=/);
+      for (const m of src.matchAll(/<GroupItem\b[^>]*>/g)) expect(m[0], `${path.basename(f)} : ${m[0].slice(0, 80)}`).toMatch(/tooltip=/);
     }
+  });
+
+  it('aucun titre de champ en élément label sans champ associé : plus de htmlFor neutralisé, les groupes passent par GroupItem', () => {
+    for (const f of tsx(SRC)) expect(fs.readFileSync(f, 'utf8'), path.basename(f)).not.toMatch(/NO_FOR|htmlFor: undefined/);
+    const groups = tsx(SRC).reduce((n, f) => n + (fs.readFileSync(f, 'utf8').match(/<GroupItem\b/g) || []).length, 0);
+    expect(groups).toBeGreaterThanOrEqual(20);
   });
 
   it('chaque clé appelée existe ; chaque explication fait 12 caractères au moins en FR et en NL', () => {
@@ -126,6 +173,19 @@ describe('explication de chaque champ', () => {
     }
   });
 
+  it('aucun champ de saisie sans identifiant ni nom, hors Form.Item nommé (remarque de Chrome constatée en 0.2.8)', () => {
+    for (const f of tsx(SRC)) {
+      const lines = fs.readFileSync(f, 'utf8').split('\n');
+      lines.forEach((line, i) => {
+        for (const m of line.matchAll(/<Input(?:\.TextArea|\.Password|\.Search)?(?=[\s/>])/g)) {
+          const near = lines.slice(Math.max(0, i - 3), i + 1).join(' ');
+          const named = /\b(name|id)=/.test(line.slice(m.index)) || /<Form\.Item\b[^>]*\bname=/.test(near) || /<GroupItem\b/.test(near);
+          expect(named, `${path.basename(f)}:${i + 1} : ${line.trim().slice(0, 90)}`).toBe(true);
+        }
+      });
+    }
+  });
+
   it('aucun champ de saisie sans attribut d\'autocomplétion (remarque des outils de développement de Chrome)', () => {
     for (const f of tsx(SRC)) {
       for (const line of fs.readFileSync(f, 'utf8').split('\n')) {
@@ -134,5 +194,23 @@ describe('explication de chaque champ', () => {
         }
       }
     }
+  });
+});
+
+describe('captures : fichiers livrés dans l\'archive', () => {
+  const dir = (l: string) => path.resolve(process.cwd(), 'public', 'help', l);
+  it('chaque capture existe en FR et en NL, est une image JPEG et ne dépasse pas 400 Ko', () => {
+    for (const s of TOPICS.flatMap((tp) => tp.shots)) for (const l of ['fr', 'nl']) {
+      const f = path.join(dir(l), `${s.id}.jpg`);
+      expect(fs.existsSync(f), `${l}/${s.id}.jpg absent : npm run help:capture`).toBe(true);
+      const b = fs.readFileSync(f);
+      expect([b[0], b[1], b[2]], `${l}/${s.id}.jpg n'est pas une image JPEG`).toEqual([0xff, 0xd8, 0xff]);
+      expect(b.length, `${l}/${s.id}.jpg`).toBeLessThan(400 * 1024);
+    }
+  });
+
+  it('aucune capture sans fiche : les dossiers FR et NL ne contiennent que les images décrites', () => {
+    const ids = new Set(TOPICS.flatMap((tp) => tp.shots.map((s) => `${s.id}.jpg`)));
+    for (const l of ['fr', 'nl']) for (const f of fs.readdirSync(dir(l))) expect(ids.has(f), `${l}/${f}`).toBe(true);
   });
 });

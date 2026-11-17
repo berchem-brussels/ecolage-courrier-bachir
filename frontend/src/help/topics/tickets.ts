@@ -4,10 +4,11 @@ const topic: HelpTopic = {
   id: "tickets", path: "/tickets", group: "help", titleKey: "nav.tickets", roles: ["agent", "chef_service", "secretariat", "gestionnaire", "auditeur", "admin"],
   purpose: { fr: "Cet écran liste vos tickets : les questions et les problèmes que vous avez signalés. Une personne qui traite une file y voit aussi les tickets de sa file, avec des compteurs de suivi.", nl: "Dit scherm toont uw tickets: de vragen en problemen die u gemeld hebt. Een persoon die een wachtrij behandelt, ziet er ook de tickets van zijn wachtrij, met opvolgingstellers." },
   layout: [
-    { fr: "Le bouton {{tickets.report}}, présent en haut de chaque écran, ouvre le formulaire de signalement.", nl: "De knop {{tickets.report}}, bovenaan elk scherm aanwezig, opent het meldformulier." },
-    { fr: "Les compteurs {{tickets.stats.open}}, {{tickets.stats.overdue}}, {{tickets.stats.unassigned}} et {{tickets.stats.resolved}} ne s'affichent que pour une personne qui traite une file.", nl: "De tellers {{tickets.stats.open}}, {{tickets.stats.overdue}}, {{tickets.stats.unassigned}} en {{tickets.stats.resolved}} verschijnen enkel voor een persoon die een wachtrij behandelt." },
-    { fr: "La liste donne la référence, le titre, le type, l'entité, la priorité et le statut. Un clic sur une ligne ouvre le ticket.", nl: "De lijst geeft de referentie, de titel, het soort, de entiteit, de prioriteit en de status. Een klik op een rij opent het ticket." },
+    { fr: "[[1]] Le bouton {{tickets.report}}, présent en haut de chaque écran, ouvre le formulaire de signalement.", nl: "[[1]] De knop {{tickets.report}}, bovenaan elk scherm aanwezig, opent het meldformulier." },
+    { fr: "[[2]] Les compteurs {{tickets.stats.open}}, {{tickets.stats.overdue}}, {{tickets.stats.unassigned}} et {{tickets.stats.resolved}} ne s'affichent que pour une personne qui traite une file.", nl: "[[2]] De tellers {{tickets.stats.open}}, {{tickets.stats.overdue}}, {{tickets.stats.unassigned}} en {{tickets.stats.resolved}} verschijnen enkel voor een persoon die een wachtrij behandelt." },
+    { fr: "[[3]] La liste donne la référence, le titre, le type, l'entité, la priorité et le statut. Un clic sur une ligne ouvre le ticket.", nl: "[[3]] De lijst geeft de referentie, de titel, het soort, de entiteit, de prioriteit en de status. Een klik op een rij opent het ticket." },
   ],
+  overviewShot: "tickets-overview",
   procedures: [
     {
       title: { fr: "Signaler un problème ou poser une question", nl: "Een probleem melden of een vraag stellen" },
@@ -23,6 +24,7 @@ const topic: HelpTopic = {
         { problem: { fr: "Le champ de capture n'existe pas.", nl: "Het veld voor een schermafbeelding bestaat niet." }, solution: { fr: "Sur les écrans qui affichent du courrier, aucune capture n'est proposée, pour protéger les données personnelles : décrivez le problème par écrit.", nl: "Op schermen die post tonen wordt geen schermafbeelding aangeboden, om de persoonsgegevens te beschermen: beschrijf het probleem schriftelijk." } },
         { problem: { fr: "Une capture est refusée.", nl: "Een schermafbeelding wordt geweigerd." }, solution: { fr: "Elle doit être une image PNG ou JPEG de 2 mégaoctets au plus.", nl: "Ze moet een png- of jpeg-afbeelding van hoogstens 2 megabyte zijn." } },
       ],
+      shots: ["tickets-report"],
     },
     {
       title: { fr: "Suivre un ticket et répondre", nl: "Een ticket opvolgen en antwoorden" },
@@ -65,6 +67,9 @@ const topic: HelpTopic = {
     { q: { fr: "Pourquoi ne puis-je pas joindre de capture ?", nl: "Waarom kan ik geen schermafbeelding toevoegen?" }, a: { fr: "Sur les écrans qui affichent du courrier (registre, à enregistrer, enregistrer, consultations), aucune capture n'est proposée : elle pourrait montrer des données personnelles. Décrivez le problème par écrit.", nl: "Op schermen die post tonen (register, te registreren, inschrijven, raadplegingen) wordt geen schermafbeelding aangeboden: ze zou persoonsgegevens kunnen tonen. Beschrijf het probleem schriftelijk." } },
   ],
   seeAlso: ["help", "settings"],
-  shots: [],
+  shots: [
+    { id: "tickets-overview", path: "/tickets", marks: [{ sel: ".page-header button" }, { sel: ".ant-statistic" }, { sel: ".ant-table" }], caption: { fr: "Liste des tickets", nl: "Lijst van tickets" } },
+    { id: "tickets-report", path: "/tickets", actions: [{"click": "tickets.report"}, {"wait": 500}], clip: "modal", marks: [{ sel: ".ant-modal .ant-radio-group" }, { sel: "#title" }], caption: { fr: "Formulaire de signalement", nl: "Meldformulier" } },
+  ],
 };
 export default topic;

@@ -90,7 +90,7 @@ export default function RegisterPage() {
       </div>
       <Card>
         <Space wrap style={{ marginBottom: 16 }}>
-          <Input.Search allowClear aria-label={t('common.search')} placeholder={t('common.search')} defaultValue={q} onSearch={(v) => setFilter('q', v)} style={{ width: 260 }} />
+          <Input.Search allowClear name="q" aria-label={t('common.search')} placeholder={t('common.search')} defaultValue={q} onSearch={(v) => setFilter('q', v)} style={{ width: 260 }} />
           <Radio.Group optionType="button" aria-label={t('common.status')} value={status} onChange={(e) => setFilter('statut', e.target.value)}
             options={[{ value: '', label: t('common.all') }, { value: 'enregistre', label: t('mail.status.enregistre') }, { value: 'annule', label: t('mail.status.annule') }]} />
           <Radio.Group optionType="button" aria-label={t('common.year')} value={yearFilter} onChange={(e) => setFilter('annee', e.target.value === 'courante' ? '' : e.target.value)}

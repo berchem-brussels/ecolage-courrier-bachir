@@ -43,6 +43,7 @@ function buildApp() {
   app.use('/api/pieces', require('./routes/pieces'));
   app.use('/api/consultations', require('./routes/consultations'));
   app.use('/api/tickets', require('./routes/tickets'));
+  app.use('/api/faq', require('./routes/faq'));
   app.use('/api/settings', require('./routes/settings'));
 
   const { handleRpc } = require('./mcp');

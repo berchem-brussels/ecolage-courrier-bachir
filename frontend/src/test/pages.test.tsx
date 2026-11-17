@@ -105,12 +105,23 @@ describe('écrans', () => {
   const badLabels = (root: HTMLElement) => [...root.ownerDocument.querySelectorAll('label[for]')]
     .map((l) => ({ f: l.getAttribute('for') || '', e: root.ownerDocument.getElementById(l.getAttribute('for') || '') }))
     .filter((x) => !x.e || !LABELABLE.includes(x.e.tagName)).map((x) => `${x.f} -> ${x.e ? x.e.tagName : 'absent'}`);
+  // Une étiquette <label> sans attribut for et sans champ à l'intérieur est signalée par Chrome (« No label associated with a form field »,
+  // E23) : les titres de groupes de boutons passent par GroupItem, jamais par un label orphelin.
+  const orphanLabels = (root: HTMLElement) => [...root.ownerDocument.querySelectorAll('label')]
+    .filter((l) => !l.getAttribute('for') && !l.querySelector(LABELABLE.join(',').toLowerCase()))
+    .map((l) => (l.textContent || '').slice(0, 40));
+  // Chrome signale aussi un champ de saisie sans identifiant ni nom (« A form field element should have an id or name attribute »).
+  const unnamed = (root: HTMLElement) => [...root.ownerDocument.querySelectorAll('input, textarea, select')]
+    .filter((e) => !(e as HTMLInputElement).id && !(e as HTMLInputElement).name && !['hidden', 'checkbox', 'radio'].includes((e as HTMLInputElement).type) && e.getAttribute('aria-hidden') !== 'true')
+    .map((e) => e.outerHTML.slice(0, 100));
   for (const [name, C] of [...PAGES, ['MailDrawer', () => <MailDrawer mail={mails[0] as unknown as Mail} onClose={() => {}} onChanged={() => {}} />] as [string, React.ComponentType]]) {
     it(`${name} : chaque étiquette vise un champ de saisie`, async () => {
       const { container } = render(wrap(C, 'fr'));
       await waitFor(() => expect(container.ownerDocument.querySelector('h1, h2')).toBeTruthy());
       await new Promise((r) => setTimeout(r, 50));
       expect(badLabels(container)).toEqual([]);
+      expect(orphanLabels(container)).toEqual([]);
+      expect(unnamed(container)).toEqual([]);
     });
   }
 
@@ -120,12 +131,30 @@ describe('écrans', () => {
     await screen.findByRole('dialog');
     await screen.findByText(/Obliger le changement/);
     expect(badLabels(u.container)).toEqual([]);
+    expect(orphanLabels(u.container)).toEqual([]);
     u.unmount();
     const c = render(wrap(ContactsPage, 'fr'));
     fireEvent.click((await screen.findAllByRole('button', { name: /Nouveau contact/ }))[0]);
     await screen.findByRole('dialog');
     await screen.findAllByText(/Correspondentietaal|Langue de correspondance/);
     expect(badLabels(c.container)).toEqual([]);
+    expect(orphanLabels(c.container)).toEqual([]);
+  });
+
+  it('fenêtres des services, des types, des entités et des registres : étiquettes bien reliées, champs nommés (défaut de Chrome constaté en 0.2.8)', async () => {
+    const open = async (C: React.ComponentType, how: () => Promise<void>) => {
+      const r = render(wrap(C, 'fr'));
+      await how();
+      await screen.findByRole('dialog');
+      await new Promise((res) => setTimeout(res, 120));
+      expect(badLabels(r.container), 'étiquette qui vise un élément absent ou non saisissable').toEqual([]);
+      expect(orphanLabels(r.container), 'étiquette orpheline').toEqual([]);
+      expect(unnamed(r.container), 'champ sans identifiant ni nom').toEqual([]);
+      r.unmount();
+    };
+    await open(ServicesPage, async () => { fireEvent.click((await screen.findAllByRole('button', { name: /Nouveau service/ }))[0]); });
+    await open(TypesPage, async () => { fireEvent.click((await screen.findAllByRole('button', { name: /Nouveau type/ }))[0]); });
+    await open(EntitiesPage, async () => { await waitFor(() => expect(document.querySelector('.ant-table-row')).toBeTruthy()); fireEvent.click(document.querySelector('.ant-table-row') as Element); });
   });
 
   it('le registre affiche le numéro et l’expéditeur reçus de l’API', async () => {

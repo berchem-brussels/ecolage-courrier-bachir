@@ -5,10 +5,11 @@ const topic: HelpTopic = {
   purpose: { fr: "Cet écran sert à enregistrer un courrier reçu : l'application lui donne le numéro suivant du registre de l'entité. Le formulaire est prêt pour le courrier suivant dès que vous avez enregistré.", nl: "Dit scherm dient om een ontvangen brief in te schrijven: de toepassing geeft hem het volgende nummer van het register van de entiteit. Het formulier staat klaar voor de volgende brief zodra u ingeschreven hebt." },
   layout: [
     { fr: "Si vous avez un rôle dans les deux entités, des boutons en haut du formulaire choisissent l'entité dont le registre reçoit le courrier.", nl: "Als u een rol in beide entiteiten hebt, kiezen knoppen bovenaan het formulier in het register van welke entiteit de brief komt." },
-    { fr: "Les champs obligatoires sont {{mail.received_date}}, {{mail.channel}}, {{mail.sender}}, {{mail.subject}} et {{mail.type}}.", nl: "De verplichte velden zijn {{mail.received_date}}, {{mail.channel}}, {{mail.sender}}, {{mail.subject}} en {{mail.type}}." },
+    { fr: "[[1]] Les champs obligatoires sont {{mail.received_date}}, {{mail.channel}}, {{mail.sender}}, {{mail.subject}} et {{mail.type}}.", nl: "[[1]] De verplichte velden zijn {{mail.received_date}}, {{mail.channel}}, {{mail.sender}}, {{mail.subject}} en {{mail.type}}." },
     { fr: "Le bouton {{common.more}} affiche les champs facultatifs : langue, urgence, destinataire, référence de l'expéditeur, date du document, nombre de pièces et remarque.", nl: "De knop {{common.more}} toont de facultatieve velden: taal, urgentie, bestemmeling, referentie van de afzender, datum van het document, aantal stukken en opmerking." },
-    { fr: "Les blocs {{mail.session.count}} et {{mail.session.last}} comptent les courriers enregistrés depuis l'ouverture de l'écran et rappellent leurs numéros.", nl: "De blokken {{mail.session.count}} en {{mail.session.last}} tellen de brieven die sinds het openen van het scherm zijn ingeschreven en herinneren aan hun nummers." },
+    { fr: "[[2]] Les blocs {{mail.session.count}} et {{mail.session.last}} comptent les courriers enregistrés depuis l'ouverture de l'écran et rappellent leurs numéros.", nl: "[[2]] De blokken {{mail.session.count}} en {{mail.session.last}} tellen de brieven die sinds het openen van het scherm zijn ingeschreven en herinneren aan hun nummers." },
   ],
+  overviewShot: "registration-overview",
   procedures: [
     {
       title: { fr: "Enregistrer un courrier reçu", nl: "Een ontvangen brief inschrijven" },
@@ -55,6 +56,8 @@ const topic: HelpTopic = {
     { q: { fr: "Puis-je choisir le numéro ?", nl: "Kan ik het nummer kiezen?" }, a: { fr: "Non. L'application attribue toujours le numéro suivant, pour que le registre n'ait ni trou ni doublon.", nl: "Nee. De toepassing kent altijd het volgende nummer toe, zodat het register geen gaten of dubbels heeft." } },
   ],
   seeAlso: ["register", "inbox", "contacts"],
-  shots: [],
+  shots: [
+    { id: "registration-overview", path: "/enregistrer", marks: [{ sel: "form" }, { sel: ".ant-col-lg-8 .ant-card" }], caption: { fr: "Enregistrer un courrier", nl: "Een brief inschrijven" } },
+  ],
 };
 export default topic;

@@ -108,3 +108,94 @@ describe('centre d\'aide', () => {
     await screen.findByText('Le support de test');
   });
 });
+
+const LOCAL = [
+  { id: 1, topic_id: 'register', question_fr: 'Que faire d\'un courrier abîmé ?', question_nl: 'Wat te doen met een beschadigde brief?', answer_fr: 'Notez-le dans la remarque.', answer_nl: 'Noteer het in de opmerking.', is_active: 1 },
+  { id: 2, topic_id: null, question_fr: 'À qui poser une question ?', question_nl: 'Aan wie stel ik een vraag?', answer_fr: 'Au support.', answer_nl: 'Aan de ondersteuning.', is_active: 1 },
+  { id: 3, topic_id: 'register', question_fr: 'Ancienne question retirée', question_nl: 'Oude ingetrokken vraag', answer_fr: 'x', answer_nl: 'y', is_active: 0 },
+];
+const calls: { url: string; method?: string }[] = [];
+function stubFaq() {
+  calls.length = 0;
+  vi.stubGlobal('fetch', vi.fn(async (url: string, init?: { method?: string }) => {
+    calls.push({ url, method: init?.method });
+    const data = url.startsWith('/api/faq') ? LOCAL : {};
+    return { ok: true, status: 200, statusText: 'OK', json: async () => ({ data, meta: { envelope: 1 }, pagination: { total: LOCAL.length, limit: 200, offset: 0 } }) };
+  }));
+}
+
+describe('FAQ locale', () => {
+  it('le panneau de l\'écran montre les questions locales de l\'écran, sans celles qui sont retirées', async () => {
+    stubFaq();
+    wrap(<HelpButton />, '/registre');
+    fireEvent.click(screen.getByRole('button', { name: 'Aide' }));
+    await screen.findByText('Que faire d\'un courrier abîmé ?');
+    expect(screen.queryByText('Ancienne question retirée')).toBeNull();
+    expect(calls.some((c) => c.url === '/api/faq?topic_id=register')).toBe(true);
+  });
+
+  it('en néerlandais, la question locale s\'affiche en néerlandais', async () => {
+    stubFaq();
+    wrap(<HelpButton />, '/registre', 'nl');
+    fireEvent.click(screen.getByRole('button', { name: 'Help' }));
+    await screen.findByText('Wat te doen met een beschadigde brief?');
+  });
+
+  it('centre d\'aide : questions générales et questions d\'écran ; le lecteur ne voit ni bouton d\'ajout ni question retirée', async () => {
+    stubFaq();
+    held = ['secretariat'];
+    wrap(<HelpPage />, '/help');
+    await screen.findByText('À qui poser une question ?');
+    await screen.findByText('Que faire d\'un courrier abîmé ?');
+    expect(screen.queryByText('Ancienne question retirée')).toBeNull();
+    expect(screen.queryByRole('button', { name: /Ajouter une question/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Retirer' })).toBeNull();
+  });
+
+  it('le gestionnaire du registre ajoute, corrige et retire ; il voit aussi les questions retirées', async () => {
+    stubFaq();
+    held = ['gestionnaire'];
+    wrap(<HelpPage />, '/help');
+    await screen.findByText('Ancienne question retirée');
+    expect(screen.getByRole('button', { name: /Ajouter une question/ })).toBeInTheDocument();
+    // Les questions sont repliées : on ouvre une question active, puis la question retirée.
+    fireEvent.click(screen.getByText('À qui poser une question ?'));
+    await screen.findByRole('button', { name: 'Retirer' });
+    expect(screen.getAllByRole('button', { name: 'Modifier' }).length).toBeGreaterThan(0);
+    fireEvent.click(screen.getByText('Ancienne question retirée'));
+    await screen.findByText('Retirée');
+    fireEvent.click(screen.getByRole('button', { name: /Ajouter une question/ }));
+    await screen.findByText(/lue par toutes les personnes connectées/);
+    for (const label of ['Écran concerné', 'Question en français', 'Question en néerlandais', 'Réponse en français', 'Réponse en néerlandais']) expect(screen.getByText(label)).toBeInTheDocument();
+    expect(document.querySelectorAll('.ant-modal .ant-form-item-tooltip').length).toBe(5);
+  });
+
+  it('l\'administrateur gère aussi la FAQ ; un agent sans rôle de registre ne la gère pas', async () => {
+    stubFaq();
+    admin = true;
+    const a = wrap(<HelpPage />, '/help');
+    await screen.findByRole('button', { name: /Ajouter une question/ });
+    a.unmount();
+    admin = false; held = ['agent'];
+    wrap(<HelpPage />, '/help');
+    await screen.findByText('À qui poser une question ?');
+    expect(screen.queryByRole('button', { name: /Ajouter une question/ })).toBeNull();
+  });
+
+  it('défaut de la 0.2.7 : le choix du parcours n\'est élargi à tout le mode d\'emploi que par un changement de lien', async () => {
+    const { needsAll, defaultPath } = await import('../pages/HelpPage');
+    expect(needsAll('agent', 'register')).toBe(true);
+    expect(needsAll('gestionnaire', 'register')).toBe(false);
+    expect(needsAll('all', 'register')).toBe(false);
+    expect(needsAll('admin', '')).toBe(false);
+    expect(defaultPath(false, ['secretariat', 'auditeur'])).toBe('secretariat');
+    expect(defaultPath(true, [])).toBe('admin');
+  });
+
+  it('défaut de la 0.2.7 : plus aucune clé brute dans l\'impression complète, titres et questions compris', async () => {
+    stubFaq();
+    wrap(<HelpPage />, '/help?print=1');
+    await waitFor(() => expect(document.querySelectorAll('.help-topic').length).toBe(TOPICS.length));
+    expect(document.body.textContent).not.toMatch(/\{\{|\}\}/);
+  });
+});

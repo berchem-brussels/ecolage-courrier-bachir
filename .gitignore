@@ -34,3 +34,8 @@ CAHIER-DES-CHARGES*.md
 *.log
 .DS_Store
 Thumbs.db
+
+# Captures de l'aide : seuls les JPEG sont versés ; rapports et résultats locaux du script Playwright exclus
+frontend/public/help/report-*.txt
+frontend/test-results/
+frontend/playwright-report/

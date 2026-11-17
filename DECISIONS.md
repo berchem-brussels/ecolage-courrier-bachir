@@ -1,6 +1,6 @@
 # Décisions et actions
 
-Application courrier · version 0.2.7 · journal au 03/11/2026
+Application courrier · version 0.2.9 · journal au 17/11/2026
 
 Ce fichier réunit les décisions prises pendant le développement, les règles de travail convenues avec le conducteur du projet et les actions à faire. Les décisions de périmètre du 13/10/2026 (A1 à A12) sont dans le cahier des charges, section 2.
 
@@ -67,6 +67,14 @@ Ce fichier réunit les décisions prises pendant le développement, les règles 
 | 03/11/2026 | Publication de la 0.2.6 | Branche `version/v0.2.6`, demande de fusion n° 5, travail « tests » vert, fusion `4871a46`, étiquette `v0.2.6`, publication immuable avec l'archive ; empreinte SHA-256 identique sur le PC, sur GitHub et dans l'archive de Claude | Conducteur du projet |
 | 03/11/2026 | Parcours du centre d'aide | Un parcours par rôle (agent, responsable de service, secrétariat, gestionnaire du registre, auditeur, administrateur), choisi par défaut d'après les rôles de la personne, plus « tout le mode d'emploi » ; fiches classées dans l'ordre où le rôle s'en sert | Conducteur du projet (« go » du 03/11/2026) |
 | 03/11/2026 | Version 0.2.7 | Aide par écran 1/2 : 14 fiches FR et NL, panneau latéral, centre d'aide, explication de chaque champ, contrôles bloquants ; repères numérotés et captures en 0.2.8 ; E23 corrigée en partie, relevé de Chrome à la recette | Conducteur du projet (« go » du 03/11/2026) |
+| 03/11/2026 | Recette de la 0.2.7 sur NIXUS | 10 contrôles sur 10 conformes (version et bouton « Aide », panneau du registre, procédure dépliée, lien vers le mode d'emploi complet, parcours « Administrateur » puis « Secrétariat », recherche, impression, explications de champs, néerlandais) ; contrôles 7, 8 et 10 sur confirmation orale ; relevé de Chrome : 4 remarques « No label », aucune « autocomplete » ni « id or name » ; trois défauts de présentation notés : clé brute dans une question, puces collées, parcours écrasé par `#` | Conducteur du projet |
+| 03/11/2026 | Publication de la 0.2.7 | Publiée telle quelle, défauts à corriger en 0.2.8 (recommandation de Claude retenue) ; branche `version/v0.2.7`, demande de fusion n° 6, travail « tests » vert, fusion `11ac1a6`, étiquette `v0.2.7`, publication immuable ; empreinte SHA-256 identique sur le PC, sur GitHub et dans l'archive de Claude | Conducteur du projet |
+| 03/11/2026 | FAQ locale | Gérée par l'administrateur et par les gestionnaires du registre (E40) ; commune aux deux entités avec avertissement (E41) ; ticket résolu proposable pour la FAQ | Conducteur du projet (« go » du 03/11/2026, proposition de Claude par défaut) |
+| 03/11/2026 | Titres de groupes de boutons | Composant `GroupItem` à la place des `<label>` orphelins, vérifié ensuite dans Chrome (E23) | Conducteur du projet (« go » du 03/11/2026, proposition de Claude par défaut) |
+| 03/11/2026 | Version 0.2.8 | Aide 2/2 : captures annotées, repères, FAQ locale en base, correction des trois défauts, `GroupItem`, nginx ; Playwright à la version du standard (`^1.61.1`, 1.64.1 installée) ; SSO : recette réelle après création de l'inscription Entra ID, séparément | Conducteur du projet (« go » du 03/11/2026) |
+| 17/11/2026 | Recette de la 0.2.8 sur NIXUS | Installée le 17/11/2026 (sauvegarde de 43 sauvegardes, construction en 2 min 46 s, migration 008 appliquée, API 0.2.8) ; conformes à la main : version, panneau avec capture annotée et repères, marge des puces, néerlandais, nginx, FAQ (ajout et affichage), remarques de Chrome sur 4 écrans sur 5 ; le script de recette lancé sur le PC du conducteur : 16 contrôles conformes sur 21, dont tout le cycle de la FAQ, nginx et le néerlandais | Conducteur du projet |
+| 17/11/2026 | 0.2.8 non publiée, 0.2.9 | Défauts relevés à la recette : erreur de la fiche « Entités et registres », étiquette de « Nouveau service », champs sans identifiant ni nom, capture de « Créer un compte » sur la mauvaise procédure. Choix du conducteur : « le mieux et le plus rapide » ; recommandation de Claude retenue : la 0.2.8 n'est pas publiée, la 0.2.9 la remplace et sera publiée après sa recette (précédent : 0.2.3 remplacée par 0.2.4) | Conducteur du projet |
+| 17/11/2026 | Script de recette | Claude ne peut pas atteindre `192.0.2.10` (adresse interne) : il écrit un script que le conducteur lance sur son PC (Node, Playwright, Chrome du poste) ; compte et mot de passe tapés dans la fenêtre PowerShell, jamais dans la conversation ni dans le script ; le script est conservé dans le dépôt (`frontend/help-capture/recette.mjs`) | Conducteur du projet |
 
 ## 2. Règles de travail convenues
 
@@ -82,6 +90,7 @@ Elles s'ajoutent aux règles du standard (section 2).
 8. Avant de livrer un changement d'outil de construction ou de dépendance de l'interface : comparer, en français et en néerlandais, les textes et les captures de toutes les pages avec la version précédente, avec un compte qui a les rôles de secrétariat. Les tests tournent sous Node et ne voient pas les défauts du moteur de construction.
 9. Le navigateur peut ranger les téléchargements dans un dossier OneDrive : GITHUB.md attend `Téléchargements`. Chercher l'archive (`Get-ChildItem -Path $HOME -Recurse -Filter <archive>`), puis la copier dans `Téléchargements` avant la section 5.
 10. Les commandes de NIXUS (session SSH) et celles de GitHub (PowerShell du PC) se tapent dans deux fenêtres distinctes : `exit` ferme la session SSH avant les commandes GitHub.
+11. Avant de livrer une version qui change un écran ou une fiche d'aide : `npm run help:audit` sur l'instance de démonstration (chaque libellé cité par une zone doit exister à l'écran), puis, après le déploiement, le script de recette sur l'instance d'acceptance. Une fiche décrite sans avoir été vérifiée contre l'écran est une erreur en puissance (E42).
 
 ## 3. Actions à faire
 
@@ -102,5 +111,7 @@ Elles s'ajoutent aux règles du standard (section 2).
 | 13 | Ajouter à `docs/SECURITE.md` que `npm audit` ne signale pas `multer` : fait en 0.2.3. Corriger `sudo` devant `ls -t` : fait dans le dépôt en 0.2.3 | Claude | Fait |
 | 14 | Mettre à jour le contenu type de `ci.yml` dans GITHUB.md avec `permissions: contents: read` (E28 : appliqué en 0.2.5) ; informer Renaud de `qs` (E31), du bouton « Tester » (E32) et des deux défauts du gabarit 1.3.0 (E29 nginx 1 Mo, E30 redirection ouverte) | Conducteur du projet, Renaud | Avec la 0.2.5 |
 | 15 | Informer Renaud de la restriction des captures de tickets sur les écrans de courrier (E35), du garde-fou sur l'écran déclaré (E36) et de la limite nginx de 1 Mo du gabarit, corrigée par un bloc dédié (E29) | Conducteur du projet | Avec la 0.2.6 |
-| 16 | Relever les remarques de Chrome (F12, onglet Issues) sur Enregistrer un courrier, Utilisateurs (création), Paramètres, Tickets (signalement) et le centre d'aide, puis les transmettre à Claude (E23) | Conducteur du projet | À la recette de la 0.2.7 |
+| 16 | Lancer `node recette.mjs` sur l'instance d'acceptance après la 0.2.9 et transmettre le rapport à Claude : 0 échec attendu, dont 0 remarque de Chrome sur 11 écrans et fenêtres (E23) | Conducteur du projet | À la recette de la 0.2.9 |
 | 17 | Examiner l'alerte Dependabot n° 29 sur GitHub (Security › Dependabot) et dire s'il s'agit de la chaîne `eslint` (E34, E38) | Conducteur du projet | Avant la 0.2.8 |
+| 18 | Faire créer par l'administrateur du locataire l'inscription d'application Entra ID (annuaire, identifiant, secret, adresse de retour `https://<adresse>/api/auth/callback`, consentement pour `openid profile email`) puis jouer la recette réelle en 7 points | Administrateur du locataire Microsoft 365, conducteur du projet | Dès que l'inscription existe |
+| 19 | Informer Renaud : FAQ gérée par les gestionnaires (E40) et commune aux deux entités (E41) | Conducteur du projet | Avec la 0.2.8 |

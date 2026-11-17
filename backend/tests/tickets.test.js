@@ -223,3 +223,10 @@ test('capture de 2 Mo acceptée par le serveur, au-delà refusée', async () => 
   const ko = await secAc.post('/api/tickets', { type: 'bug', title: 'Trop grande', screen: 'tickets', screenshot: `data:image/png;base64,${trop.toString('base64')}` });
   assert.equal(ko.status, 413);
 });
+
+test('nginx : /help reste l\'écran du centre d\'aide malgré le dossier des captures, sans redirection absolue', () => {
+  const conf = fs.readFileSync(path.join(__dirname, '..', '..', 'frontend', 'nginx.conf'), 'utf8');
+  assert.match(conf, /absolute_redirect off;/);
+  assert.match(conf, /location \/ \{\s*try_files \$uri \/index\.html;/);
+  assert.doesNotMatch(conf, /try_files \$uri \$uri\//);
+});

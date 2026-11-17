@@ -4,11 +4,12 @@ const topic: HelpTopic = {
   id: "inbox", path: "/a-enregistrer", group: "main", titleKey: "nav.inbox", roles: ["secretariat", "gestionnaire"],
   purpose: { fr: "Cet écran sert à enregistrer le courrier scanné. Vous déposez les fichiers du copieur, l'application les met en file, et vous transformez chaque fichier en courrier enregistré, l'un après l'autre.", nl: "Dit scherm dient om gescande post in te schrijven. U plaatst de bestanden van de kopieermachine, de toepassing zet ze in een wachtrij en u maakt van elk bestand een ingeschreven brief, een voor een." },
   layout: [
-    { fr: "Le cadre {{piece.drop}} reçoit les fichiers : PDF, JPEG ou PNG, avec la taille maximale indiquée dans le cadre.", nl: "Het kader {{piece.drop}} ontvangt de bestanden: pdf, jpeg of png, met de maximale grootte die in het kader staat." },
-    { fr: "Le fichier en cours s'affiche à gauche avec son nom, sa taille et la date de dépôt ; le formulaire {{inbox.form}} est à droite.", nl: "Het bestand in behandeling verschijnt links met zijn naam, zijn grootte en de datum van de plaatsing; het formulier {{inbox.form}} staat rechts." },
-    { fr: "Les boutons {{inbox.previous}} et {{inbox.next}} parcourent la file ; {{inbox.list}} la montre en entier.", nl: "De knoppen {{inbox.previous}} en {{inbox.next}} doorlopen de wachtrij; {{inbox.list}} toont ze volledig." },
-    { fr: "Le bouton {{piece.reject}} retire de la file un fichier qui n'est pas un courrier.", nl: "De knop {{piece.reject}} haalt een bestand dat geen brief is uit de wachtrij." },
+    { fr: "[[1]] Le cadre {{piece.drop}} reçoit les fichiers : PDF, JPEG ou PNG, avec la taille maximale indiquée dans le cadre.", nl: "[[1]] Het kader {{piece.drop}} ontvangt de bestanden: pdf, jpeg of png, met de maximale grootte die in het kader staat." },
+    { fr: "[[2]] Le fichier en cours s'affiche à gauche avec son nom, sa taille et la date de dépôt ; le formulaire {{inbox.form}} est à droite.", nl: "[[2]] Het bestand in behandeling verschijnt links met zijn naam, zijn grootte en de datum van de plaatsing; het formulier {{inbox.form}} staat rechts." },
+    { fr: "[[3]] Les boutons {{inbox.previous}} et {{inbox.next}} parcourent la file ; {{inbox.list}} la montre en entier.", nl: "[[3]] De knoppen {{inbox.previous}} en {{inbox.next}} doorlopen de wachtrij; {{inbox.list}} toont ze volledig." },
+    { fr: "[[4]] Le bouton {{piece.reject}} retire de la file un fichier qui n'est pas un courrier.", nl: "[[4]] De knop {{piece.reject}} haalt een bestand dat geen brief is uit de wachtrij." },
   ],
+  overviewShot: "inbox-overview",
   procedures: [
     {
       title: { fr: "Déposer des fichiers scannés", nl: "Gescande bestanden plaatsen" },
@@ -55,6 +56,8 @@ const topic: HelpTopic = {
     { q: { fr: "Quelle différence avec {{nav.registration}} ?", nl: "Wat is het verschil met {{nav.registration}}?" }, a: { fr: "{{nav.registration}} sert à enregistrer un courrier papier sans fichier. {{nav.inbox}} sert à enregistrer le courrier scanné, avec son fichier.", nl: "{{nav.registration}} dient om een papieren brief zonder bestand in te schrijven. {{nav.inbox}} dient om gescande post met zijn bestand in te schrijven." } },
   ],
   seeAlso: ["registration", "register"],
-  shots: [],
+  shots: [
+    { id: "inbox-overview", path: "/a-enregistrer", marks: [{ sel: ".ant-upload" }, { sel: "form" }, { sel: "button", text: "inbox.next" }, { sel: "button", text: "piece.reject" }], caption: { fr: "File « À enregistrer »", nl: "Wachtrij « Te registreren »" } },
+  ],
 };
 export default topic;

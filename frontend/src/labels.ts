@@ -23,10 +23,3 @@ export function contactLabel(c: { kind?: string; name?: string | null; first_nam
  */
 export const RADIOGROUP = { role: 'radiogroup' } as Record<string, string>;
 
-/**
- * Étiquette d'un groupe de boutons (Radio.Group) ou d'un champ composé dans un Form.Item : sans attribut « for ».
- * Ant Design pose for = identifiant du champ, que Radio.Group met sur un bloc <div> ; Chrome signale alors une étiquette
- * qui ne vise aucun champ de saisie (défaut relevé à la recette de la 0.2.0, présent depuis la 0.1.0). Le nom accessible
- * du groupe vient de son aria-label. Ant Design reprend la valeur htmlFor donnée au Form.Item à la place de l'identifiant.
- */
-export const NO_FOR = { htmlFor: undefined } as { htmlFor?: string };

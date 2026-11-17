@@ -65,7 +65,7 @@ export default function ConsultationsPage() {
       <Alert type="info" showIcon style={{ marginBottom: 16 }} message={t('consult.help')} />
       <Card>
         <Space wrap style={{ marginBottom: 16 }}>
-          <Input.Search allowClear aria-label={t('consult.number')} placeholder={t('consult.number')} defaultValue={number} onSearch={(v) => set({ numero: v.trim() })} style={{ width: 240 }} />
+          <Input.Search allowClear name="number" aria-label={t('consult.number')} placeholder={t('consult.number')} defaultValue={number} onSearch={(v) => set({ numero: v.trim() })} style={{ width: 240 }} />
           <DatePicker.RangePicker format="L" aria-label={t('consult.period')} value={[from ? dayjs(from) : null, to ? dayjs(to) : null]}
             onChange={(v) => set({ du: v?.[0] ? v[0].format('YYYY-MM-DD') : '', au: v?.[1] ? v[1].format('YYYY-MM-DD') : '' })} />
         </Space>

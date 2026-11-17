@@ -11,8 +11,9 @@ import { SaveOutlined } from '@ant-design/icons';
 import dayjs, { type Dayjs } from 'dayjs';
 import api, { ApiError, qs } from '../api';
 import { useAuth } from '../contexts/AuthContext';
+import GroupItem from './GroupItem';
 import { useI18n } from '../contexts/I18nContext';
-import { NO_FOR, pick, RADIOGROUP, type Entity } from '../labels';
+import { pick, RADIOGROUP, type Entity } from '../labels';
 import { ContactPicker, type Contact } from './ContactForm';
 
 interface MailType { id: number; label_fr: string; label_nl: string | null; is_demo: number }
@@ -68,9 +69,9 @@ export default function RegistrationForm({ entity, pieceIds, onSaved, saveLabel 
             </Form.Item>
           </Col>
           <Col xs={24} sm={14}>
-            <Form.Item {...NO_FOR} name="channel" tooltip={hint('mail.channel')} label={t('mail.channel')} rules={[{ required: true }]}>
+            <GroupItem name="channel" tooltip={hint('mail.channel')} label={t('mail.channel')} rules={[{ required: true }]}>
               <Radio.Group aria-label={t('mail.channel')} {...RADIOGROUP} optionType="button" options={CHANNELS.map((c) => ({ value: c, label: t(`mail.channel.${c}`) }))} />
-            </Form.Item>
+            </GroupItem>
           </Col>
         </Row>
         {channel === 'recommande' && (
@@ -80,20 +81,20 @@ export default function RegistrationForm({ entity, pieceIds, onSaved, saveLabel 
           <ContactPicker onPicked={(c: Contact) => form.setFieldValue('lang', c.lang)} />
         </Form.Item>
         <Form.Item name="subject" tooltip={hint('mail.subject')} label={t('mail.subject')} rules={[{ required: true, max: 500 }]}><Input.TextArea autoComplete="off" rows={2} autoSize={{ minRows: 2, maxRows: 5 }} /></Form.Item>
-        <Form.Item {...NO_FOR} name="type_id" tooltip={hint('mail.type')} label={t('mail.type')} rules={[{ required: true }]}>
+        <GroupItem name="type_id" tooltip={hint('mail.type')} label={t('mail.type')} rules={[{ required: true }]}>
           <Radio.Group aria-label={t('mail.type')} {...RADIOGROUP} optionType="button" style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}
             options={types.map((ty) => ({ value: ty.id, label: pick(ty, 'label', lang) }))} />
-        </Form.Item>
+        </GroupItem>
         <Row gutter={16}>
           <Col xs={24} sm={14}>
-            <Form.Item {...NO_FOR} name="lang" tooltip={hint('mail.lang')} label={t('mail.lang')}>
+            <GroupItem name="lang" tooltip={hint('mail.lang')} label={t('mail.lang')}>
               <Radio.Group aria-label={t('mail.lang')} optionType="button" options={(['fr', 'nl', 'autre'] as const).map((l) => ({ value: l, label: t(`mail.lang.${l}`) }))} />
-            </Form.Item>
+            </GroupItem>
           </Col>
           <Col xs={24} sm={10}>
-            <Form.Item {...NO_FOR} name="urgency" tooltip={hint('mail.urgency')} label={t('mail.urgency')}>
+            <GroupItem name="urgency" tooltip={hint('mail.urgency')} label={t('mail.urgency')}>
               <Radio.Group aria-label={t('mail.urgency')} optionType="button" options={(['normale', 'urgente'] as const).map((u) => ({ value: u, label: t(`mail.urgency.${u}`) }))} />
-            </Form.Item>
+            </GroupItem>
           </Col>
         </Row>
         <div style={{ display: showMore ? 'block' : 'none' }}>

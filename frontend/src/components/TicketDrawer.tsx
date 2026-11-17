@@ -3,7 +3,10 @@ import { useCallback, useEffect, useState } from 'react';
 import { Button, Checkbox, Collapse, Descriptions, Drawer, Form, Grid, Input, List, Modal, Space, Tag, Typography, message } from 'antd';
 import dayjs from 'dayjs';
 import api, { ApiError } from '../api';
+import { useAuth } from '../contexts/AuthContext';
 import { useI18n } from '../contexts/I18nContext';
+import { TOPICS } from '../help';
+import FaqModal from './FaqModal';
 
 export interface TicketMessage { id: number; kind: 'message' | 'event'; body: string; is_internal: number; created_at: string; author_name: string | null }
 export interface Ticket {
@@ -16,6 +19,9 @@ const OPEN = ['new', 'in_progress', 'waiting_requester'];
 
 export default function TicketDrawer({ id, onClose, onChanged, userId }: { id: number | null; onClose: () => void; onChanged: () => void; userId: number }) {
   const { t, hint } = useI18n();
+  const { user, isAdmin } = useAuth();
+  const [faqOpen, setFaqOpen] = useState(false);
+  const canFaq = isAdmin || (user?.entity_roles || []).some((r) => r.role === 'gestionnaire');
   const screens = Grid.useBreakpoint();
   const [ticket, setTicket] = useState<Ticket | null>(null);
   const [pending, setPending] = useState<Action | null>(null);
@@ -39,6 +45,7 @@ export default function TicketDrawer({ id, onClose, onChanged, userId }: { id: n
   if (ticket.can_handle && open) actions.push({ to: 'resolved', reason: true, label: 'tickets.action.resolve' }, { to: 'rejected', reason: true, label: 'tickets.action.reject', danger: true }, { to: 'transfer', reason: true, label: 'tickets.action.transfer' });
   if ((ticket.can_handle || requester) && open) actions.push({ to: 'cancelled', reason: true, label: 'tickets.action.cancel', danger: true });
   if ((ticket.can_handle || requester) && ticket.status === 'resolved') actions.push({ to: 'closed', reason: false, label: 'tickets.action.close' });
+  const propose = ticket.can_handle && ticket.status === 'resolved' && canFaq;
   if (ticket.can_reopen) actions.push({ to: 'reopen', reason: true, label: 'tickets.action.reopen' });
 
   const run = async (a: Action, why?: string) => {
@@ -69,6 +76,7 @@ export default function TicketDrawer({ id, onClose, onChanged, userId }: { id: n
       </Descriptions>
       {ticket.has_screenshot && <Typography.Paragraph><a href={`/api/tickets/${ticket.id}/screenshot`} target="_blank" rel="noreferrer">{t('tickets.screenshot.view')}</a></Typography.Paragraph>}
       {ticket.context && <Collapse size="small" style={{ marginBottom: 12 }} items={[{ key: 'c', label: t('tickets.context'), children: <pre style={{ whiteSpace: 'pre-wrap', fontSize: 12 }}>{JSON.stringify(ticket.context, null, 2)}</pre> }]} />}
+      {propose && <Button style={{ marginBottom: 12 }} onClick={() => setFaqOpen(true)}>{t('faq.propose')}</Button>}
       {actions.length > 0 && (
         <Space wrap style={{ marginBottom: 16 }}>
           {actions.map((a) => <Button key={a.to} danger={a.danger} onClick={() => (a.reason ? setPending(a) : run(a))}>{t(a.label)}</Button>)}
@@ -93,6 +101,8 @@ export default function TicketDrawer({ id, onClose, onChanged, userId }: { id: n
         <Typography.Paragraph type="secondary">{hint('tickets.reason')}</Typography.Paragraph>
         <Input.TextArea rows={3} id="ticket-reason" name="reason" autoComplete="off" aria-label={t('tickets.reason')} value={reason} onChange={(e) => setReason(e.target.value)} />
       </Modal>
+      <FaqModal open={faqOpen} onClose={() => setFaqOpen(false)} onSaved={() => undefined}
+        initial={{ topic_id: TOPICS.some((x) => x.id === ticket.screen) ? ticket.screen : '', question_fr: ticket.title, answer_fr: ticket.resolution || '' }} />
     </Drawer>
   );
 }

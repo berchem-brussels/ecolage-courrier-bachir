@@ -9,10 +9,11 @@ import { Alert, Form, Input, Modal, Radio, Typography, message } from 'antd';
 import { useLocation } from 'react-router-dom';
 import api, { ApiError, getLastApiError } from '../api';
 import { useAuth } from '../contexts/AuthContext';
+import GroupItem from './GroupItem';
 import { useI18n } from '../contexts/I18nContext';
 import { useSettings } from '../contexts/SettingsContext';
 import { screenForPath } from '../screens';
-import { NO_FOR } from '../labels';
+
 
 type TicketType = 'incident' | 'bug' | 'question' | 'wish';
 const MAX = 2 * 1024 * 1024;
@@ -67,13 +68,13 @@ export default function ReportTicketModal({ open, onClose, onCreated }: { open: 
     <Modal open={open} width={640} title={t('tickets.report')} okText={t('tickets.send')} cancelText={t('common.cancel')} onOk={() => form.submit()} onCancel={onClose} destroyOnClose>
       <Typography.Paragraph type="secondary">{t('tickets.screen_joined')} <strong>{screenName}</strong></Typography.Paragraph>
       <Form form={form} layout="vertical" onFinish={submit} initialValues={{ type: 'question', impact: 'person', urgency: 'annoying' }}>
-        <Form.Item {...NO_FOR} name="type" label={t('tickets.field.type')} tooltip={hint('tickets.type')} extra={t(type === 'question' && hasEntity ? 'tickets.who.business' : 'tickets.who.it')}>
+        <GroupItem name="type" label={t('tickets.field.type')} tooltip={hint('tickets.type')} extra={t(type === 'question' && hasEntity ? 'tickets.who.business' : 'tickets.who.it')}>
           <Radio.Group aria-label={t('tickets.field.type')} optionType="button" options={(['incident', 'bug', 'question', 'wish'] as const).map((x) => ({ value: x, label: t(`tickets.type.${x}`) }))} />
-        </Form.Item>
+        </GroupItem>
         {askEntity && (
-          <Form.Item {...NO_FOR} name="entity_id" label={t('tickets.field.entity')} tooltip={hint('tickets.entity')} rules={[{ required: true }]}>
+          <GroupItem name="entity_id" label={t('tickets.field.entity')} tooltip={hint('tickets.entity')} rules={[{ required: true }]}>
             <Radio.Group aria-label={t('tickets.field.entity')} optionType="button" options={entities.map(([id, code]) => ({ value: id, label: code }))} />
-          </Form.Item>
+          </GroupItem>
         )}
         <Form.Item name="title" label={t('tickets.field.title')} tooltip={hint('tickets.title')} rules={[{ required: true, max: 200 }]}><Input autoComplete="off" /></Form.Item>
         <Form.Item name="description" label={t('tickets.field.description')} tooltip={hint('tickets.description')}><Input.TextArea rows={3} autoComplete="off" /></Form.Item>
@@ -83,12 +84,12 @@ export default function ReportTicketModal({ open, onClose, onCreated }: { open: 
             <Form.Item name="actual" label={t('tickets.field.actual')} tooltip={hint('tickets.actual')}><Input.TextArea rows={2} autoComplete="off" /></Form.Item>
           </>
         )}
-        <Form.Item {...NO_FOR} name="impact" label={t('tickets.field.impact')} tooltip={hint('tickets.impact')}>
+        <GroupItem name="impact" label={t('tickets.field.impact')} tooltip={hint('tickets.impact')}>
           <Radio.Group aria-label={t('tickets.field.impact')} optionType="button" options={(['person', 'service', 'organisation'] as const).map((x) => ({ value: x, label: t(`tickets.impact.${x}`) }))} />
-        </Form.Item>
-        <Form.Item {...NO_FOR} name="urgency" label={t('tickets.field.urgency')} tooltip={hint('tickets.urgency')}>
+        </GroupItem>
+        <GroupItem name="urgency" label={t('tickets.field.urgency')} tooltip={hint('tickets.urgency')}>
           <Radio.Group aria-label={t('tickets.field.urgency')} optionType="button" options={(['blocking', 'annoying', 'comfort'] as const).map((x) => ({ value: x, label: t(`tickets.urgency.${x}`) }))} />
-        </Form.Item>
+        </GroupItem>
         {screen?.noCapture ? (
           <Alert type="info" showIcon message={t('tickets.no_capture')} />
         ) : (

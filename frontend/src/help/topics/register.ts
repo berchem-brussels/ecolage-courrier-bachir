@@ -4,11 +4,12 @@ const topic: HelpTopic = {
   id: "register", path: "/registre", group: "main", titleKey: "nav.register", roles: ["secretariat", "gestionnaire"],
   purpose: { fr: "Cet écran liste les courriers enregistrés dans le registre d'une entité, du plus récent au plus ancien. Vous y retrouvez un courrier, ouvrez sa fiche pour la corriger, lisez ses fichiers ou annulez son enregistrement.", nl: "Dit scherm toont de ingeschreven brieven in het register van een entiteit, van de nieuwste naar de oudste. U vindt er een brief terug, opent zijn fiche om ze te corrigeren, leest zijn bestanden of annuleert zijn inschrijving." },
   layout: [
-    { fr: "Le bouton {{mail.register}}, en haut à droite, ouvre le formulaire d'enregistrement.", nl: "De knop {{mail.register}} rechtsboven opent het inschrijvingsformulier." },
+    { fr: "[[1]] Le bouton {{mail.register}}, en haut à droite, ouvre le formulaire d'enregistrement.", nl: "[[1]] De knop {{mail.register}} rechtsboven opent het inschrijvingsformulier." },
     { fr: "Si vous avez un rôle dans les deux entités, des boutons au-dessus de la liste choisissent l'entité dont vous voyez le registre.", nl: "Als u een rol in beide entiteiten hebt, kiezen knoppen boven de lijst van welke entiteit u het register ziet." },
-    { fr: "La recherche {{common.search}} et les filtres de statut ({{common.all}}, {{mail.status.enregistre}}, {{mail.status.annule}}) et d'année ({{common.year.current}}, {{common.year.previous}}, {{common.year.all}}) limitent la liste.", nl: "De zoekfunctie {{common.search}} en de filters op status ({{common.all}}, {{mail.status.enregistre}}, {{mail.status.annule}}) en jaar ({{common.year.current}}, {{common.year.previous}}, {{common.year.all}}) beperken de lijst." },
-    { fr: "La liste donne le numéro, la date de réception, l'expéditeur, l'objet, le type et le statut. Un clic sur une ligne ouvre la fiche du courrier.", nl: "De lijst geeft het nummer, de ontvangstdatum, de afzender, het onderwerp, het soort en de status. Een klik op een rij opent de fiche van de brief." },
+    { fr: "[[2]] La recherche {{common.search}} et les filtres de statut ({{common.all}}, {{mail.status.enregistre}}, {{mail.status.annule}}) et d'année ({{common.year.current}}, {{common.year.previous}}, {{common.year.all}}) limitent la liste.", nl: "[[2]] De zoekfunctie {{common.search}} en de filters op status ({{common.all}}, {{mail.status.enregistre}}, {{mail.status.annule}}) en jaar ({{common.year.current}}, {{common.year.previous}}, {{common.year.all}}) beperken de lijst." },
+    { fr: "[[3]] La liste donne le numéro, la date de réception, l'expéditeur, l'objet, le type et le statut. Un clic sur une ligne ouvre la fiche du courrier.", nl: "[[3]] De lijst geeft het nummer, de ontvangstdatum, de afzender, het onderwerp, het soort en de status. Een klik op een rij opent de fiche van de brief." },
   ],
+  overviewShot: "register-overview",
   procedures: [
     {
       title: { fr: "Retrouver un courrier", nl: "Een brief terugvinden" },
@@ -36,6 +37,7 @@ const topic: HelpTopic = {
       errors: [
         { problem: { fr: "Le bouton {{common.save}} ne fait rien.", nl: "De knop {{common.save}} doet niets." }, solution: { fr: "Un champ obligatoire est vide : l'expéditeur, l'objet ou le type. Complétez-le.", nl: "Een verplicht veld is leeg: de afzender, het onderwerp of het soort. Vul het aan." } },
       ],
+      shots: ["register-fiche"],
     },
     {
       title: { fr: "Annuler un enregistrement", nl: "Een inschrijving annuleren" },
@@ -49,6 +51,7 @@ const topic: HelpTopic = {
       errors: [
         { problem: { fr: "Le bouton {{mail.cancel}} ne répond pas.", nl: "De knop {{mail.cancel}} reageert niet." }, solution: { fr: "Le motif est obligatoire : écrivez-le d'abord.", nl: "De reden is verplicht: schrijf ze eerst." } },
       ],
+      shots: ["register-fiche"],
     },
     {
       title: { fr: "Lire ou ajouter un fichier d'un courrier", nl: "Een bestand van een brief lezen of toevoegen" },
@@ -72,6 +75,9 @@ const topic: HelpTopic = {
     { q: { fr: "Peut-on savoir qui a ouvert un courrier ?", nl: "Kan men weten wie een brief geopend heeft?" }, a: { fr: "Oui. Chaque ouverture de la fiche et chaque lecture d'un fichier sont inscrites au journal des consultations, avec la personne, la date et l'heure. L'auditeur de l'entité consulte ce journal.", nl: "Ja. Elke opening van de fiche en elke lezing van een bestand worden in het raadplegingslogboek genoteerd, met de persoon, de datum en het uur. De auditor van de entiteit raadpleegt dat logboek." } },
   ],
   seeAlso: ["registration", "inbox", "consultations"],
-  shots: [],
+  shots: [
+    { id: "register-overview", path: "/registre", marks: [{ sel: ".ant-layout-content .ant-btn-primary" }, { sel: ".ant-input-search" }, { sel: ".ant-table" }], caption: { fr: "Registre des entrées", nl: "Inkomende post" } },
+    { id: "register-fiche", path: "/registre", actions: [{"clickSel": ".ant-table-row"}, {"wait": 600}], clip: "drawer", marks: [{ sel: ".ant-drawer form" }, { sel: ".ant-drawer .ant-btn-primary" }], caption: { fr: "Fiche d'un courrier", nl: "Fiche van een brief" } },
+  ],
 };
 export default topic;

@@ -4,11 +4,12 @@ const topic: HelpTopic = {
   id: "users", path: "/admin/utilisateurs", group: "admin", titleKey: "nav.users", roles: ["admin"],
   purpose: { fr: "Cet écran, réservé à l'administrateur, tient les comptes de l'application. Vous créez un compte, vous donnez un rôle par entité, vous désactivez un compte et vous désignez les administrateurs qui gardent un accès de secours par mot de passe.", nl: "Dit scherm, voorbehouden aan de beheerder, beheert de accounts van de toepassing. U maakt een account aan, geeft een rol per entiteit, deactiveert een account en wijst de beheerders aan die een noodtoegang met wachtwoord behouden." },
   layout: [
-    { fr: "Le bouton {{common.create}}, en haut à droite, ouvre le formulaire {{users.new}}.", nl: "De knop {{common.create}} rechtsboven opent het formulier {{users.new}}." },
-    { fr: "La colonne {{users.entity_roles}} donne les rôles de chaque personne ; le lien {{users.edit_roles}} les modifie.", nl: "De kolom {{users.entity_roles}} geeft de rollen van elke persoon; de link {{users.edit_roles}} wijzigt ze." },
-    { fr: "La colonne {{users.admin_local}} montre, pour les administrateurs, l'interrupteur de l'accès de secours ; {{users.microsoft_linked}} apparaît après la première connexion Microsoft du compte.", nl: "De kolom {{users.admin_local}} toont voor de beheerders de schakelaar van de noodtoegang; {{users.microsoft_linked}} verschijnt na de eerste Microsoft-aanmelding van het account." },
+    { fr: "[[1]] Le bouton {{common.create}}, en haut à droite, ouvre le formulaire {{users.new}}.", nl: "[[1]] De knop {{common.create}} rechtsboven opent het formulier {{users.new}}." },
+    { fr: "[[2]] La colonne {{users.entity_roles}} donne les rôles de chaque personne ; le lien {{users.edit_roles}} les modifie.", nl: "[[2]] De kolom {{users.entity_roles}} geeft de rollen van elke persoon; de link {{users.edit_roles}} wijzigt ze." },
+    { fr: "[[3]] La colonne {{users.admin_local}} montre, pour les administrateurs, l'interrupteur de l'accès de secours ; {{users.microsoft_linked}} apparaît après la première connexion Microsoft du compte.", nl: "[[3]] De kolom {{users.admin_local}} toont voor de beheerders de schakelaar van de noodtoegang; {{users.microsoft_linked}} verschijnt na de eerste Microsoft-aanmelding van het account." },
     { fr: "L'administrateur n'accède pas au contenu du courrier : il lui faut pour cela un rôle de registre dans l'entité.", nl: "De beheerder heeft geen toegang tot de inhoud van de post: daarvoor heeft hij een registerrol in de entiteit nodig." },
   ],
+  overviewShot: "users-overview",
   procedures: [
     {
       title: { fr: "Créer un compte", nl: "Een account aanmaken" },
@@ -21,7 +22,8 @@ const topic: HelpTopic = {
         { fr: "Choisissez {{users.password.generated}} pour que l'application crée le mot de passe, puis cliquez sur {{common.save}}.", nl: "Kies {{users.password.generated}} opdat de toepassing het wachtwoord aanmaakt en klik op {{common.save}}." },
       ],
       result: { fr: "Le compte existe. Si le mot de passe est généré, il s'affiche une seule fois : transmettez-le à la personne par un moyen sûr avant de fermer la fenêtre.", nl: "Het account bestaat. Als het wachtwoord gegenereerd is, verschijnt het slechts een keer: bezorg het via een veilig middel aan de persoon voordat u het venster sluit." },
-          },
+      shots: ["users-create"],
+    },
     {
       title: { fr: "Modifier les rôles d'un compte", nl: "De rollen van een account wijzigen" },
       when: { fr: "Quand une personne change de service ou doit travailler pour l'autre entité.", nl: "Wanneer een persoon van dienst verandert of voor de andere entiteit moet werken." },
@@ -62,6 +64,9 @@ const topic: HelpTopic = {
     { q: { fr: "Pourquoi le dernier administrateur ne peut-il pas être désactivé ?", nl: "Waarom kan de laatste beheerder niet gedeactiveerd worden?" }, a: { fr: "L'application doit toujours avoir au moins un administrateur actif, sinon plus personne ne pourrait la régler.", nl: "De toepassing moet altijd minstens een actieve beheerder hebben, anders kan niemand ze nog instellen." } },
   ],
   seeAlso: ["settings", "entities"],
-  shots: [],
+  shots: [
+    { id: "users-overview", path: "/admin/utilisateurs", marks: [{ sel: ".page-header button" }, { sel: ".ant-table" }, { sel: ".ant-switch" }], caption: { fr: "Liste des comptes", nl: "Lijst van accounts" } },
+    { id: "users-create", path: "/admin/utilisateurs", actions: [{"click": "common.create"}, {"wait": 500}], clip: "modal", marks: [{ sel: "#email" }], caption: { fr: "Création d'un compte", nl: "Een account aanmaken" } },
+  ],
 };
 export default topic;

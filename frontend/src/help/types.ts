@@ -18,7 +18,8 @@ export interface Shot {
   path: string;
   actions?: ShotAction[];
   clip?: 'page' | 'modal' | 'drawer';
-  marks?: { sel: string }[];
+  /** Repère : sélecteur CSS ; `text` (clé de traduction) retient, parmi les éléments trouvés, celui qui porte ce libellé. */
+  marks?: { sel: string; text?: string }[];
   caption: L;
 }
 
