@@ -7,6 +7,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useI18n } from '../contexts/I18nContext';
 import { useEntities } from '../hooks';
 import EntityChoice, { useEntityParam } from '../components/EntityChoice';
+import CloseReasonsCard from '../components/CloseReasonsCard';
 
 interface MailType { id: number; entity_id: number; label_fr: string; label_nl: string | null; nl_to_validate: number; is_demo: number; is_active: number }
 
@@ -77,6 +78,7 @@ export default function TypesPage() {
             ) : null) },
           ]} />
       </Card>
+      {entity && <CloseReasonsCard entityId={entity.id} />}
       <Modal open={editing !== undefined} title={editing ? t('type.edit') : t('type.new')} okText={t('common.save')} cancelText={t('common.cancel')}
         onOk={() => form.submit()} onCancel={() => setEditing(undefined)} destroyOnClose>
         <Form form={form} layout="vertical" onFinish={save}>

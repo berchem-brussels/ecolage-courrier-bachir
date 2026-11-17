@@ -10,6 +10,8 @@ const MESSAGES = {
   TOO_MANY: { fr: 'Trop de tentatives. Réessayez plus tard.', nl: 'Te veel pogingen. Probeer later opnieuw.' },
   BAD_PASSWORD: { fr: 'Mot de passe actuel incorrect.', nl: 'Huidig wachtwoord onjuist.' },
   INSTALL_CLOSED: { fr: "L'installation est déjà faite.", nl: 'De installatie is al uitgevoerd.' },
+  CLOSED: { fr: "Ce courrier est clos : rouvrez-le avant toute attribution ou tout renvoi.", nl: 'Deze brief is afgesloten: heropen hem vóór elke toewijzing of terugsturen.' },
+  CLOSE_REASON_INVALID: { fr: "Ce motif de clôture n'existe pas, n'est plus actif ou appartient à une autre entité.", nl: 'Deze sluitingsreden bestaat niet, is niet meer actief of hoort bij een andere entiteit.' },
   TRANSITION: { fr: "Ce changement de statut n'est pas permis.", nl: 'Deze statuswijziging is niet toegestaan.' },
   CANCELLED: { fr: 'Élément annulé : plus de modification possible.', nl: 'Geannuleerd element: geen wijziging meer mogelijk.' },
   DUPLICATE: { fr: 'Cette adresse est déjà utilisée.', nl: 'Dit adres wordt al gebruikt.' },

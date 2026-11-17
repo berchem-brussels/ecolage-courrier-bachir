@@ -17,12 +17,12 @@ import { contactLabel, pick } from '../labels';
 import EntityChoice, { useEntityParam } from '../components/EntityChoice';
 import MailDrawer, { type Mail } from '../components/MailDrawer';
 
-type Box = 'a_enregistrer' | 'a_attribuer' | 'mon_service' | 'moi' | 'en_copie';
+type Box = 'a_enregistrer' | 'a_attribuer' | 'mon_service' | 'moi' | 'en_copie' | 'clos';
 type Counts = Record<Box, number>;
 const REGISTER_BOXES: Box[] = ['a_enregistrer', 'a_attribuer'];
-const AGENT_BOXES: Box[] = ['mon_service', 'moi', 'en_copie'];
+const AGENT_BOXES: Box[] = ['mon_service', 'moi', 'en_copie', 'clos'];
 const PAGE_SIZE = 20;
-const ZERO: Counts = { a_enregistrer: 0, a_attribuer: 0, mon_service: 0, moi: 0, en_copie: 0 };
+const ZERO: Counts = { a_enregistrer: 0, a_attribuer: 0, mon_service: 0, moi: 0, en_copie: 0, clos: 0 };
 
 export default function BannettesPage() {
   const { t, lang } = useI18n();

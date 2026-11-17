@@ -93,6 +93,13 @@ export const hints: Record<string, Record<Lang, string>> = {
   'attr.reason': { fr: "Pourquoi le service traitant change. Obligatoire quand le courrier était déjà attribué à un autre service ; il reste dans l'historique.", nl: 'Waarom de behandelende dienst wijzigt. Verplicht wanneer de brief al aan een andere dienst was toegewezen; ze blijft in de geschiedenis.' },
   'attr.return_reason': { fr: "Pourquoi ce courrier n'est pas celui de votre service, par exemple le service qui doit le traiter. Le secrétariat le lira.", nl: 'Waarom deze brief niet voor uw dienst is, bijvoorbeeld de dienst die hem moet behandelen. Het secretariaat leest dit.' },
   'users.services': { fr: "Services dont cette personne traite le courrier dans l'entité ; seuls les services de l'entité sont proposés.", nl: 'Diensten waarvan deze persoon de post behandelt in de entiteit; enkel de diensten van de entiteit worden voorgesteld.' },
+  "treat.close_reason": { fr: "Motif choisi dans la liste de votre entité ; il reste visible dans l'historique. Le gestionnaire du registre tient cette liste.", nl: "Reden gekozen uit de lijst van uw entiteit; ze blijft zichtbaar in de geschiedenis. De beheerder van het register houdt die lijst bij." },
+  "treat.close_note": { fr: "Précision libre sur la clôture, par exemple la date ou le moyen de la réponse.", nl: "Vrije toelichting bij de afsluiting, bijvoorbeeld de datum of het middel van het antwoord." },
+  "treat.reopen_reason": { fr: "Pourquoi le courrier est rouvert. Obligatoire : le motif reste dans l'historique.", nl: "Waarom de brief wordt heropend. Verplicht: de reden blijft in de geschiedenis." },
+  "treat.comment_scope": { fr: "Le service traitant : seules les personnes de ce service et le registre le lisent. Toute l'entité : tous ceux qui voient le courrier le lisent.", nl: "De behandelende dienst: enkel de personen van die dienst en het register lezen het. De hele entiteit: iedereen die de brief ziet, leest het." },
+  "treat.comment_body": { fr: "Votre remarque sur le traitement du courrier ; elle ne se modifie pas après l'envoi.", nl: "Uw opmerking over de behandeling van de brief; ze kan na verzending niet meer worden gewijzigd." },
+  "closereason.label_fr": { fr: "Texte du motif tel qu'il apparaît en français dans la liste de clôture.", nl: "Tekst van de reden zoals hij in het Frans in de sluitingslijst verschijnt." },
+  "closereason.label_nl": { fr: "Texte du motif en néerlandais ; laissez vide s'il n'est pas encore traduit.", nl: "Tekst van de reden in het Nederlands; laat leeg als hij nog niet vertaald is." },
 };
 
 export function hintText(key: string, lang: Lang): string {

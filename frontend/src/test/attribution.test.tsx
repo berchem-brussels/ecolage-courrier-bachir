@@ -142,12 +142,9 @@ describe('fiche : ce que chaque rôle voit et peut faire', () => {
     expect(put('/attribution')!.body).toMatchObject({ service_id: 11, reason: 'Compétence du service B' });
   });
 
-  it('historique : date, auteur, nature, service d’origine et motif ; la copie et l’agent actuels sont affichés', () => {
+  it('cadre Attribution : la copie et l’agent actuels sont affichés ; l’historique est dans le cadre Traitement depuis la 0.4.0', () => {
     render(wrap(<AttributionCard mail={{ ...attributed, rights: rightsNone } as never} onChanged={() => {}} onReturned={() => {}} />));
-    expect(screen.getByText('Historique de l\u2019attribution'.replace('\u2019', "'"))).toBeTruthy();
-    expect(screen.getByText(/Réattribué au service/)).toBeTruthy();
-    expect(screen.getByText(/depuis Service B fictif/)).toBeTruthy();
-    expect(screen.getByText('Compétence du service A')).toBeTruthy();
+    expect(screen.queryByText(/Historique/)).toBeNull();
     expect(screen.getByText('Agnès Fictive')).toBeTruthy();
     expect(screen.getAllByText('Service B fictif').length).toBeGreaterThan(0);
     expect(screen.queryByRole('button', { name: 'Attribuer' })).toBeNull();

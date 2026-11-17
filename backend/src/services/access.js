@@ -10,6 +10,16 @@
 const { getDb } = require('../database');
 const { REGISTER_ROLES, AGENT_ROLES, hasEntityRole } = require('../rights');
 
+/**
+ * Statut effectif d'un courrier (version 0.4.0) : le statut stocké reste « enregistre » ou « annule », l'avancement du
+ * traitement est dans `processing` (none, en_traitement, clos). Expression SQL à placer dans un SELECT (alias « status »).
+ */
+const STATUS_SQL = `CASE WHEN m.status = 'annule' THEN 'annule' WHEN m.processing = 'clos' THEN 'clos'
+  WHEN m.processing = 'en_traitement' THEN 'en_traitement' ELSE 'enregistre' END`;
+
+/** Même calcul en JavaScript, pour une ligne lue sans l'expression (colonnes status et processing). */
+const effectiveStatus = (m) => (m.status === 'annule' ? 'annule' : (m.processing === 'clos' ? 'clos' : (m.processing === 'en_traitement' ? 'en_traitement' : 'enregistre')));
+
 /** Services auxquels la personne est rattachée dans une entité (Administration › Utilisateurs). */
 function serviceIdsOf(userId, entityId) {
   return getDb().prepare('SELECT service_id FROM user_services WHERE user_id = ? AND entity_id = ?').all(userId, entityId).map((r) => r.service_id);
@@ -35,22 +45,40 @@ function canSeeMail(user, m) {
 
 /** Courrier (colonnes utiles aux droits) par identifiant ; undefined s'il n'existe pas. */
 function mailForAccess(mailId) {
-  return getDb().prepare('SELECT id, entity_id, status, service_id, agent_id FROM mails WHERE id = ?').get(mailId);
+  return getDb().prepare(`SELECT m.id, m.entity_id, ${STATUS_SQL} AS status, m.service_id, m.agent_id FROM mails m WHERE m.id = ?`).get(mailId);
 }
 
-/** Actions permises à la personne sur ce courrier : l'interface n'affiche que ce que le serveur accepte. */
+/**
+ * Actions permises à la personne sur ce courrier : l'interface n'affiche que ce que le serveur accepte.
+ * m : id, entity_id, service_id, agent_id et status effectif (enregistre, en_traitement, clos, annule).
+ * Traitement (0.4.0) : seul l'agent nommé prend en charge ; l'agent nommé et le responsable du service closent ;
+ * le secrétariat et le gestionnaire rouvrent et commentent ; les membres du service traitant commentent.
+ */
 function mailRights(user, m) {
   const open = m.status !== 'annule';
+  const closed = m.status === 'clos';
   const register = isRegister(user, m.entity_id);
   const member = isMemberOf(user, m.entity_id, m.service_id);
   const manager = member && hasEntityRole(user, m.entity_id, ['chef_service']);
+  const named = isAgent(user, m.entity_id) && !!m.agent_id && m.agent_id === user.id;
   return {
     edit: register && open,
     cancel: register && open,
-    attribute: register && open,
-    set_agent: open && !!m.service_id && (register || manager),
-    return_to_secretariat: open && !!m.service_id && member,
+    attribute: register && open && !closed,
+    set_agent: open && !closed && !!m.service_id && (register || manager),
+    return_to_secretariat: open && !closed && !!m.service_id && member,
+    take: !!m.service_id && m.status === 'enregistre' && named,
+    close: m.status === 'en_traitement' && (named || manager),
+    reopen: closed && register,
+    comment: open && (register || member || named),
   };
 }
 
-module.exports = { serviceIdsOf, isRegister, isAgent, isMemberOf, canSeeMail, mailForAccess, mailRights };
+/** Commentaire lisible : portée « entité » pour qui voit le courrier ; portée « service » pour le registre de l'entité et les membres de ce service. */
+function canSeeComment(user, m, c) {
+  if (c.author_id === user.id) return true;
+  if (c.scope === 'entity') return canSeeMail(user, m);
+  return isRegister(user, m.entity_id) || isMemberOf(user, m.entity_id, c.service_id);
+}
+
+module.exports = { STATUS_SQL, effectiveStatus, serviceIdsOf, isRegister, isAgent, isMemberOf, canSeeMail, mailForAccess, mailRights, canSeeComment };

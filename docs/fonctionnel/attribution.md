@@ -28,3 +28,4 @@ Un rôle vaut pour une entité : un agent de l'administration communale ne voit 
 - « Mon service » montre tout le courrier du service, y compris celui d'un collègue ; « Moi » montre seulement celui dont on est l'agent nommé.
 - Les hiérarchies de services ne sont pas appliquées : un agent d'un service parent ne voit pas les courriers des sous-services.
 - Pas encore livrés : onglets « En retard » et « Mes tâches » (étapes suivantes), rappels, escalades et mentions dans la cloche.
+- Depuis la 0.4.0, un courrier attribué se prend en charge, se commente, se clôt et se rouvre : voir `traitement.md`. L'historique complet est dans le cadre « Traitement » de la fiche.

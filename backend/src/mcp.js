@@ -23,6 +23,8 @@ const consultations = require('./services/consultations');
 const settings = require('./services/settings');
 const tickets = require('./services/tickets');
 const faq = require('./services/faq');
+const processing = require('./services/processing');
+const closeReasons = require('./services/close-reasons');
 
 const PROTOCOL_VERSION = '2025-03-26';
 const CONFIRM_TTL_MS = 5 * 60 * 1000;
@@ -90,6 +92,31 @@ const TOOLS = [
     fr: 'Renvoie au secrétariat un courrier qui n’est pas celui du service (membre du service traitant), avec un motif ; le secrétariat le réattribue.',
     nl: 'Stuurt een brief die niet voor de dienst bestemd is terug naar het secretariaat (lid van de behandelende dienst), met een reden; het secretariaat wijst hem opnieuw toe.',
     run: (u, a) => { const m = attribution.returnToSecretariat(u, a.id, a.reason, 'mcp'); try { return mails.view(u, m.id); } catch (e) { return { id: m.id, number: m.number, returned: true }; } } },
+  // Traitement (version 0.4.0). Une clôture se corrige par une réouverture : pas de confirmation en deux appels.
+  { name: 'take_mail', route: 'POST /api/mails/:id/take', schema: idSchema,
+    fr: 'Prend en charge un courrier attribué (agent nommé seulement) : le courrier passe « en traitement » et le nom de l’agent apparaît sur la fiche.',
+    nl: 'Neemt een toegewezen brief in behandeling (enkel de aangeduide bediende): de brief gaat « in behandeling » en de naam van de bediende verschijnt op het dossier.',
+    run: (u, a) => { processing.take(u, a.id, 'mcp'); return mails.view(u, a.id); } },
+  { name: 'close_mail', route: 'POST /api/mails/:id/close', schema: withId(S.mailClose),
+    fr: 'Clôt un courrier en traitement (agent nommé ou responsable du service) avec un motif de la liste de l’entité (close_reason_id) et une note facultative.',
+    nl: 'Sluit een brief in behandeling af (aangeduide bediende of verantwoordelijke van de dienst) met een reden uit de lijst van de entiteit (close_reason_id) en een optionele nota.',
+    run: (u, { id, ...a }) => { processing.close(u, id, a, 'mcp'); return mails.view(u, id); } },
+  { name: 'reopen_mail', route: 'POST /api/mails/:id/reopen', schema: withId(S.mailReopen),
+    fr: 'Rouvre un courrier clos (secrétariat ou gestionnaire de l’entité) avec un motif ; le courrier revient « en traitement ».',
+    nl: 'Heropent een afgesloten brief (secretariaat of beheerder van de entiteit) met een reden; de brief gaat terug « in behandeling ».',
+    run: (u, a) => { processing.reopen(u, a.id, a.reason, 'mcp'); return mails.view(u, a.id); } },
+  { name: 'list_mail_comments', route: 'GET /api/mails/:id/comments', read: true, schema: idSchema,
+    fr: 'Liste les commentaires d’un courrier que la personne peut lire (visibles du service traitant ou de toute l’entité).',
+    nl: 'Lijst van de opmerkingen bij een brief die de persoon mag lezen (zichtbaar voor de behandelende dienst of de hele entiteit).',
+    run: (u, a) => processing.comments(u, a.id) },
+  { name: 'add_mail_comment', route: 'POST /api/mails/:id/comments', schema: withId(S.mailComment),
+    fr: 'Ajoute un commentaire à un courrier, visible du service traitant (scope service) ou de toute l’entité (scope entity) ; il ne se modifie pas.',
+    nl: 'Voegt een opmerking toe aan een brief, zichtbaar voor de behandelende dienst (scope service) of de hele entiteit (scope entity); ze kan niet worden gewijzigd.',
+    run: (u, { id, ...a }) => processing.addComment(u, id, a, 'mcp') },
+  { name: 'get_mail_history', route: 'GET /api/mails/:id/history', read: true, schema: idSchema,
+    fr: 'Historique complet d’un courrier, du plus récent au plus ancien : enregistrement, attributions, prise en charge, commentaires lisibles, clôtures, réouvertures (et consultations pour le registre).',
+    nl: 'Volledige geschiedenis van een brief, van recent naar oud: registratie, toewijzingen, inbehandelingname, leesbare opmerkingen, afsluitingen, heropeningen (en raadplegingen voor het register).',
+    run: (u, a) => processing.history(u, a.id, 'mcp') },
   { name: 'list_service_members', route: 'GET /api/services/:id/members', read: true, schema: withId(S.serviceMembers),
     fr: 'Liste les agents et responsables d’un service (pour nommer un agent) : prénom, nom, rôle.', nl: 'Lijst van de bedienden en verantwoordelijken van een dienst (om een bediende aan te duiden): voornaam, naam, rol.',
     run: (u, { id, ...a }) => attribution.members(u, id, a) },
@@ -105,6 +132,9 @@ const TOOLS = [
   ...resourceTools({ singular: 'mail_type', plural: 'mail_types', route: '/api/mail-types', svc: types,
     schemas: { list: S.typeList, create: S.typeCreate, update: S.typeUpdate },
     fr: { one: 'un type de courrier', plural: 'types de courrier' }, nl: { one: 'een brieftype', plural: 'brieftypes' } }),
+  ...resourceTools({ singular: 'close_reason', plural: 'close_reasons', route: '/api/close-reasons', svc: closeReasons,
+    schemas: { list: S.closeReasonList, create: S.closeReasonCreate, update: S.closeReasonUpdate },
+    fr: { one: 'un motif de clôture', plural: 'motifs de clôture' }, nl: { one: 'een sluitingsreden', plural: 'sluitingsredenen' } }),
   ...resourceTools({ singular: 'service', plural: 'services', route: '/api/services', svc: orgServices,
     schemas: { list: S.serviceList, create: S.serviceCreate, update: S.serviceUpdate },
     fr: { one: 'un service destinataire', plural: 'services destinataires' }, nl: { one: 'een bestemmingsdienst', plural: 'bestemmingsdiensten' } }),

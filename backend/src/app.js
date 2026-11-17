@@ -40,6 +40,7 @@ function buildApp() {
   app.use('/api/auth', require('./routes/auth'));
   // Attribution et bannettes avant les routes génériques des courriers (« /api/mails/counts » n'est pas un identifiant).
   app.use('/api/mails', require('./routes/mail-attribution'));
+  app.use('/api/mails', require('./routes/mail-processing'));
   app.use('/api/services', require('./routes/service-members'));
   for (const [mount, router] of Object.entries(require('./routes/resources').RESOURCES)) app.use(mount, router);
   app.use('/api/users', require('./routes/users'));

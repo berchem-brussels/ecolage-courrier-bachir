@@ -13,7 +13,7 @@ import { useI18n } from '../contexts/I18nContext';
 import { useEntities } from '../hooks';
 import { contactLabel, pick } from '../labels';
 import EntityChoice, { useEntityParam } from '../components/EntityChoice';
-import MailDrawer, { type Mail } from '../components/MailDrawer';
+import MailDrawer, { STATUS_COLOR, type Mail } from '../components/MailDrawer';
 
 const PAGE_SIZE = 20;
 
@@ -59,7 +59,7 @@ export default function RegisterPage() {
     return (<div><Typography.Title level={1} style={{ fontSize: 22 }}>{t('mail.title')}</Typography.Title><Alert type="info" showIcon message={t('mail.norole')} /></div>);
   }
 
-  const statusTag = (s: Mail['status']) => <Tag color={s === 'annule' ? 'default' : 'blue'}>{t(`mail.status.${s}`)}</Tag>;
+  const statusTag = (s: Mail['status']) => <Tag color={STATUS_COLOR[s]}>{t(`mail.status.${s}`)}</Tag>;
   const columns = [
     { title: t('mail.number'), dataIndex: 'number', key: 'number', render: (n: string, m: Mail) => (
       <span style={{ whiteSpace: 'nowrap' }}>
@@ -92,7 +92,7 @@ export default function RegisterPage() {
         <Space wrap style={{ marginBottom: 16 }}>
           <Input.Search allowClear name="q" aria-label={t('common.search')} placeholder={t('common.search')} defaultValue={q} onSearch={(v) => setFilter('q', v)} style={{ width: 260 }} />
           <Radio.Group optionType="button" aria-label={t('common.status')} value={status} onChange={(e) => setFilter('statut', e.target.value)}
-            options={[{ value: '', label: t('common.all') }, { value: 'enregistre', label: t('mail.status.enregistre') }, { value: 'annule', label: t('mail.status.annule') }]} />
+            options={[{ value: '', label: t('common.all') }, { value: 'enregistre', label: t('mail.status.enregistre') }, { value: 'en_traitement', label: t('mail.status.en_traitement') }, { value: 'clos', label: t('mail.status.clos') }, { value: 'annule', label: t('mail.status.annule') }]} />
           <Radio.Group optionType="button" aria-label={t('common.year')} value={yearFilter} onChange={(e) => setFilter('annee', e.target.value === 'courante' ? '' : e.target.value)}
             options={[{ value: 'courante', label: t('common.year.current') }, { value: 'precedente', label: t('common.year.previous') }, { value: 'toutes', label: t('common.year.all') }]} />
         </Space>

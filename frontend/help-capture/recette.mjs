@@ -4,7 +4,7 @@
  *   RECETTE_URL       adresse de l'application, par exemple https://192.0.2.10:8450
  *   RECETTE_USER      adresse e-mail du compte administrateur d'acceptance
  *   RECETTE_PASSWORD  son mot de passe
- *   RECETTE_VERSION   version attendue au bas du menu (0.3.1 par défaut)
+ *   RECETTE_VERSION   version attendue au bas du menu (0.4.0 par défaut)
  *   RECETTE_HEADLESS  1 pour ne pas afficher le navigateur (poste sans écran)
  * Les contrôles des bannettes (0.3.0 et suivantes) sont en lecture seule : aucun courrier n'est attribué, renvoyé ni modifié.
  * Ce que le script modifie sur l'instance d'acceptance : il crée une question de FAQ d'essai, la corrige puis la retire
@@ -20,7 +20,7 @@ const USER = process.env.RECETTE_USER;
 const PASSWORD = process.env.RECETTE_PASSWORD;
 if (!BASE || !USER || !PASSWORD) { console.error('Définissez RECETTE_URL, RECETTE_USER et RECETTE_PASSWORD dans cette fenêtre PowerShell.'); process.exit(2); }
 
-const VERSION = process.env.RECETTE_VERSION || '0.3.1';
+const VERSION = process.env.RECETTE_VERSION || '0.4.0';
 const OUT = path.resolve('captures');
 fs.mkdirSync(OUT, { recursive: true });
 const lines = [];

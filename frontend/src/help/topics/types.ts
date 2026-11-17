@@ -33,6 +33,16 @@ const topic: HelpTopic = {
       ],
       result: { fr: "Un type désactivé n'est plus proposé pour les nouveaux courriers, mais les courriers déjà enregistrés le gardent : rien n'est supprimé.", nl: "Een gedeactiveerd soort wordt niet meer voorgesteld voor nieuwe brieven, maar de reeds ingeschreven brieven behouden het: niets wordt gewist." },
     },
+    {
+      title: { fr: "Gérer les motifs de clôture", nl: "De redenen van afsluiting beheren" },
+      when: { fr: "Quand vous voulez ajouter, corriger ou retirer un motif proposé aux agents qui closent un courrier de l'entité.", nl: "Wanneer u een reden die aan de bedienden wordt voorgesteld bij het afsluiten van een brief van de entiteit, wilt toevoegen, verbeteren of weghalen." },
+      steps: [
+        { fr: "Ouvrez {{nav.types}} dans le menu. Sous la liste des types, le cadre {{closereason.title}} montre les motifs de l'entité choisie.", nl: "Open {{nav.types}} in het menu. Onder de lijst van soorten toont het kader {{closereason.title}} de redenen van de gekozen entiteit." },
+        { fr: "Pour en ajouter un, cliquez sur {{closereason.new}}, écrivez le {{closereason.label_fr}} et, si vous l'avez, le {{closereason.label_nl}}, puis cliquez sur {{common.save}}.", nl: "Om er een toe te voegen, klikt u op {{closereason.new}}, schrijft u het {{closereason.label_fr}} en, indien u het hebt, het {{closereason.label_nl}} en klikt u daarna op {{common.save}}." },
+        { fr: "Pour en retirer un, cliquez sur {{common.deactivate}} sur sa ligne, écrivez le motif dans {{common.reason}} et confirmez.", nl: "Om er een weg te halen, klikt u op {{common.deactivate}} op zijn rij, schrijft u de reden in {{common.reason}} en bevestigt u." },
+      ],
+      result: { fr: "Le nouveau motif est proposé à la prochaine clôture. Un motif désactivé n'est plus proposé, mais les courriers déjà clos avec ce motif le gardent : rien n'est supprimé.", nl: "De nieuwe reden wordt bij de volgende afsluiting voorgesteld. Een gedeactiveerde reden wordt niet meer voorgesteld, maar reeds afgesloten brieven behouden ze: niets wordt gewist." },
+    },
   ],
   faq: [
     { q: { fr: "Pourquoi ne puis-je pas enregistrer de courrier ?", nl: "Waarom kan ik geen brief inschrijven?" }, a: { fr: "Si aucun type n'est défini pour l'entité, le formulaire d'enregistrement l'indique. Créez au moins un type ici.", nl: "Als voor de entiteit geen soort gedefinieerd is, meldt het inschrijvingsformulier dat. Maak hier minstens een soort aan." } },

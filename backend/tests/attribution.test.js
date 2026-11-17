@@ -545,12 +545,12 @@ test('MCP : mêmes droits que l’API pour attribuer, nommer, renvoyer, compter 
 
 test('un compte sans aucun rôle ne voit ni bannette ni courrier, par l’API comme par MCP', async () => {
   const nobody = await create([], 'personne');
-  for (const box of ['a_attribuer', 'mon_service', 'moi', 'en_copie']) {
+  for (const box of ['a_attribuer', 'mon_service', 'moi', 'en_copie', 'clos']) {
     const r = await nobody.get(`/api/mails?box=${box}`);
     assert.equal(r.status, 200);
     assert.equal(r.body.data.length, 0);
   }
-  assert.deepEqual((await nobody.get('/api/mails/counts')).body.data, { a_enregistrer: 0, a_attribuer: 0, mon_service: 0, moi: 0, en_copie: 0 });
+  assert.deepEqual((await nobody.get('/api/mails/counts')).body.data, { a_enregistrer: 0, a_attribuer: 0, mon_service: 0, moi: 0, en_copie: 0, clos: 0 });
   assert.equal(parse(await nobody.mcp('tools/call', { name: 'get_mail', arguments: { id: ids.m1 } })).code, 'FORBIDDEN');
 });
 

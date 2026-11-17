@@ -1,4 +1,4 @@
-# Architecture, version 0.3.1
+# Architecture, version 0.4.0
 
 Le français fait foi. Les versions néerlandaise et anglaise sont des traductions de Claude à faire relire (écart E13).
 
@@ -105,7 +105,7 @@ Une fiche par écran dans `frontend/src/help/topics/`, au schéma `HelpTopic` (`
 - **Captures de l'aide** : `frontend/help-capture/capture.spec.ts` (Playwright, `npm run help:capture`) lit les captures décrites dans les fiches (`shots`) et écrit `frontend/public/help/<langue>/<id>.jpg`. `npm run help:demo` démarre une instance éphémère sur `backend/instance/atelier.exemple.json` avec un compte de démonstration : jamais de donnée réelle. Un bouton se vise par sa clé de traduction. Les repères `[[n]]` du texte des zones sont ceux de la capture d'ensemble : un test les compare, vérifie que chaque capture existe en FR et en NL, qu'elle est un JPEG de moins de 400 Ko et qu'aucune n'est inutilisée. nginx : `absolute_redirect off` et `try_files $uri /index.html` pour que `/help` reste l'écran du centre d'aide malgré le dossier des captures.
 - **Groupes de boutons** : `components/GroupItem.tsx` remplace `Form.Item` pour les champs à boutons ou à cases : le titre est le nom du groupe (`role="group"`, `aria-labelledby`), pas un `<label>` orphelin.
 
-84 routes au total, 77 outils MCP exposés (67 outils, dont ceux qui passent en deux appels).
+84 routes au total, 77 outils MCP exposés (67 outils, dont ceux qui passent en deux appels ; 95 routes et 89 outils exposés en 0.4.0, voir plus bas).
 
 ## Audit des fiches et script de recette (0.2.9)
 
@@ -123,3 +123,14 @@ Une fiche par écran dans `frontend/src/help/topics/`, au schéma `HelpTopic` (`
 - **Notifications** (`services/notifications.js`) : courrier attribué à la personne, à son service, mis en copie, renvoyé au secrétariat ; numéro et nature seulement ; écartées si le courrier n'est plus lisible. Routes `GET /api/notifications` et `POST /api/notifications/read`.
 - **Routes et outils MCP ajoutés** : `GET /api/mails/counts`, `PUT /api/mails/:id/attribution`, `PUT /api/mails/:id/agent`, `POST /api/mails/:id/return`, `GET /api/services/:id/members`, `GET /api/notifications`, `POST /api/notifications/read` ; outils `get_mail_counts`, `attribute_mail`, `set_mail_agent`, `return_mail`, `list_service_members`, `list_notifications`, `mark_notifications_read`.
 - **Interface** : page Bannettes (onglets avec compteurs selon le rôle dans l'entité), cadre « Attribution » de la fiche (lecture seule pour qui ne peut pas modifier), cloche de l'en-tête (relue toutes les minutes), services dans « Modifier les rôles ». Aide : fiche « Bannettes » (15 fiches).
+
+## Traitement du courrier (0.4.0)
+
+- **Statut effectif** : la table `mails` garde `status` (`enregistre`, `annule`) ; l'avancement est dans `processing` (`none`, `en_traitement`, `clos`). L'API rend le statut effectif par l'expression `STATUS_SQL` (`services/access.js`) : `enregistre`, `en_traitement`, `clos`, `annule` (écart E50).
+- **Service** `services/processing.js` : `take`, `close`, `reopen`, `addComment`, `comments`, `timeline`, `history`. Les droits viennent de `access.mailRights` (champs `take`, `close`, `reopen`, `comment`) et le serveur les recontrôle à chaque appel ; l'écran n'affiche que ce que la fiche autorise. Les transitions interdites répondent 409 (`TRANSITION`, `CLOSED`).
+- **Tables** (migration 010) : `close_reasons` (motifs par entité), `mail_events` (prise en charge, clôture, réouverture), `mail_comments` (portée `service` ou `entity`, jamais modifiés), colonnes de traitement de `mails`, `notifications` reconstruite pour les natures `commente`, `clos`, `rouvert`.
+- **Routes** : `/api/mails/:id/take`, `close`, `reopen`, `comments` (GET, POST), `history` (fichier `routes/mail-processing.js`) et `/api/close-reasons`. Chaque route a son outil MCP.
+- **Journal d'audit** : numéro, portée et identifiants seulement ; jamais le texte d'un commentaire, ni l'objet, ni l'expéditeur.
+- **Interface** : `components/TraitementCard.tsx` (cadre de la fiche), `components/CloseReasonsCard.tsx` (page des types), onglet « Clos » de `BannettesPage`.
+
+95 routes au total, 89 outils MCP exposés (78 outils, dont ceux qui passent en deux appels).

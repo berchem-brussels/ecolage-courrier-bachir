@@ -67,6 +67,19 @@ const topic: HelpTopic = {
         { problem: { fr: "Le fichier est refusé.", nl: "Het bestand wordt geweigerd." }, solution: { fr: "Seuls les PDF, JPEG et PNG sont acceptés, avec une taille maximale affichée dans le cadre de dépôt.", nl: "Enkel pdf, jpeg en png worden aanvaard, met een maximale grootte die in het kader staat." } },
       ],
     },
+    {
+      title: { fr: "Rouvrir un courrier clos", nl: "Een afgesloten brief heropenen" },
+      when: { fr: "Quand un courrier a été clos trop tôt ou qu'un élément nouveau arrive. Cette action revient au secrétariat et au gestionnaire du registre.", nl: "Wanneer een brief te vroeg werd afgesloten of er een nieuw element binnenkomt. Dat komt toe aan het secretariaat en aan de beheerder van het register." },
+      steps: [
+        { fr: "Ouvrez {{nav.register}} dans le menu et choisissez le statut {{mail.status.clos}}.", nl: "Open {{nav.register}} in het menu en kies de status {{mail.status.clos}}." },
+        { fr: "Cliquez sur la ligne du courrier : la fiche s'ouvre à droite.", nl: "Klik op de rij van de brief: de fiche opent rechts." },
+        { fr: "Dans le cadre {{treat.title}}, écrivez le {{treat.reopen.reason}}, puis cliquez sur {{treat.reopen}}.", nl: "Schrijf in het kader {{treat.title}} de {{treat.reopen.reason}} en klik daarna op {{treat.reopen}}." },
+      ],
+      result: { fr: "Le courrier revient en traitement chez la personne qui l'avait pris en charge, qui reçoit une notification. Le motif de la réouverture reste dans l'historique complet.", nl: "De brief gaat terug in behandeling bij de persoon die hem had genomen, die een melding ontvangt. De reden van de heropening blijft in de volledige geschiedenis." },
+      errors: [
+        { problem: { fr: "Le bouton de réouverture n'apparaît pas.", nl: "De knop om te heropenen verschijnt niet." }, solution: { fr: "Seul un courrier clos se rouvre, et seulement par le secrétariat ou le gestionnaire du registre de l'entité du courrier.", nl: "Enkel een afgesloten brief wordt heropend, en enkel door het secretariaat of de beheerder van het register van de entiteit van de brief." } },
+      ],
+    },
   ],
   faq: [
     { q: { fr: "Comment le numéro d'un courrier est-il choisi ?", nl: "Hoe wordt het nummer van een brief gekozen?" }, a: { fr: "L'application attribue le numéro suivant du registre de l'entité au moment de l'enregistrement. Il suit l'année de la date de réception : un courrier reçu le 31 décembre et enregistré le 2 janvier prend un numéro de l'année écoulée. Deux personnes qui enregistrent en même temps n'obtiennent jamais le même numéro.", nl: "De toepassing kent het volgende nummer van het register van de entiteit toe op het moment van de inschrijving. Het volgt het jaar van de ontvangstdatum: een brief ontvangen op 31 december en ingeschreven op 2 januari krijgt een nummer van het voorbije jaar. Twee personen die gelijktijdig inschrijven krijgen nooit hetzelfde nummer." } },
