@@ -9,10 +9,10 @@ import type { MenuProps } from 'antd';
 import {
   TeamOutlined, QuestionCircleOutlined, EyeOutlined, MenuFoldOutlined, MenuUnfoldOutlined, LogoutOutlined, LockOutlined, SunOutlined, MoonOutlined,
   BookOutlined, FormOutlined, ContactsOutlined, ApartmentOutlined, TagsOutlined, NumberOutlined, HomeOutlined,
-  InboxOutlined, AuditOutlined, SettingOutlined, FlagOutlined, CustomerServiceOutlined,
+  InboxOutlined, AuditOutlined, FolderOpenOutlined, SettingOutlined, FlagOutlined, CustomerServiceOutlined,
 } from '@ant-design/icons';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { auditRoles, registerRoles, useAuth } from '../contexts/AuthContext';
+import { agentRoles, auditRoles, registerRoles, useAuth } from '../contexts/AuthContext';
 import { useI18n } from '../contexts/I18nContext';
 import { useSettings } from '../contexts/SettingsContext';
 import AppMark from './AppMark';
@@ -20,6 +20,7 @@ import Chatbot from './Chatbot';
 import PasswordModal from './PasswordModal';
 import ReportTicketModal from './ReportTicketModal';
 import HelpButton from '../help/HelpButton';
+import NotificationBell from './NotificationBell';
 
 const { Header, Sider, Content } = Layout;
 
@@ -42,6 +43,7 @@ export default function AppLayout() {
 
   // Menus de confort : le serveur recontrôle chaque appel (standard v3.2, section 8.4).
   const keepsRegister = registerRoles(user).length > 0;
+  const treats = keepsRegister || agentRoles(user).length > 0;
   const audits = auditRoles(user).length > 0;
   const managesTypes = isAdmin || (user?.entity_roles || []).some((r) => r.role === 'gestionnaire');
   const admin = [
@@ -53,12 +55,13 @@ export default function AppLayout() {
   ];
   const menuItems: MenuProps['items'] = [
     { type: 'group', label: t('nav.group.main'), children: [
+      ...(treats ? [{ key: '/bannettes', icon: <FolderOpenOutlined />, label: t('nav.bannettes') }] : []),
       ...(keepsRegister ? [
         { key: '/registre', icon: <BookOutlined />, label: t('nav.register') },
         { key: '/a-enregistrer', icon: <InboxOutlined />, label: t('nav.inbox') },
         { key: '/enregistrer', icon: <FormOutlined />, label: t('nav.registration') },
         { key: '/contacts', icon: <ContactsOutlined />, label: t('nav.contacts') },
-      ] : [{ key: '/accueil', icon: <HomeOutlined />, label: t('nav.home') }]),
+      ] : (treats ? [] : [{ key: '/accueil', icon: <HomeOutlined />, label: t('nav.home') }])),
       ...(audits ? [{ key: '/consultations', icon: <AuditOutlined />, label: t('nav.consultations') }] : []),
     ] },
     ...(admin.length ? [{ type: 'group' as const, label: t('nav.group.admin'), children: admin }] : []),
@@ -132,6 +135,7 @@ export default function AppLayout() {
             <Segmented size="small" aria-label={t('layout.mode')} value={user?.ui_mode || 'simple'}
               onChange={(v) => savePreferences({ ui_mode: v as 'simple' | 'complet' })}
               options={[{ label: t('layout.mode.simple'), value: 'simple' }, { label: t('layout.mode.complet'), value: 'complet' }]} />
+            {treats && <NotificationBell compact={isMobile} />}
             <Select size="small" aria-label={t('layout.lang')} value={lang} onChange={changeLang} style={{ width: 64 }}
               options={[{ value: 'fr', label: 'FR' }, { value: 'nl', label: 'NL' }]} />
             {!compact && <Tooltip title={dark ? t('layout.theme.light') : t('layout.theme.dark')}>

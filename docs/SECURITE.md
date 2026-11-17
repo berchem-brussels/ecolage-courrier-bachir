@@ -1,4 +1,4 @@
-# Grille de sécurité, version 0.2.9 du 17/11/2026
+# Grille de sécurité, version 0.3.1 du 17/11/2026
 
 Résultat de la grille de la section 10.2 du standard. « Automatisé » : test qui tourne à chaque `npm test`. « Non joué » : contrôle qui n'a pas pu tourner dans le bac à sable ; il se joue à la recette sur NIXUS. Décomptes relevés sous Node 22.22.2 dans le bac à sable de Claude ; les images utilisent Node 20.19.5.
 
@@ -12,7 +12,7 @@ Résultat de la grille de la section 10.2 du standard. « Automatisé » : test 
 | Secrets | Fichier de l'instance (services réels) exclu du dépôt | Conforme | `atelier.test.js` |
 | Secrets | Erreur sans trace technique | Conforme | `securite.test.js` |
 | Secrets | Aucun compte créé par le code ; premier administrateur par l'écran d'installation | Conforme | `api.test.js` |
-| Authentification | Toute route hors liste écrite exige une session (77 routes, dont les 6 de la connexion Microsoft de la 0.2.5, les 11 des tickets de la 0.2.6 et les 5 de la FAQ de la 0.2.8 ; liste écrite des routes libres : santé, version, paramètres publics, installation, connexion locale, configuration de connexion, départ et retour Microsoft) | Conforme | `securite.test.js` |
+| Authentification | Toute route hors liste écrite exige une session (84 routes, dont les 6 de la connexion Microsoft de la 0.2.5, les 11 des tickets de la 0.2.6, les 5 de la FAQ de la 0.2.8 et les 7 de l'attribution, des membres d'un service et des notifications de la 0.3.0 ; liste écrite des routes libres : santé, version, paramètres publics, installation, connexion locale, configuration de connexion, départ et retour Microsoft) | Conforme | `securite.test.js` |
 | Authentification | Cookie HttpOnly, SameSite=Strict, Secure ; empreinte seule en base | Conforme | `securite.test.js` |
 | Authentification | Jeton inventé, expiré ou fermé refusé ; déconnexion et désactivation ferment la session | Conforme | `securite.test.js`, `api.test.js` |
 | Authentification | Connexion Microsoft : code d'autorisation avec PKCE S256, `state` et `nonce` aléatoires, aucun `prompt` ni `max_age` | Conforme | `sso.test.js` ; adresse relevée dans Chromium contre un faux Microsoft |
@@ -37,6 +37,23 @@ Résultat de la grille de la section 10.2 du standard. « Automatisé » : test 
 | Autorisation | Entité d'un ticket limitée aux entités du demandeur ; choix obligatoire avec deux entités ; transfert vers la file métier refusé sans entité | Conforme | `tickets.test.js` |
 | Autorisation | Réglages des tickets réservés à l'administrateur, par l'API et par le MCP ; au moins un rôle par file ; changement journalisé avec l'ancienne et la nouvelle valeur ; absents des paramètres publics | Conforme | `tickets.test.js` |
 | Autorisation | Tickets à traiter (MCP) limités aux files de la personne | Conforme | `tickets.test.js` |
+| Autorisation | Attribution : seuls le secrétariat et le gestionnaire de l'entité du courrier attribuent ; agent, responsable, auditeur, administrateur et secrétariat de l'autre entité refusés, rien n'est écrit | Conforme | `attribution.test.js` |
+| Autorisation | Visibilité par service : un courrier non attribué n'est lu que du registre de l'entité ; attribué, il est lu des membres de son service, des services en copie et de l'agent nommé, de personne d'autre ; l'administrateur et l'auditeur ne le lisent jamais | Conforme | `attribution.test.js` |
+| Autorisation | Un agent ou un responsable lit sans rien modifier : correction, annulation, création, ajout de fichier, renommage d'une pièce refusés (403), rien ne change en base | Conforme | `attribution.test.js` |
+| Autorisation | Pièces d'un courrier : lisibles (liste, description, contenu) de qui lit le courrier ; la file « À enregistrer » reste au registre ; lectures de l'agent au journal des consultations | Conforme | `attribution.test.js` |
+| Autorisation | Un rôle qui n'est plus celui d'un agent retire l'accès, même nommé ou avec un rattachement resté en base | Conforme | `attribution.test.js` |
+| Autorisation | Cloisonnement AC et CPAS avec un service commun : le rôle et le rattachement valent pour une entité ; attribution, nomination, renvoi, liste des membres et compteurs de l'autre entité refusés | Conforme | `attribution.test.js` |
+| Autorisation | Nomination d'un agent : compte actif, rôle d'agent ou de responsable dans l'entité, rattaché au service traitant ; responsable d'un autre service, agent simple et auditeur refusés | Conforme | `attribution.test.js` |
+| Autorisation | Renvoi au secrétariat : membre du service traitant seulement, motif obligatoire, pas de renvoi d'une copie ni d'un courrier annulé ; le courrier devient illisible pour qui le renvoie | Conforme | `attribution.test.js` |
+| Validation | Un service n'est jamais traitant et en copie à la fois : réattribuer au service qui était en copie le retire des copies ; une liste de copies qui contient le service traitant est refusée (409) | Conforme (0.3.1) | `attribution.test.js` ; défaut trouvé par `recette-agent.mjs` |
+| Autorisation | Bannettes et compteurs : mêmes droits que la fiche, courriers annulés exclus, compteur égal à la liste, entité non permise refusée (403) | Conforme | `attribution.test.js` |
+| Autorisation | Notifications : lues et marquées par leur destinataire seulement ; numéro et nature sans objet ni expéditeur ; écartées si le courrier n'est plus lisible | Conforme | `attribution.test.js` |
+| Autorisation | Membres d'un service : lus par l'administrateur, le registre d'une entité du service et ses membres ; ni courriel ni donnée de compte | Conforme | `attribution.test.js` |
+| Validation | Rattachement aux services : services de l'entité seulement, rôle d'agent ou de responsable seulement, rien d'écrit en cas de refus ; une mise à jour sans `service_ids` garde les services | Conforme | `attribution.test.js` |
+| Données | Attribution, nomination et renvoi au journal d'audit sans objet ni expéditeur ; historique de la fiche avec motif et auteur | Conforme | `attribution.test.js` |
+| Données | Migration 009 appliquée à une base de la 0.2.9 contenant un courrier : valeurs conservées, contraintes de nature actives | Conforme | `attribution.test.js` |
+| Autorisation | Même droits par l'API et par le MCP pour l'attribution, la nomination, le renvoi, les compteurs, les membres et les notifications | Conforme | `attribution.test.js`, `mcp.test.js` (parité) |
+| Interface | L'écran ne propose que les actions permises par le serveur (champ `rights`) : lecture seule, formulaire d'attribution, nomination, renvoi, annulation | Conforme | `attribution.test.tsx` |
 | Injections | Interpolations SQL des tickets limitées à des constantes du code (colonnes, clause des files, regroupements) | Conforme | `securite.test.js`, statique |
 | Validation | Capture d'un ticket : PNG ou JPEG contrôlé sur ses premiers octets, 2 Mo au plus (413 au-delà), refusée sur les écrans qui affichent du courrier (E35, E36) | Conforme | `tickets.test.js` |
 | API | Corps de 4 Mo accepté sur `/api/tickets` seulement ; nginx : bloc de 4 Mo pour `POST /api/tickets`, 1 Mo ailleurs | Conforme | `tickets.test.js` (contenu de `nginx.conf`, capture de 2 Mo) |
@@ -52,7 +69,7 @@ Résultat de la grille de la section 10.2 du standard. « Automatisé » : test 
 | Injections | Ni `eval`, ni `Function`, ni `child_process` dans `src/` | Conforme | `securite.test.js`, statique |
 | Injections | Chemin : nom de fichier généré par le serveur, chemin vérifié sous le dossier des fichiers, nom d'origine nettoyé | Conforme | `pieces.test.js` (`../../etc/passwd.pdf`) |
 | Injections | XSS : aucun `dangerouslySetInnerHTML` ajouté ; nom de fichier affiché par React | Conforme | Revue du code |
-| Validation | Schéma ajv sur chaque corps et chaque requête, `additionalProperties: false` | Conforme | 43 schémas |
+| Validation | Schéma ajv sur chaque corps et chaque requête, `additionalProperties: false` | Conforme | 50 schémas |
 | Validation | Dépôt : type vérifié sur les premiers octets (PDF, JPEG, PNG), type annoncé et extension ignorés, TIFF et exécutable renommé refusés, fichier vide refusé, un seul fichier par envoi | Conforme | `pieces.test.js` ; le test échoue quand on retire le contrôle du type réel (preuve jouée le 20/10/2026 : 2 tests en échec) |
 | Validation | Dépôt : taille plafonnée par le paramètre de l'instance (413), fichier temporaire effacé dans tous les cas de refus | Conforme | `pieces.test.js` |
 | Validation | Fichiers temporaires des envois interrompus effacés après une heure | Conforme | `pieces.test.js` |
@@ -65,7 +82,7 @@ Résultat de la grille de la section 10.2 du standard. « Automatisé » : test 
 | En-têtes | Contenu d'une pièce : `default-src 'none'; frame-ancestors 'self'`, `X-Frame-Options SAMEORIGIN`, `nosniff`, `no-store` | Conforme | `pieces.test.js` ; le test échoue quand on retire `frame-ancestors 'self'` (preuve jouée le 20/10/2026 : 1 test en échec) |
 | En-têtes | nginx : la route du contenu ne reçoit ni `X-Frame-Options DENY` ni `frame-ancestors 'none'` ; les autres routes les gardent | Conforme dans le bac à sable | `nginx.conf` livré, chargé par nginx 1.24 devant le vrai serveur ; aucun refus de cadre dans la console de Chromium. À rejouer sur NIXUS (nginx 1.27.5) |
 | Dépendances | `npm audit --omit=dev` serveur | 0 vulnérabilité | Sortie du 03/11/2026 après `npm update qs` (6.16.0 vers 6.16.2, alerte parue après le 27/10/2026, E31) ; sortie du 27/10/2026 : après `body-parser` 1.20.9, `fast-uri` 3.1.9 et `multer` 2.5.0. Limite : `npm audit` ne signalait rien sur `multer` 1.4.5-lts.2 alors que Dependabot (GitHub) y relevait 10 alertes hautes ; les alertes de GitHub se lisent à chaque version en plus de `npm audit` |
-| Dépendances | `npm audit --omit=dev` interface | 0 vulnérabilité | Sortie du 17/11/2026 (0.2.9) |
+| Dépendances | `npm audit --omit=dev` interface | 0 vulnérabilité | Sortie du 17/11/2026 (0.3.0) |
 | Dépendances | Les suites et l'audit des dépendances de production se rejouent à chaque demande de fusion | Conforme | `.github/workflows/ci.yml`, contrôlé par `depot.test.js` ; premier passage sur GitHub à observer |
 | Dépendances | Audit complet de l'interface, outils de développement compris | 0 vulnérabilité (4 en 0.2.2, 10 en 0.2.1) après `vite` 8.3.5, `@vitejs/plugin-react` 6.1.2 et `vitest` 4.1.12 | Sortie du 27/10/2026 ; la section suivante garde l'historique |
 | Dépendances | `multer` 2.5.0 (génération 1.x dépréciée par l'éditeur, 10 alertes hautes relevées par Dependabot sur 1.4.5-lts.2) | Conforme ; accord de Renaud du 27/10/2026 | 82 tests serveur sur 82 avec la 2.5.0, écart E20 clos |
@@ -81,6 +98,8 @@ Résultat de la grille de la section 10.2 du standard. « Automatisé » : test 
 Les trois contrôles qui ne restent jamais « non joués » (secrets commités, contrôle d'accès côté serveur, IDOR) sont conformes.
 
 ## Audit complet de l'interface
+
+Mesure du 17/11/2026 avec la 0.3.0 : 3 vulnérabilités modérées, outils de développement seulement, aucune dans l'image servie par nginx : `@typescript-eslint/parser` (dépendance directe), `@typescript-eslint/typescript-estree` et `minimatch` (déni de service par amplification de motifs). Même chaîne `eslint` que l'écart E34 ; correction par `npm audit fix --force` (changement de génération), soumise à Renaud. L'audit des dépendances de production reste à 0.
 
 Mesure du 03/11/2026 avec la 0.2.5 : 12 vulnérabilités modérées, toutes dans la chaîne `eslint` (`minimatch`, `glob`, `rimraf`, `flat-cache` et leurs dépendants : `eslint`, `eslint-plugin-jsx-a11y`, `@typescript-eslint/parser`), outils de développement, aucune dans l'image servie par nginx ; avis parus après le 27/10/2026. La correction demande une montée majeure d'`eslint` : accord de Renaud avant toute montée (écart E34). La CI ne bloque qu'au niveau « haute ».
 
@@ -189,3 +208,43 @@ Chaque contrôle a été contourné sur une copie, la suite concernée rejouée,
 | Champ de motif d'annulation d'un courrier sans nom | 1 échec |
 | Capture de « Créer un compte » sur une autre procédure | 1 échec |
 | Libellé d'un bouton inexistant cité par une fiche (erreur d'origine de « Entités et registres ») | L'audit `help:audit` l'a signalé avant la correction et réussit après |
+
+## Preuves d'échec des contrôles de la 0.3.0
+
+Chaque contrôle a été contourné sur une copie, la suite concernée rejouée, l'original jamais touché. Trois contournements n'étaient d'abord pas détectés : des tests ont été ajoutés, puis ils le sont (un test sur le rôle d'agent exigé, un sur l'exclusion des courriers annulés des bannettes « Moi », « En copie » et « À attribuer », un sur l'annulation proposée sans droit d'annulation).
+
+Serveur (`attribution.test.js`) : 18 contournements sur 18 détectés (le dix-huitième, ajouté en 0.3.1, est le retrait de la correction de la réattribution au service en copie).
+
+| Contournement | Tests en échec |
+| --- | --- |
+| Service non contrôlé à la lecture d'un courrier | 5 |
+| Lecture des copies ouverte à tous les agents de l'entité | 8 |
+| Rôle d'agent non exigé à la lecture | 1 (après ajout du test) |
+| Rôle de registre non exigé pour attribuer | 4 |
+| Motif non exigé au changement de service | 1 |
+| Agent nommé sans contrôle de rattachement | 3 |
+| Service d'une autre entité accepté | 15 |
+| Renvoi permis à tout lecteur | 5 |
+| Changement d'agent permis à un agent simple | 2 |
+| Pièce d'un courrier lisible de tout agent de l'entité | 3 |
+| Pièce de la file lisible d'un agent | 1 |
+| Modification ouverte à qui peut lire | 1 |
+| Courrier annulé encore attribuable | 1 |
+| Notification d'un courrier invisible encore montrée | 1 |
+| Bannette « Mon service » sans filtre d'entité | 1 |
+| Services conservés à tort quand le rôle change | 2 |
+| Courriers annulés dans les bannettes | 1 (après ajout du test) |
+| Réattribution au service en copie sans retrait des copies (0.3.1) | 1 |
+
+Interface (`attribution.test.tsx`) : 8 contournements sur 8 détectés.
+
+| Contournement | Tests en échec |
+| --- | --- |
+| Fiche modifiable pour tout lecteur | 1 |
+| Annulation proposée sans droit d'annulation | 1 (après ajout du test) |
+| Motif non exigé au changement de service | 1 |
+| Renvoi possible sans motif | 1 |
+| Formulaire d'attribution montré à l'agent | 3 |
+| Services envoyés pour tous les rôles | 2 |
+| Onglet « À attribuer » montré aux agents | 2 |
+| Objet du courrier dans une notification | 1 |

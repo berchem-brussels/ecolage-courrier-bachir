@@ -94,6 +94,7 @@ describe('aide par écran', () => {
     const EXPECTED: Record<string, string[]> = {
       'users-create': ['Créer un compte'], 'contacts-create': ['Créer un contact'], 'tickets-report': ['Signaler un problème ou poser une question'],
       'register-fiche': ['Corriger un courrier enregistré', 'Annuler un enregistrement'],
+      'bannettes-attribution': ['Attribuer un courrier'],
     };
     const seen: Record<string, string[]> = {};
     for (const tp of TOPICS) for (const p of tp.procedures) for (const id of p.shots || []) (seen[id] ||= []).push(p.title.fr);

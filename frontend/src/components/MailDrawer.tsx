@@ -14,6 +14,7 @@ import { contactLabel, pick, RADIOGROUP } from '../labels';
 import { ContactPicker, type Contact } from './ContactForm';
 import PieceUpload from './PieceUpload';
 import PieceViewer, { type Piece } from './PieceViewer';
+import AttributionCard, { type MailAttribution } from './AttributionCard';
 
 export interface Mail {
   id: number; number: string; entity_id: number; entity_code: string; year: number; seq: number; received_date: string; registered_at: string;
@@ -23,11 +24,14 @@ export interface Mail {
   sender_reference: string | null; document_date: string | null; pieces_count: number | null; notes: string | null; status: 'enregistre' | 'annule';
   cancel_reason: string | null; created_by_first_name: string | null; created_by_last_name: string | null; created_at: string; updated_at: string;
   files_count?: number; pieces?: Piece[];
+  service_id: number | null; service_name_fr: string | null; service_name_nl: string | null; agent_id: number | null;
+  agent_first_name: string | null; agent_last_name: string | null; return_reason: string | null; returned_at: string | null;
+  copies?: MailAttribution['copies']; attributions?: MailAttribution['attributions']; rights?: MailAttribution['rights'];
 }
 interface MailType { id: number; label_fr: string; label_nl: string | null }
 const CHANNELS = ['courrier', 'recommande', 'colis', 'guichet'] as const;
 
-export default function MailDrawer({ mail: row, onClose, onChanged }: { mail: Mail | null; onClose: () => void; onChanged: (m: Mail) => void }) {
+export default function MailDrawer({ mail: row, onClose, onChanged, onReturned }: { mail: Mail | null; onClose: () => void; onChanged: (m: Mail) => void; onReturned?: (id: number) => void }) {
   const { t, lang, hint } = useI18n();
   const { user } = useAuth();
   const screens = Grid.useBreakpoint();
@@ -41,6 +45,9 @@ export default function MailDrawer({ mail: row, onClose, onChanged }: { mail: Ma
   const mail = full && row && full.id === row.id ? full : row;
   const pieces = full?.pieces || [];
   const wide = screens.lg === true && pieces.length > 0;
+  // Les droits viennent de la fiche relue par le serveur : sans eux, rien d'éditable n'est montré.
+  const canEdit = !!mail?.rights?.edit;
+  const canCancel = !!mail?.rights?.cancel;
 
   useEffect(() => {
     if (!row) { setFull(null); return; }
@@ -55,6 +62,7 @@ export default function MailDrawer({ mail: row, onClose, onChanged }: { mail: Ma
   }, [row?.id, form]);
 
   const changed = (m: Mail) => { setFull((f) => ({ ...m, pieces: m.pieces || f?.pieces || [] })); onChanged(m); };
+  const returned = (id: number) => { setFull(null); onClose(); onReturned?.(id); };
   const added = (p: Piece) => {
     message.success(`${t('piece.received')} : ${p.original_name}`);
     const next = full ? { ...full, pieces: [...(full.pieces || []), p], files_count: (full.files_count || 0) + 1 } : null;
@@ -90,7 +98,7 @@ export default function MailDrawer({ mail: row, onClose, onChanged }: { mail: Ma
           onChange={(v) => setShown(Number(v))} options={pieces.map((p) => ({ value: p.id, label: `${p.position}. ${p.original_name}` }))} />
       )}
       {pieces.length > 0 ? <PieceViewer piece={current} height={wide ? '72vh' : '50vh'} /> : <Typography.Paragraph type="secondary">{t('piece.none.mail')}</Typography.Paragraph>}
-      {mail.status !== 'annule' && <div style={{ marginTop: 12 }}><PieceUpload compact fields={{ mail_id: mail.id }} onDone={added} /></div>}
+      {mail.status !== 'annule' && canEdit && <div style={{ marginTop: 12 }}><PieceUpload compact fields={{ mail_id: mail.id }} onDone={added} /></div>}
     </Card>
   );
 
@@ -111,7 +119,23 @@ export default function MailDrawer({ mail: row, onClose, onChanged }: { mail: Ma
             {mail.cancel_reason && <Descriptions.Item label={t('mail.cancel_reason')}>{mail.cancel_reason}</Descriptions.Item>}
           </Descriptions>
           {!wide && files}
-          {mail.status === 'annule' ? null : (
+          <AttributionCard mail={mail as Mail & MailAttribution} onChanged={(m) => changed(m as Mail)} onReturned={returned} />
+          {mail.status !== 'annule' && full && !canEdit && (
+            <>
+              <Alert type="info" showIcon style={{ marginBottom: 12 }} message={t('mail.readonly')} />
+              <Descriptions column={1} size="small" style={{ marginBottom: 16 }}>
+                <Descriptions.Item label={t('mail.subject')}>{mail.subject}</Descriptions.Item>
+                <Descriptions.Item label={t('mail.channel')}>{t(`mail.channel.${mail.channel}`)}</Descriptions.Item>
+                <Descriptions.Item label={t('mail.lang')}>{t(`mail.lang.${mail.lang}`)}</Descriptions.Item>
+                <Descriptions.Item label={t('mail.urgency')}>{t(`mail.urgency.${mail.urgency}`)}</Descriptions.Item>
+                {mail.addressee_name && <Descriptions.Item label={t('mail.addressee_name')}>{mail.addressee_name}</Descriptions.Item>}
+                {mail.sender_reference && <Descriptions.Item label={t('mail.sender_reference')}>{mail.sender_reference}</Descriptions.Item>}
+                {mail.document_date && <Descriptions.Item label={t('mail.document_date')}>{dayjs(mail.document_date).format('L')}</Descriptions.Item>}
+                {mail.notes && <Descriptions.Item label={t('mail.notes')}>{mail.notes}</Descriptions.Item>}
+              </Descriptions>
+            </>
+          )}
+          {mail.status === 'annule' || !canEdit ? null : (
             <>
               <Form form={form} layout="vertical" onFinish={save}>
                 <GroupItem name="channel" tooltip={hint('mail.channel')} label={t('mail.channel')}><Radio.Group aria-label={t('mail.channel')} {...RADIOGROUP} optionType="button" options={CHANNELS.map((c) => ({ value: c, label: t(`mail.channel.${c}`) }))} /></GroupItem>
@@ -130,7 +154,7 @@ export default function MailDrawer({ mail: row, onClose, onChanged }: { mail: Ma
                 <Form.Item name="notes" tooltip={hint('mail.notes')} label={t('mail.notes')} rules={[{ max: 5000 }]}><Input.TextArea autoComplete="off" rows={2} /></Form.Item>
                 <Button type="primary" htmlType="submit">{t('common.save')}</Button>
               </Form>
-              {user && (
+              {user && canCancel && (
                 <Card size="small" style={{ marginTop: 24 }} title={t('mail.cancel')}>
                   <Alert type="info" showIcon style={{ marginBottom: 8 }} message={t('mail.cancel.help')} />
                   <Input.TextArea autoComplete="off" name="cancel_reason" rows={2} aria-label={t('mail.cancel_reason')} placeholder={t('mail.cancel_reason')} value={reason} onChange={(e) => setReason(e.target.value)} />

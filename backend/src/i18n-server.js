@@ -45,6 +45,8 @@ const MESSAGES = {
   LOCAL_LOGIN_DISABLED: { fr: 'Connexion par mot de passe désactivée : utilisez votre compte Microsoft.', nl: 'Aanmelden met wachtwoord uitgeschakeld: gebruik uw Microsoft-account.' },
   SSO_TENANT_REQUIRED: { fr: "Saisissez d'abord l'annuaire (locataire), puis relancez le test.", nl: 'Geef eerst de directory (tenant) op en start de test opnieuw.' },
   SSO_TEST_FAILED: { fr: "Le test a échoué : l'annuaire (locataire) indiqué n'a pas répondu comme attendu chez Microsoft.", nl: 'De test is mislukt: de opgegeven directory (tenant) antwoordde niet zoals verwacht bij Microsoft.' },
+  SERVICE_INVALID: { fr: "Ce service n'existe pas, n'est plus actif ou ne sert pas l'entité de ce courrier.", nl: 'Deze dienst bestaat niet, is niet meer actief of bedient de entiteit van deze brief niet.' },
+  AGENT_INVALID: { fr: "Cette personne ne peut pas être nommée : elle doit être agent ou responsable de ce service dans l'entité, avec un compte actif.", nl: 'Deze persoon kan niet worden aangeduid: ze moet bediende of verantwoordelijke van deze dienst zijn in de entiteit, met een actief account.' },
   REFERENCE_INVALID: { fr: "Référence vers un élément inexistant ou encore utilisé.", nl: 'Verwijzing naar een onbestaand of nog gebruikt element.' },
 };
 

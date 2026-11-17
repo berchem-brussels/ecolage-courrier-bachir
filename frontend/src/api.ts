@@ -17,7 +17,7 @@ export class ApiError extends Error {
 
 export interface Page<T> { data: T[]; pagination: { total: number; limit: number; offset: number } }
 
-async function request<T>(method: string, path: string, body?: unknown): Promise<{ data: T; pagination?: Page<T>['pagination'] }> {
+async function request<T>(method: string, path: string, body?: unknown): Promise<{ data: T; pagination?: Page<T>['pagination']; meta?: Record<string, unknown> }> {
   const headers: Record<string, string> = { Accept: 'application/json' };
   if (method !== 'GET' && csrfToken) headers['X-CSRF-Token'] = csrfToken;
   // Un FormData part en multipart/form-data : le navigateur pose lui-même l'en-tête et sa frontière.
@@ -39,6 +39,8 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
 export const api = {
   get: <T>(path: string) => request<T>('GET', path).then((r) => r.data),
   page: <T>(path: string) => request<T[]>('GET', path).then((r) => ({ data: r.data, pagination: r.pagination! })),
+  /** Liste avec les informations de la réponse (meta), par exemple le nombre de notifications non lues. */
+  withMeta: <T>(path: string) => request<T>('GET', path).then((r) => ({ data: r.data, meta: r.meta || {} })),
   post: <T>(path: string, body: unknown) => request<T>('POST', path, body).then((r) => r.data),
   put: <T>(path: string, body: unknown) => request<T>('PUT', path, body).then((r) => r.data),
   del: <T>(path: string, body?: unknown) => request<T>('DELETE', path, body ?? {}).then((r) => r.data),

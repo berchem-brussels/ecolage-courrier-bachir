@@ -61,6 +61,7 @@ test('captures de l’aide', async ({ page }) => {
         for (const a of shot.actions || []) {
           if (a.wait) await page.waitForTimeout(a.wait);
           if (a.clickSel) await page.click(a.clickSel);
+          if (a.scroll) await page.locator(a.scroll).first().scrollIntoViewIfNeeded();
           if (a.click) await page.getByRole('button', { name: translations[a.click]?.[lang] || a.click }).first().click();
           if (a.fill) await page.fill(a.fill.sel, a.fill.value);
         }

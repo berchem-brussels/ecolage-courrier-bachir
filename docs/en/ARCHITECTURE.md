@@ -1,4 +1,4 @@
-# Architecture, version 0.2.9
+# Architecture, version 0.3.1
 
 The French text is authoritative. This translation was made by Claude and still needs review (gap E13).
 
@@ -70,3 +70,12 @@ New in 0.2.7 (help per screen): one sheet per screen in `frontend/src/help/topic
 New in 0.2.8: local FAQ (table `help_faq`, migration 008, five `/api/faq` routes, five MCP tools; read by every signed-in person, written by the administrator and the register managers, logical withdrawal, audit log without the text, shared by both entities); help screenshots (`frontend/help-capture/capture.spec.ts`, Playwright, on the fictitious data of `npm run help:demo`, 18 per language, a test checks presence, JPEG format, size under 400 KB and the `[[n]]` references); nginx with `absolute_redirect off` and `try_files $uri /index.html` so `/help` stays the help centre screen; `components/GroupItem.tsx` for fields with buttons or boxes (the title is the group's name, not an orphan `<label>`). 77 routes in total, 70 MCP tools.
 
 New in 0.2.9: « sheet against real screen » audit (`frontend/help-capture/audit-fiches.spec.ts`, `npm run help:audit`: every label quoted in a sheet's list of zones must exist on the sheet's screen) and the acceptance script `frontend/help-capture/recette.mjs`, run from a workstation that reaches the instance (account and password in the command window, never in the file; the script drives the workstation's Chrome and replays the version, the panel, nginx, Dutch, the FAQ, raw keys, the path with `#`, and reads Chrome's remarks and the badly linked labels or fields without id or name on 11 screens and windows). Search and reason fields outside `Form.Item` carry a `name`.
+
+## Assignment and mailboxes (0.3.0)
+
+- **Migration 009**: columns `service_id`, `agent_id`, `attributed_at`, `return_reason`, `returned_at` on `mails`; tables `mail_copies` (services in copy), `mail_attributions` (history with reason and author), `user_services` (a person's services per entity) and `notifications`. Existing mail keeps all its values.
+- **Rights**: `services/access.js` decides who reads a mail and what they can do with it. The entity register reads everything; an agent or service head reads the mail of their services, in copy, or naming them, in the entity where they hold that role; the administrator, the auditor and the other entity read nothing. Files follow the same read right.
+- **Assignment**: the secretariat assigns (handling service, optional named agent, optional services in copy; reason required when the service changes); the service head changes the agent of their service; any member of the handling service returns the mail to the secretariat with a reason. Every change goes to the history and the audit log, without subject or sender.
+- **Mailboxes**: `GET /api/mails?box=` and `GET /api/mails/counts`, same right as the mail record, cancelled mail excluded.
+- **Notifications**: number and nature only; hidden when the mail can no longer be read.
+- **Routes**: 84 in total, 77 MCP tools exposed.

@@ -1,6 +1,6 @@
 /** Comptes de l'application, réservés à l'administrateur (standard v3.2, section 17.4). Remplacé à terme par l'application Droits. */
 import { useCallback, useEffect, useState } from 'react';
-import { Alert, Button, Card, Checkbox, Form, Input, Modal, Popconfirm, Radio, Space, Switch, Table, Tag, Typography, message } from 'antd';
+import { Alert, Button, Card, Checkbox, Form, Input, Modal, Popconfirm, Radio, Select, Space, Switch, Table, Tag, Typography, message } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import api, { ApiError, qs } from '../api';
 import GroupItem from '../components/GroupItem';
@@ -11,29 +11,47 @@ import { pick, type Entity } from '../labels';
 
 interface U { id: number; email: string; first_name: string; last_name: string; user_role: 'agent' | 'admin'; preferred_lang: 'fr' | 'nl'; is_active: number; is_admin_local: number; microsoft_linked: number; entity_roles: EntityRole[] }
 type RoleChoice = EntityRole['role'] | '';
+/** Choix d'une entité : le rôle et, pour un agent ou un responsable, ses services dans l'entité. */
+interface Choice { role: RoleChoice; service_ids: number[] }
+interface ServiceRow { id: number; name_fr: string; name_nl: string | null; entity_ids: number[] }
+const TREATS: RoleChoice[] = ['agent', 'chef_service'];
 const ROLES: EntityRole['role'][] = ['agent', 'chef_service', 'secretariat', 'gestionnaire', 'auditeur'];
 
-/** Un choix exclusif par entité, en boutons (standard v3.2, section 12.4) ; « Aucun » retire le rôle. */
-function EntityRolesInput({ entities, value, onChange }: { entities: Entity[]; value?: Record<number, RoleChoice>; onChange?: (v: Record<number, RoleChoice>) => void }) {
+/** Un choix exclusif par entité, en boutons (standard v3.2, section 12.4) ; « Aucun » retire le rôle. Un agent ou un responsable choisit aussi ses services. */
+function EntityRolesInput({ entities, services, value, onChange }: { entities: Entity[]; services: ServiceRow[]; value?: Record<number, Choice>; onChange?: (v: Record<number, Choice>) => void }) {
   const { t, lang, hint } = useI18n();
+  const set = (id: number, patch: Partial<Choice>) => onChange?.({ ...(value || {}), [id]: { role: value?.[id]?.role || '', service_ids: value?.[id]?.service_ids || [], ...patch } });
   return (
     <Space direction="vertical" style={{ width: '100%' }}>
-      {entities.map((e) => (
-        <div key={e.id}>
-          <Typography.Text strong>{e.code} · {pick(e, 'name', lang)}</Typography.Text>
-          <div style={{ marginTop: 4 }}>
-            <Radio.Group size="small" optionType="button" aria-label={`${t('users.entity_roles')} ${e.code}`} value={value?.[e.id] || ''}
-              onChange={(ev) => onChange?.({ ...(value || {}), [e.id]: ev.target.value })}
-              options={[{ value: '', label: t('role.none') }, ...ROLES.map((r) => ({ value: r, label: t(`role.${r}`) }))]} />
+      {entities.map((e) => {
+        const c = value?.[e.id];
+        const options = services.filter((sv) => sv.entity_ids.includes(e.id)).map((sv) => ({ value: sv.id, label: pick(sv, 'name', lang) }));
+        return (
+          <div key={e.id}>
+            <Typography.Text strong>{e.code} · {pick(e, 'name', lang)}</Typography.Text>
+            <div style={{ marginTop: 4 }}>
+              <Radio.Group size="small" optionType="button" aria-label={`${t('users.entity_roles')} ${e.code}`} value={c?.role || ''}
+                onChange={(ev) => set(e.id, { role: ev.target.value, service_ids: TREATS.includes(ev.target.value) ? (c?.service_ids || []) : [] })}
+                options={[{ value: '', label: t('role.none') }, ...ROLES.map((r) => ({ value: r, label: t(`role.${r}`) }))]} />
+            </div>
+            {c && TREATS.includes(c.role) && (
+              <div style={{ marginTop: 8 }} title={hint('users.services')}>
+                <Typography.Text type="secondary">{t('users.services')} : {t('users.services.help')}</Typography.Text>
+                <Select mode="multiple" showSearch optionFilterProp="label" style={{ width: '100%', marginTop: 4 }} aria-label={`${t('users.services')} ${e.code}`}
+                  placeholder={t('users.services.placeholder')} value={c.service_ids} options={options} onChange={(ids) => set(e.id, { service_ids: ids })} />
+              </div>
+            )}
           </div>
-        </div>
-      ))}
+        );
+      })}
     </Space>
   );
 }
 
-const toMap = (roles: EntityRole[]) => Object.fromEntries(roles.map((r) => [r.entity_id, r.role])) as Record<number, RoleChoice>;
-const toList = (m: Record<number, RoleChoice> | undefined) => Object.entries(m || {}).filter(([, r]) => r).map(([id, role]) => ({ entity_id: Number(id), role }));
+const toMap = (roles: EntityRole[]) => Object.fromEntries(roles.map((r) => [r.entity_id, { role: r.role, service_ids: r.service_ids || [] }])) as Record<number, Choice>;
+const toList = (m: Record<number, Choice> | undefined) => Object.entries(m || {}).filter(([, c]) => c.role).map(([id, c]) => ({
+  entity_id: Number(id), role: c.role as EntityRole['role'], ...(TREATS.includes(c.role) ? { service_ids: c.service_ids } : {}),
+}));
 
 export default function UsersPage() {
   const { t, hint } = useI18n();
@@ -44,7 +62,8 @@ export default function UsersPage() {
   const [form] = Form.useForm();
   const { user: me, refresh } = useAuth();
   const [rolesFor, setRolesFor] = useState<U | null>(null);
-  const [rolesValue, setRolesValue] = useState<Record<number, RoleChoice>>({});
+  const [rolesValue, setRolesValue] = useState<Record<number, Choice>>({});
+  const [services, setServices] = useState<ServiceRow[]>([]);
   const entities = useEntities();
   const fail = (e: unknown) => message.error(e instanceof ApiError ? e.message : t('common.error'));
 
@@ -53,11 +72,12 @@ export default function UsersPage() {
     try { setRows((await api.page<U>(`/users${qs({ limit: 200 })}`)).data); } catch (e) { fail(e); } finally { setLoading(false); }
   }, [t]);
   useEffect(() => { load(); }, [load]);
+  useEffect(() => { api.page<ServiceRow>(`/services${qs({ is_active: 1, limit: 200 })}`).then((r) => setServices(r.data)).catch(() => setServices([])); }, []);
 
   const mode = Form.useWatch('password_mode', form);
   const newRole = Form.useWatch('user_role', form);
 
-  const create = async (v: Omit<U, 'id' | 'is_active' | 'entity_roles' | 'is_admin_local' | 'microsoft_linked'> & { is_admin_local?: boolean; password_mode: 'generated' | 'manual'; password?: string; must_change_password: boolean; roles?: Record<number, RoleChoice> }) => {
+  const create = async (v: Omit<U, 'id' | 'is_active' | 'entity_roles' | 'is_admin_local' | 'microsoft_linked'> & { is_admin_local?: boolean; password_mode: 'generated' | 'manual'; password?: string; must_change_password: boolean; roles?: Record<number, Choice> }) => {
     const { roles, ...rest } = v;
     try {
       const r = await api.post<U & { generated_password?: string }>('/users', { ...rest, entity_roles: toList(roles) });
@@ -127,7 +147,7 @@ export default function UsersPage() {
             <Form.Item name="email" tooltip={hint('users.email')} label={t('users.field.email')} rules={[{ required: true, type: 'email' }]}><Input autoComplete="off" /></Form.Item>
             <Form.Item name="first_name" tooltip={hint('users.first_name')} label={t('users.field.first_name')} rules={[{ required: true }]}><Input autoComplete="off" /></Form.Item>
             <Form.Item name="last_name" tooltip={hint('users.last_name')} label={t('users.field.last_name')} rules={[{ required: true }]}><Input autoComplete="off" /></Form.Item>
-            <GroupItem name="roles" tooltip={hint('users.entity_roles')} label={t('users.entity_roles')} extra={t('users.entity_roles.help')}><EntityRolesInput entities={entities} /></GroupItem>
+            <GroupItem name="roles" tooltip={hint('users.entity_roles')} label={t('users.entity_roles')} extra={t('users.entity_roles.help')}><EntityRolesInput entities={entities} services={services} /></GroupItem>
             <GroupItem name="user_role" tooltip={hint('users.app_role')} label={t('users.app_role')}><Radio.Group aria-label={t('users.app_role')} optionType="button" options={roleOptions} /></GroupItem>
             <GroupItem name="preferred_lang" tooltip={hint('users.lang')} label={t('users.field.lang')}><Radio.Group aria-label={t('users.field.lang')} optionType="button" options={[{ value: 'fr', label: 'FR' }, { value: 'nl', label: 'NL' }]} /></GroupItem>
             {/* Modèle Microsoft 365 (standard v3.2, section 8.1) */}
@@ -145,7 +165,7 @@ export default function UsersPage() {
       <Modal open={!!rolesFor} title={rolesFor ? `${t('users.edit_roles')} : ${rolesFor.first_name} ${rolesFor.last_name}` : ''} okText={t('common.save')} cancelText={t('common.cancel')}
         onOk={saveRoles} onCancel={() => setRolesFor(null)} destroyOnClose>
         <Typography.Paragraph type="secondary">{t('users.entity_roles.help')}</Typography.Paragraph>
-        <EntityRolesInput entities={entities} value={rolesValue} onChange={setRolesValue} />
+        <EntityRolesInput entities={entities} services={services} value={rolesValue} onChange={setRolesValue} />
       </Modal>
     </div>
   );

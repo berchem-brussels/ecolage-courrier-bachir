@@ -11,7 +11,11 @@ const listQuery = (extra = {}) => obj({
 /** Rôles par entité : au plus un rôle par entité (CDC CE-001). */
 const ENTITY_ROLES = {
   type: 'array', maxItems: 20,
-  items: obj({ entity_id: T.int(1), role: T.en('agent', 'chef_service', 'secretariat', 'gestionnaire', 'auditeur') }, ['entity_id', 'role']),
+  items: obj({
+    entity_id: T.int(1), role: T.en('agent', 'chef_service', 'secretariat', 'gestionnaire', 'auditeur'),
+    // Services de l'agent ou du responsable dans cette entité ; absent : les services déjà rattachés sont conservés.
+    service_ids: { type: 'array', items: T.int(1), maxItems: 50, uniqueItems: true },
+  }, ['entity_id', 'role']),
 };
 
 module.exports = {
@@ -99,7 +103,22 @@ module.exports = {
     lang: T.en('fr', 'nl', 'autre'), company_number: T.str(20),
   }),
 
-  mailList: listQuery({ entity_id: T.int(1), status: T.en('enregistre', 'annule'), year: T.int(2000, 2999), channel: T.en('courrier', 'recommande', 'colis', 'guichet') }),
+  mailList: listQuery({
+    entity_id: T.int(1), status: T.en('enregistre', 'annule'), year: T.int(2000, 2999), channel: T.en('courrier', 'recommande', 'colis', 'guichet'),
+    // Bannette (CE-120) : sans ce paramètre, le registre de l'entité.
+    box: T.en('a_attribuer', 'mon_service', 'moi', 'en_copie'),
+  }),
+  mailCounts: obj({ entity_id: T.int(1) }),
+  // Attribution (CE-060, CE-061) : service traitant, agent nommé facultatif, services en copie facultatifs ; motif si le service change.
+  mailAttribution: obj({
+    service_id: T.int(1), agent_id: { type: ['integer', 'null'], minimum: 1 },
+    copy_service_ids: { type: 'array', items: T.int(1), maxItems: 10, uniqueItems: true }, reason: T.str(500),
+  }, ['service_id']),
+  mailAgent: obj({ agent_id: { type: ['integer', 'null'], minimum: 1 } }, ['agent_id']),
+  mailReturn: obj({ reason: T.reqStr(500) }, ['reason']),
+  serviceMembers: obj({ entity_id: T.int(1) }),
+  notificationList: listQuery({ unread: { type: 'boolean' } }),
+  notificationRead: obj({ ids: { type: 'array', items: T.int(1), maxItems: 200, uniqueItems: true } }),
   mailCreate: obj({
     entity_id: T.int(1), received_date: T.date(), channel: T.en('courrier', 'recommande', 'colis', 'guichet'),
     tracking_number: T.str(50), sender_contact_id: T.int(1), addressee_name: T.str(200), subject: T.reqStr(500), type_id: T.int(1),

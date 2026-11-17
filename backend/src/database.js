@@ -412,6 +412,57 @@ const MIGRATIONS = [
     );
     CREATE INDEX idx_help_faq_topic ON help_faq(topic_id)
   `],
+  // Attribution (CDC CE-060 à CE-062, CE-120, CE-140) : service traitant, agent nommé, services en copie, historique,
+  // rattachement des personnes aux services par entité, notifications. Un courrier renvoyé au secrétariat n'a plus de
+  // service traitant et garde le motif du renvoi jusqu'à sa nouvelle attribution.
+  ['009_attribution', `
+    ALTER TABLE mails ADD COLUMN service_id INTEGER REFERENCES org_services(id) ON DELETE RESTRICT;
+    ALTER TABLE mails ADD COLUMN agent_id INTEGER REFERENCES users(id) ON DELETE SET NULL;
+    ALTER TABLE mails ADD COLUMN attributed_at TEXT;
+    ALTER TABLE mails ADD COLUMN return_reason TEXT;
+    ALTER TABLE mails ADD COLUMN returned_at TEXT;
+    CREATE INDEX idx_mails_service ON mails(service_id);
+    CREATE INDEX idx_mails_agent ON mails(agent_id);
+    CREATE TABLE mail_copies (
+      mail_id INTEGER NOT NULL REFERENCES mails(id) ON DELETE RESTRICT,
+      service_id INTEGER NOT NULL REFERENCES org_services(id) ON DELETE RESTRICT,
+      added_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+      added_at TEXT NOT NULL DEFAULT (datetime('now')),
+      PRIMARY KEY (mail_id, service_id)
+    );
+    CREATE INDEX idx_mail_copies_service ON mail_copies(service_id);
+    CREATE TABLE mail_attributions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      mail_id INTEGER NOT NULL REFERENCES mails(id) ON DELETE RESTRICT,
+      kind TEXT NOT NULL CHECK (kind IN ('attribution', 'reattribution', 'agent', 'copies', 'renvoi')),
+      service_id INTEGER REFERENCES org_services(id) ON DELETE RESTRICT,
+      from_service_id INTEGER REFERENCES org_services(id) ON DELETE RESTRICT,
+      agent_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+      from_agent_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+      copies TEXT,
+      reason TEXT,
+      author_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+    CREATE INDEX idx_mail_attributions_mail ON mail_attributions(mail_id);
+    CREATE TABLE user_services (
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      entity_id INTEGER NOT NULL REFERENCES entities(id) ON DELETE RESTRICT,
+      service_id INTEGER NOT NULL REFERENCES org_services(id) ON DELETE RESTRICT,
+      PRIMARY KEY (user_id, entity_id, service_id)
+    );
+    CREATE INDEX idx_user_services_service ON user_services(service_id);
+    CREATE TABLE notifications (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      mail_id INTEGER NOT NULL REFERENCES mails(id) ON DELETE RESTRICT,
+      kind TEXT NOT NULL CHECK (kind IN ('attribue', 'service', 'copie', 'renvoye')),
+      author_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      read_at TEXT
+    );
+    CREATE INDEX idx_notifications_user ON notifications(user_id, read_at)
+  `],
 ];
 
 function migrate() {
@@ -465,4 +516,4 @@ function safeBuildUpdate(body, excludeKeys = ['id']) {
   return { sets, params };
 }
 
-module.exports = { initDb, getDb, saveNow, safeBuildUpdate };
+module.exports = { initDb, getDb, saveNow, safeBuildUpdate, MIGRATIONS };

@@ -1,8 +1,31 @@
 # Historique des versions
 
-Application courrier · version 0.2.9 · historique au 17/11/2026
+Application courrier · version 0.3.1 · historique au 17/11/2026
 
-## 0.2.9 du 17/11/2026, préparée, à installer et à recetter sur NIXUS
+## 0.3.1 du 17/11/2026, livrée, à installer et recetter sur NIXUS
+
+Correction d'un cas de réattribution trouvé en jouant l'attribution avec de vrais comptes (`recette-agent.mjs`, sur l'instance de démonstration) après l'installation de la 0.3.0. Aucune migration, aucune dépendance changée, aucun changement d'écran ni d'aide : l'archive reprend la 0.3.0 et en diffère par cinq fichiers de code, de test et d'outil, plus les numéros de version et les documents.
+
+- **Réattribution au service qui était en copie** : le secrétariat renvoyait un courrier du service A au service B, qui l'avait en copie, et le serveur refusait (409 `SERVICE_INVALID`) parce qu'un service ne peut être traitant et en copie à la fois. Désormais, sans liste de copies donnée, le nouveau service traitant quitte la liste des copies ; une liste donnée qui le contient reste refusée. Cas courant : un service renvoie, le secrétariat réattribue à celui qui était informé.
+- **Nouveau test** (`attribution.test.js`, 31 tests dans le fichier) : réattribution au service en copie avec et sans liste, puis après un renvoi. Il échoue quand on retire la correction (preuve jouée : 1 test en échec).
+- **Nouveau script de recette** `frontend/help-capture/recette-agent.mjs` : crée trois comptes de test (agent du service A, agent du service B, responsable du service A, mot de passe aléatoire jamais affiché) et un courrier fictif, joue le parcours avec chacune de ces identités et celle du secrétariat (rien de lisible avant l'attribution, lecture seule de l'agent, nomination par le responsable, notifications et cloche, renvoi avec motif depuis l'écran, réattribution, cloisonnement de l'autre entité), puis annule le courrier avec un motif et désactive les comptes, même en cas d'échec. 45 contrôles conformes sur la démonstration ; il a trouvé le défaut ci-dessus.
+- **Décomptes** : serveur 149 tests, écrans 144 réussis et 1 test strict ignoré, `help:check` 22, `help:audit` réussi, `recette.mjs` 38 contrôles, `recette-faq.mjs` 5, `recette-agent.mjs` 45 ; preuves d'échec : 18 sur 18 (serveur), 8 sur 8 (interface).
+
+## 0.3.0 du 17/11/2026, installée sur NIXUS le 17/11/2026, non publiée, remplacée par la 0.3.1
+
+Étape 3 du planning : attribution du courrier. Migration 009 ; aucune dépendance ajoutée ni changée ; `npm ci` relit les verrous.
+
+- **Attribution** : le secrétariat et le gestionnaire attribuent un courrier à un service traitant (un seul à la fois), à des services en copie et, facultativement, à un agent nommé du service ; changer le service d'un courrier déjà attribué demande un motif. Le responsable de service change l'agent dans son service. Tout membre du service traitant renvoie au secrétariat un courrier qui n'est pas le sien, avec un motif ; le courrier revient dans « À attribuer ». Historique de chaque fiche et journal d'audit sans objet ni expéditeur.
+- **Visibilité** : l'agent et le responsable lisent le courrier de leurs services (traitant ou copie) ou qui les nomme, et ses fichiers, dans l'entité où ils ont ce rôle ; ils ne modifient, n'annulent ni n'attribuent rien (champ `rights` de la fiche, l'écran ne propose que ce que le serveur accepte). L'administrateur, l'auditeur et l'autre entité ne lisent rien. Lectures de l'agent au journal des consultations.
+- **Bannettes** : page « Bannettes » avec onglets et compteurs : « À enregistrer » (renvoie à la file) et « À attribuer » pour le secrétariat ; « Mon service », « Moi » et « En copie » pour l'agent et le responsable. `GET /api/mails?box=` et `GET /api/mails/counts`.
+- **Cloche** dans l'en-tête : courrier attribué à la personne, à son service, mis en copie, renvoyé au secrétariat ; numéro et nature seulement ; relue toutes les minutes.
+- **Utilisateurs** : choix des services d'un agent ou d'un responsable par entité (`service_ids`), conservés si une mise à jour des rôles ne les mentionne pas.
+- **API et MCP** : 7 routes (84 au total) et 7 outils (77 exposés) ; parité contrôlée.
+- **Aide** : fiche « Bannettes » FR et NL (15 fiches), 2 captures annotées par langue, fiche du registre et fiche des utilisateurs complétées ; recette : 15 fiches, contrôles des bannettes, de la cloche et de la fiche d'attribution (lecture seule).
+- **Outils** (écart E43) : `demo-server.cjs` ne sort plus du dossier construit (6 adresses d'attaque essayées) ; `recette.mjs` et `recette-faq.mjs` : titre d'essai de la FAQ unique à chaque passage, attente de la fin du chargement après la connexion. Ces trois fichiers sont maintenant dans l'archive ; `recette-faq.mjs` et les correctifs ont été reconstruits (l'archive de départ ne contenait pas la version du dépôt) : à comparer avec le dépôt.
+- **Décomptes** : voir `MANIFESTE.md`. Preuves d'échec : 17 contournements sur 17 détectés côté serveur, 8 sur 8 côté interface (`docs/SECURITE.md`).
+
+## 0.2.9 du 17/11/2026, installée sur NIXUS, recettée et publiée sur GitHub le 17/11/2026
 
 Corrections constatées à la recette de la 0.2.8, qui n'est pas publiée : l'archive 0.2.9 reprend tout le contenu de la 0.2.8. Sans migration autre que la 008 de la 0.2.8, aucune dépendance changée depuis la 0.2.8.
 
@@ -17,6 +40,10 @@ Corrections constatées à la recette de la 0.2.8, qui n'est pas publiée : l'ar
 - Captures régénérées (versions affichées 0.2.9) : 36 images, 2,3 Mo.
 
 Suites : serveur 118 tests, écrans 117 tests (un test strict ignoré hors `help:check`), 0 échec ; `help:check` 22 tests ; audit des fiches réussi ; recette locale du script sur l'instance de démonstration : 3 relances sur 3 conformes (une remarque intermittente de Chrome vue une fois sur quatre essais, non reproduite) ; 5 contrôles contournés un à un, tous détectés ; `npm audit --omit=dev` à 0 dans les deux parties.
+
+Installée sur NIXUS le 17/11/2026 (sans migration nouvelle, construction sans `--no-cache` en 5 min 7 s) ; recettée par le script `recette.mjs` lancé sur le PC du conducteur : 23 contrôles conformes, dont **aucune remarque de Chrome sur 11 écrans et fenêtres** (E23 close), la fiche « Entités et registres » et l'image de « Créer un compte ». Le contrôle de la FAQ a échoué deux fois pour des défauts du script, pas de l'application : titre d'essai fixe en collision avec la question retirée du lancement précédent, puis appel lancé pendant la redirection qui suit la connexion ; corrigés (titre unique, page stable avant tout appel, reprise de l'appel), et les cinq contrôles de la FAQ sont conformes sur NIXUS avec `recette-faq.mjs`.
+
+Après l'archive, un correctif hors image a été versé au dépôt (commit `82ca4fa`, trois fichiers) : CodeQL a signalé trois fois une sortie possible du dossier servi par `help-capture/demo-server.cjs` (gravité « High », « Uncontrolled data used in path expression »). L'attaque fonctionnait sur l'ancien code (`/etc/passwd` servi), elle est maintenant refusée (chemin normalisé puis contrôlé) ; les trois alertes sont résolues. Le même commit fixe le titre d'essai de la FAQ dans `recette.mjs` et ajoute `recette-faq.mjs`. L'archive publiée reste celle qui a été installée et recettée ; la différence avec le code source de l'étiquette est limitée à ces trois fichiers hors image (E43).
 
 ## 0.2.8 du 03/11/2026, installée sur NIXUS le 17/11/2026, non publiée, remplacée par la 0.2.9
 

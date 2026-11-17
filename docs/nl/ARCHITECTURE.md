@@ -1,4 +1,4 @@
-# Architectuur, versie 0.2.9
+# Architectuur, versie 0.3.1
 
 De Franse tekst is rechtsgeldig. Deze vertaling werd door Claude gemaakt en moet nog worden nagelezen (afwijking E13).
 
@@ -70,3 +70,12 @@ Nieuw in 0.2.7 (hulp per scherm): een fiche per scherm in `frontend/src/help/top
 Nieuw in 0.2.8: lokale FAQ (tabel `help_faq`, migratie 008, vijf routes `/api/faq`, vijf MCP-tools; lezen door elke aangemelde persoon, schrijven door de beheerder en de registerbeheerders, logisch intrekken, auditlogboek zonder de tekst, gemeenschappelijk voor beide entiteiten); schermafbeeldingen van de hulp (`frontend/help-capture/capture.spec.ts`, Playwright, op fictieve gegevens van `npm run help:demo`, 18 per taal, een test controleert de aanwezigheid, het JPEG-formaat, de grootte van minder dan 400 KB en de verwijzingen `[[n]]`); nginx met `absolute_redirect off` en `try_files $uri /index.html` zodat `/help` het scherm van het helpcentrum blijft; `components/GroupItem.tsx` voor velden met knoppen of vakjes (de titel is de naam van de groep, geen verweesd `<label>`). 77 routes in totaal, 70 MCP-tools.
 
 Nieuw in 0.2.9: audit « fiche tegenover echt scherm » (`frontend/help-capture/audit-fiches.spec.ts`, `npm run help:audit`: elk label dat in de lijst van de zones wordt aangehaald, moet op het scherm van de fiche voorkomen) en het recetteschrift `frontend/help-capture/recette.mjs`, te starten vanaf een werkplek die de instantie bereikt (account en wachtwoord in het opdrachtvenster, nooit in het bestand; het schrift stuurt de Chrome van de werkplek aan en herspeelt de versie, het paneel, nginx, het Nederlands, de FAQ, de ruwe sleutels, het traject met `#`, en leest de opmerkingen van Chrome en de verkeerd gekoppelde labels of velden zonder id of naam op 11 schermen en vensters). Zoek- en redenvelden buiten `Form.Item` dragen een `name`.
+
+## Toewijzing en postbakken (0.3.0)
+
+- **Migratie 009**: kolommen `service_id`, `agent_id`, `attributed_at`, `return_reason`, `returned_at` op `mails`; tabellen `mail_copies` (diensten in kopie), `mail_attributions` (geschiedenis met reden en auteur), `user_services` (diensten van een persoon per entiteit) en `notifications`. Bestaande brieven behouden al hun waarden.
+- **Rechten**: `services/access.js` bepaalt wie een brief leest en wat hij ermee mag doen. Het register van de entiteit leest alles; de bediende en het diensthoofd lezen de brieven van hun diensten, in kopie of waarvoor ze zijn aangeduid, in de entiteit waar ze die rol hebben; de beheerder, de auditor en de andere entiteit lezen niets. De stukken volgen hetzelfde leesrecht.
+- **Toewijzing**: het secretariaat wijst toe (behandelende dienst, optionele bediende, optionele diensten in kopie; reden verplicht als de dienst wijzigt); het diensthoofd wijzigt de bediende van zijn dienst; elk lid van de behandelende dienst stuurt met een reden terug naar het secretariaat. Elke wijziging komt in de geschiedenis en in het auditlogboek, zonder onderwerp of afzender.
+- **Postbakken**: `GET /api/mails?box=` en `GET /api/mails/counts`, hetzelfde recht als de fiche, geannuleerde brieven uitgesloten.
+- **Meldingen**: nummer en aard enkel; weggelaten als de brief niet meer leesbaar is.
+- **Routes**: 84 in totaal, 77 MCP-tools beschikbaar.

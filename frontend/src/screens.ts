@@ -7,6 +7,7 @@ export interface ScreenInfo { id: string; path: string; titleKey: string; noCapt
 
 export const SCREENS: ScreenInfo[] = [
   { id: 'home', path: '/accueil', titleKey: 'nav.home' },
+  { id: 'bannettes', path: '/bannettes', titleKey: 'nav.bannettes', noCapture: true },
   { id: 'register', path: '/registre', titleKey: 'nav.register', noCapture: true },
   { id: 'registration', path: '/enregistrer', titleKey: 'nav.registration', noCapture: true },
   { id: 'inbox', path: '/a-enregistrer', titleKey: 'nav.inbox', noCapture: true },

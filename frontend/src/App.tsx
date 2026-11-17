@@ -12,13 +12,14 @@ import localizedFormat from 'dayjs/plugin/localizedFormat';
 import 'dayjs/locale/fr';
 import 'dayjs/locale/nl';
 import utc from 'dayjs/plugin/utc';
-import { AuthProvider, auditRoles, registerRoles, useAuth } from './contexts/AuthContext';
+import { AuthProvider, agentRoles, auditRoles, registerRoles, useAuth } from './contexts/AuthContext';
 import { I18nProvider, useI18n } from './contexts/I18nContext';
 import { SettingsProvider, type InstanceSettings } from './contexts/SettingsContext';
 import AppLayout from './components/AppLayout';
 import LoginPage from './pages/LoginPage';
 import { loadSettings, applyThemeVariables } from './settings';
 
+const BannettesPage = React.lazy(() => import('./pages/BannettesPage'));
 const RegisterPage = React.lazy(() => import('./pages/RegisterPage'));
 const RegistrationPage = React.lazy(() => import('./pages/RegistrationPage'));
 const InboxPage = React.lazy(() => import('./pages/InboxPage'));
@@ -78,10 +79,10 @@ function ToLogin() {
   return <Navigate to={`/login?next=${encodeURIComponent(location.pathname + location.search)}`} replace />;
 }
 
-/** Écran d'arrivée : le registre pour qui le tient, le journal pour l'auditeur, les entités et registres pour l'administrateur, l'accueil sinon. */
+/** Écran d'arrivée : les bannettes pour qui tient le registre ou traite le courrier d'un service, le journal pour l'auditeur, les entités et registres pour l'administrateur, l'accueil sinon. */
 function Landing() {
   const { user, isAdmin } = useAuth();
-  if (registerRoles(user).length > 0) return <Navigate to="/registre" replace />;
+  if (registerRoles(user).length > 0 || agentRoles(user).length > 0) return <Navigate to="/bannettes" replace />;
   if (auditRoles(user).length > 0) return <Navigate to="/consultations" replace />;
   return <Navigate to={isAdmin ? '/admin/registres' : '/accueil'} replace />;
 }
@@ -96,6 +97,7 @@ function AppRoutes() {
         <Route path="/" element={user ? <AppLayout /> : <ToLogin />}>
           <Route index element={<Landing />} />
           <Route path="accueil" element={<HomePage />} />
+          <Route path="bannettes" element={<BannettesPage />} />
           <Route path="registre" element={<RegisterPage />} />
           <Route path="enregistrer" element={<RegistrationPage />} />
           <Route path="a-enregistrer" element={<InboxPage />} />

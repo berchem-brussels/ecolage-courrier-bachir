@@ -15,11 +15,16 @@ export interface User {
   entity_roles: EntityRole[];
 }
 
-export interface EntityRole { entity_id: number; entity_code: string; role: 'agent' | 'chef_service' | 'secretariat' | 'gestionnaire' | 'auditeur' }
+export interface EntityRole { entity_id: number; entity_code: string; role: 'agent' | 'chef_service' | 'secretariat' | 'gestionnaire' | 'auditeur'; service_ids?: number[] }
 
 /** Entités dont la personne tient le registre. Confort d'affichage : le serveur recontrôle chaque appel. */
 export function registerRoles(user: User | null): EntityRole[] {
   return (user?.entity_roles || []).filter((r) => r.role === 'secretariat' || r.role === 'gestionnaire');
+}
+
+/** Entités où la personne traite le courrier d'un service (agent ou responsable). Confort d'affichage : le serveur recontrôle. */
+export function agentRoles(user: User | null): EntityRole[] {
+  return (user?.entity_roles || []).filter((r) => r.role === 'agent' || r.role === 'chef_service');
 }
 
 /** Entités dont la personne est auditeur (journal des consultations). Confort d'affichage : le serveur recontrôle. */

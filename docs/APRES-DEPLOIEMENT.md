@@ -1,6 +1,6 @@
 # Après déploiement
 
-Application courrier · version 0.2.9 · journal des déploiements au 17/11/2026
+Application courrier · version 0.3.1 · journal des déploiements au 17/11/2026
 
 Ce fichier reprend en tête les procédures sur NIXUS, puis un bloc par version déployée, la plus récente d'abord. Les commandes se donnent une à une dans la conversation, avec leur résultat attendu, et la suivante n'arrive qu'après le résultat de la précédente. Chaque commande dit sur quelle machine elle s'exécute.
 
@@ -46,18 +46,50 @@ Retour arrière : rejouer les étapes 3 à 11 avec l'archive précédente, rest�
 
 Faite le 13/10/2026 (bloc 0.1.0). La procédure complète est dans `NOTES_LIVRAISON_v0.1.0.md` de l'archive. Elle ne se rejoue pas : le dossier, le `.env`, les volumes et la tâche de sauvegarde existent.
 
-## 2. Version 0.2.9, préparée le 17/11/2026, à déployer
+## 2. Version 0.3.1, livrée le 17/11/2026, à déployer
+
+Aucune migration nouvelle, aucune dépendance changée : construction sans `--no-cache` (prévoir une dizaine de minutes). Procédure du 1.2 avec `courrier-v0_3_1.tar.gz` ; taille et empreinte SHA-256 dans le message de livraison. Les mêmes commandes qu'en 0.3.0 : sauvegarde, `tar tzf`, retrait de `backend frontend docs`, extraction, construction, démarrage, version.
+
+| Étape | Résultat attendu |
+| --- | --- |
+| Démarrage | `[APP] API 0.3.1 sur le port 3001` ; aucune ligne `[DB] Migration` (la 009 est déjà appliquée) ; `courrier-api Healthy` |
+| Version | `{"data":{"version":"0.3.1"},"meta":{"envelope":1,"version":"0.3.1"}}` |
+| Script `recette.mjs` | 38 contrôles conformes avec `RECETTE_VERSION` laissé par défaut (0.3.1) |
+| Script `recette-agent.mjs` (PC, mêmes variables) | Environ 45 contrôles conformes, sans `ÉCHEC`. Il crée trois comptes de test et un courrier fictif, puis annule le courrier avec un motif (son numéro reste au registre, « annulé ») et désactive les comptes ; rapport `rapport-agent.txt` et deux captures `agent-fiche.png` et `secretariat-renvoi.png` dans le dossier du script (elles montrent des données fictives et aucun mot de passe) |
+| Comptes de test | Trois comptes `recette-…@exemple.test` désactivés dans Administration › Utilisateurs ; si le script a été interrompu, les désactiver à la main et annuler le courrier d'essai |
+| Retour arrière | Procédure du 1.2 avec l'archive 0.3.0, restée dans le dossier ; aucune migration nouvelle : pas de restauration de la base |
+
+## 3. Version 0.3.0, déployée le 17/11/2026, non publiée, remplacée par la 0.3.1
 
 | Étape | Résultat relevé |
 | --- | --- |
-| Archive | `courrier-v0_2_9.tar.gz` : taille et empreinte annoncées dans le message de livraison |
-| Sauvegarde avant mise à jour | À relever |
-| Construction | `docker compose build` sans `--no-cache` ; durée à relever |
-| Démarrage | Aucune migration nouvelle ; `courrier-api Healthy`, version `0.2.9` |
-| Script de recette | À relever : `node recette-0.2.9.mjs`, 0 échec attendu |
-| Dépôt GitHub | À faire après la recette : branche `version/v0.2.9` depuis `main` (0.2.7), qui reprend aussi la 0.2.8 non publiée |
+| Archive | `courrier-v0_3_0.tar.gz`, 3 170 032 octets (déposée par File Station, 15:32:40) ; SHA-256 `8b1e0e379e5223abdfdb747557287f9131b6c162acc6f12cf5cabc32883b0006` identique sur le PC (dossier OneDrive) et dans l'archive de Claude ; taille relevée sur NIXUS : 3170032 |
+| Sauvegarde avant mise à jour | `sauvegarde terminée, 45 sauvegardes conservées.` à 16:40:58 |
+| Extraction | Archive testée (`tar tzf`, « archive lisible ») avant la suppression de l'ancien code ; `attribution.js`, `BannettesPage.tsx` et `recette-faq.mjs` présents après l'extraction |
+| Construction | `docker compose build` sans `--no-cache` : 30 étapes sur 30, sans erreur ; 16:42:23 à 16:50:46, soit 8 min 19 s (499,0 s) ; contexte du frontend 3,00 Mo ; plus long que la durée annoncée (3 à 6 minutes, images lentes à charger comme en 0.2.6) |
+| Démarrage | `[DB] Migration 009_attribution appliquée` ; `[APP] API 0.3.0 sur le port 3001` ; `courrier-api Healthy` en 44,1 s, `courrier-web Started` en 41,2 s ; les deux conteneurs `(healthy)`, ports 8090 et 8450 |
+| Version | `{"data":{"version":"0.3.0"},"meta":{"envelope":1,"version":"0.3.0"}}` |
+| Script `recette.mjs` (PC du conducteur, Node v24.11.1, Playwright 1.64.1, Chrome du poste) | 38 contrôles conformes : version `v0.3.0`, onglets « À enregistrer (1) » et « À attribuer (6) », menu « Bannettes » en premier, cloche, compteurs de l'API, panneau d'aide des bannettes avec deux repères, cadre « Attribution » de la fiche et bouton « Attribuer », FAQ complète, quinze fiches, parcours avec `#`, et **aucune remarque de Chrome ni étiquette mal reliée** sur 13 écrans et fenêtres, dont « Bannettes » et « Modifier les rôles » |
+| Script `recette-agent.mjs` | Non joué sur la 0.3.0 : écrit après l'installation, il a trouvé sur la démonstration le défaut corrigé en 0.3.1 ; à jouer sur la 0.3.1 |
+| Constats | Contrôle manuel dans le navigateur remplacé par des scripts à la demande du conducteur ; aucun incident de procédure |
 
-## 3. Version 0.2.8, déployée le 17/11/2026, non publiée, remplacée par la 0.2.9
+## 4. Version 0.2.9, déployée, recettée et publiée le 17/11/2026
+
+| Étape | Résultat relevé |
+| --- | --- |
+| Archive | `courrier-v0_2_9.tar.gz`, 2 958 067 octets (déposée par File Station) ; SHA-256 `0bb3efdd06204559e6ed246b7d2073af191de9596ee373e7a385f569f70d837a` identique sur le PC (dossier OneDrive puis `Téléchargements`), sur GitHub et dans l'archive de Claude |
+| Sauvegarde avant mise à jour | `sauvegarde terminée, 44 sauvegardes conservées.` à 14:02:51 |
+| Extraction | Archive testée (`tar tzf`) avant la suppression de l'ancien code ; `backend` et `frontend` complets (dossier `help-capture` présent) |
+| Construction | `docker compose build` sans `--no-cache` : 30 étapes sur 30, sans erreur ; 14:03:56 à 14:09:03, soit 5 min 7 s (305,3 s) ; contexte du frontend 2,60 Mo |
+| Démarrage | Aucune migration nouvelle ; `[APP] API 0.2.9 sur le port 3001` ; `courrier-api Healthy` en 57,2 s, `courrier-web Started` en 45,0 s ; les deux conteneurs `(healthy)` |
+| Version | `{"data":{"version":"0.2.9"},"meta":{"envelope":1,"version":"0.2.9"}}` |
+| Script de recette `recette-0.2.9.mjs` (PC du conducteur, Node v24.11.1, Chrome du poste) | 23 contrôles conformes : version `v0.2.9`, panneau du registre avec capture annotée, trois repères, marge des puces, nginx (HTTP 200 pour `/help` et l'image JPEG), néerlandais, clés brutes, quatorze fiches, parcours avec `#` (14 puis 9), image de « Créer un compte » dans la bonne procédure, et **aucune remarque de Chrome ni étiquette mal reliée ni champ sans nom** sur 11 écrans et fenêtres (Enregistrer un courrier, Contacts, Utilisateurs, Paramètres, Services, Types, Entités et registres : ligne et registre, Tickets, Aide, Registre : fiche d'un courrier). Un échec : la FAQ, par collision du titre d'essai avec la question retirée du lancement de la 0.2.8 (défaut du script) |
+| Script `recette-faq.mjs` | Premier essai : échec « Execution context was destroyed » (appel lancé pendant la redirection qui suit la connexion, défaut du script). Version corrigée (`recette-faq-2.mjs`) : nettoyage d'une question d'essai restée active, puis 5 contrôles conformes (création, correction, retrait sans suppression, mention « Retirée », disparition du panneau) |
+| Dépôt GitHub | Branche `version/v0.2.9` (commit `0dc99eb`, 113 fichiers : 48 `A`, 65 `M`, aucun `D`) ; alerte CodeQL « High » sur `demo-server.cjs` (3 occurrences) corrigée par le commit `82ca4fa` (3 fichiers) ; demande de fusion n° 7, quatre contrôles verts, commentaires de CodeQL résolus ; fusion `b6d0d20` ; étiquette `v0.2.9` ; publication `v0.2.9` immuable « Latest » avec `courrier-v0_2_9.tar.gz` |
+| Constats | La question de FAQ d'essai créée à la main reste active sur l'instance d'acceptance (« Que faire d'une enveloppe abîmée ? (essai) ») ; GitHub ne rappelle plus l'alerte Dependabot n° 29 (E38) ; annonce de GitHub : double authentification obligatoire après le 12/12/2026 |
+| Incidents de procédure | Deux commandes PowerShell tapées dans la session SSH puis une phrase terminée par un point copiée dans une commande (`-3.`) : refusées sans effet ; commande de recette lancée avant d'avoir renseigné l'adresse : sans effet |
+
+## 5. Version 0.2.8, déployée le 17/11/2026, non publiée, remplacée par la 0.2.9
 
 | Étape | Résultat relevé |
 | --- | --- |
@@ -71,7 +103,7 @@ Faite le 13/10/2026 (bloc 0.1.0). La procédure complète est dans `NOTES_LIVRAI
 | Dépôt GitHub | Non publiée : remplacée par la 0.2.9 |
 | Incidents de procédure | Mes fichiers de travail ont été réinitialisés entre deux sessions : reconstruits à partir de l'archive livrée, identique à celle installée (même taille) ; Claude ne peut pas atteindre l'adresse interne de NIXUS |
 
-## 4. Version 0.2.7, déployée, recettée et publiée le 03/11/2026
+## 6. Version 0.2.7, déployée, recettée et publiée le 03/11/2026
 
 | Étape | Résultat relevé |
 | --- | --- |
@@ -87,7 +119,7 @@ Faite le 13/10/2026 (bloc 0.1.0). La procédure complète est dans `NOTES_LIVRAI
 | Constats | Alerte Dependabot n° 29 (1 modérée) toujours signalée à l'envoi, non examinée (E38) |
 | Incidents de procédure | Une sortie de commande (« Started 66.2s ») collée dans le terminal : refusée par le NAS, sans effet |
 
-## 5. Version 0.2.6, déployée, recettée et publiée le 03/11/2026
+## 7. Version 0.2.6, déployée, recettée et publiée le 03/11/2026
 
 | Étape | Résultat relevé |
 | --- | --- |
@@ -102,7 +134,7 @@ Faite le 13/10/2026 (bloc 0.1.0). La procédure complète est dans `NOTES_LIVRAI
 | Constats | À l'envoi, GitHub signale une alerte Dependabot n° 29 (1 modérée, branche principale), non examinée (E38) |
 | Incidents de procédure | Archive rangée par le navigateur dans un dossier OneDrive (`files1427`) : retrouvée par `Get-ChildItem`, copiée dans `Téléchargements`, empreinte vérifiée avant l'extraction (règle 9) |
 
-## 6. Version 0.2.5, déployée, recettée et publiée le 03/11/2026
+## 8. Version 0.2.5, déployée, recettée et publiée le 03/11/2026
 
 | Étape | Résultat relevé |
 | --- | --- |
@@ -117,7 +149,7 @@ Faite le 13/10/2026 (bloc 0.1.0). La procédure complète est dans `NOTES_LIVRAI
 | Constats | Code scanning : 10 alertes ouvertes, toutes sur `pieces.js` (E25), 1 fermée (`ci.yml`, E28) |
 | Incidents de procédure | `cd C:\dev\...` tapé dans la session SSH de NIXUS : sans effet, règle 9 ajoutée ; archive rangée par le navigateur dans un dossier OneDrive et non dans `Téléchargements` : copiée avant la section 5 |
 
-## 7. Version 0.2.4, déployée, recettée et publiée le 27/10/2026
+## 9. Version 0.2.4, déployée, recettée et publiée le 27/10/2026
 
 | Étape | Résultat relevé |
 | --- | --- |
@@ -130,7 +162,7 @@ Faite le 13/10/2026 (bloc 0.1.0). La procédure complète est dans `NOTES_LIVRAI
 | Dépôt GitHub | Branche `version/v0.2.4` (commit `8cbd53c`), demande de fusion #3, travail « tests » réussi en 49 s, fusion `0415b2f`, branche supprimée, étiquette `v0.2.4`, publication `v0.2.4` immuable « Latest » avec `courrier-v0_2_4.tar.gz` ; empreinte SHA-256 `e79cdfaa6f087dbe88f3d8e50633def06ca5845dd61f57ca6dccf8ad4b4cfaf5` identique sur le PC et sur GitHub (début relevé à l'écran) |
 | Constats | Demandes de fusion ouvertes : 0 (3 fermées dont #1 et #2 de Dependabot) ; alertes Dependabot : 28 fermées, 0 ouverte ; Code scanning : 11 ouvertes, soit les 10 de `pieces.js` (E25) et une nouvelle « Workflow does not contain permissions » (gravité moyenne, `ci.yml` ligne 8, E28) |
 
-## 8. Version 0.2.3, déployée le 27/10/2026, défaut relevé à la recette, remplacée par la 0.2.4
+## 10. Version 0.2.3, déployée le 27/10/2026, défaut relevé à la recette, remplacée par la 0.2.4
 
 | Étape | Résultat relevé |
 | --- | --- |
@@ -143,7 +175,7 @@ Faite le 13/10/2026 (bloc 0.1.0). La procédure complète est dans `NOTES_LIVRAI
 | Dépôt GitHub | Non publiée : le défaut a été relevé avant l'envoi |
 | Fichier laissé dans la file | `Pièce fictive.pdf` déposé pendant la recette, non enregistré : il reste dans la file « À enregistrer » de l'entité AC |
 
-## 9. Version 0.2.2, déployée et recettée le 27/10/2026
+## 11. Version 0.2.2, déployée et recettée le 27/10/2026
 
 | Étape | Résultat relevé |
 | --- | --- |
@@ -158,7 +190,7 @@ Faite le 13/10/2026 (bloc 0.1.0). La procédure complète est dans `NOTES_LIVRAI
 | Constats | Dependabot a ouvert deux demandes de fusion (#1 `@vitest/mocker` et `vitest`, #2 `vite`) et CodeQL s'est configuré tout seul ; l'onglet « Security and quality » affiche 38 signalements : 0 secret, 28 Dependabot (10 hautes sur `multer`, 15 sur `vite`, `launch-editor`, `vitest`, `esbuild`), 10 CodeQL sur `pieces.js` ; rien n'est fermé |
 | Protection de `main` | Règle `protection-main` créée et active : demande de fusion, travail « tests » obligatoire, suppression et `--force` interdits, liste de contournement vide, cible `main` |
 
-## 10. Version 0.2.1, déployée le 20/10/2026, recettée le 27/10/2026
+## 12. Version 0.2.1, déployée le 20/10/2026, recettée le 27/10/2026
 
 | Étape | Résultat relevé |
 | --- | --- |
@@ -169,7 +201,7 @@ Faite le 13/10/2026 (bloc 0.1.0). La procédure complète est dans `NOTES_LIVRAI
 | Version et compte | `{"data":{"version":"0.2.1"},"meta":{"envelope":1,"version":"0.2.1"}}` ; `id -u` = `10001` |
 | Liste de contrôle à l'écran (27/10/2026) | 6 points sur 6 conformes : version et données conservées ; TIFF glissé refusé avec « Fichier TIFF refusé : réglez le copieur pour produire des PDF. » ; enregistrement depuis la file (`AC-2026-000004`, puis `AC-2026-000005`) et grande barre verte effacée au dépôt suivant ; trombone de `AC-2026-000004` passé à « 2 » sans rechargement ; onglet « Issues » de Chrome à 0 erreur et 0 avertissement (20 remarques d'information, écart E23) ; mention « Valeur livrée » présente après enregistrement |
 
-## 11. Version 0.2.0, déployée le 20/10/2026
+## 13. Version 0.2.0, déployée le 20/10/2026
 
 | Étape | Résultat relevé |
 | --- | --- |
@@ -185,7 +217,7 @@ Faite le 13/10/2026 (bloc 0.1.0). La procédure complète est dans `NOTES_LIVRAI
 | Liste de contrôle à l'écran | 12 points conformes sur 13 : version et menus, données conservées, aperçu PDF lisible dans Chrome, enregistrement depuis la file (`AC-2026-000003`), rejet avec motif, registre et fiche (téléchargement de 668 octets, identique), ajout d'un fichier à `AC-2026-000002`, journal de l'auditeur, taille maximale réglable (refus à 1 Mo), néerlandais, thème sombre, affichage étroit (501 px). Non conforme : point 5 (TIFF écarté sans message). Relevé en marge du point 8 : trombone du registre non mis à jour sans F5. Console : huit signalements d'étiquettes. Corrigés en 0.2.1 |
 | Comptes | « Test Auditeur » (AC · Auditeur) créé pour le point 9, puis désactivé ; son mot de passe est passé dans la conversation |
 
-## 12. Version 0.1.1, déployée le 20/10/2026
+## 14. Version 0.1.1, déployée le 20/10/2026
 
 | Étape | Résultat relevé |
 | --- | --- |
@@ -199,7 +231,7 @@ Faite le 13/10/2026 (bloc 0.1.0). La procédure complète est dans `NOTES_LIVRAI
 | Liste de contrôle à l'écran | 8 points sur 8 conformes : onglet « Courrier » et « Briefwisseling », nom de l'administration sur deux lignes, v0.1.1, cadre « Entités », services sans « NL à valider » avec RD et SCAD renommés, seul « Fermer » après création d'un compte, menu mis à jour sans F5, « Inkomende post » entier, données conservées |
 | Comptes | « Version Essai » créé pour le test, puis désactivé |
 
-## 13. Version 0.1.0, installée le 13/10/2026
+## 15. Version 0.1.0, installée le 13/10/2026
 
 | Étape | Résultat relevé |
 | --- | --- |
@@ -214,4 +246,4 @@ Faite le 13/10/2026 (bloc 0.1.0). La procédure complète est dans `NOTES_LIVRAI
 | Sauvegarde | Tâche DSM « Sauvegarde courrier » créée, quotidienne à 02:00, utilisateur root ; premier lancement manuel « Normal (0) », fichier `courrier-20261013-1715.tar.gz` de 9 423 octets |
 | Défauts relevés | Six défauts d'affichage, corrigés en 0.1.1 |
 | Comptes | « CPAS Test » créé pour le cloisonnement, désactivé ensuite |
-| Constats hors application | Notification par courriel de DSM en panne ; tâches de PILOT désactivées dans le Planificateur, laissées telles quelles |
+| Constats hors application | Notification par courriel de DSM en panne (jeton Gmail) ; tâches de PILOT désactivées dans le Planificateur, laissées telles quelles |

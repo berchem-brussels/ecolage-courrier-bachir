@@ -7,6 +7,8 @@
 const { AppError } = require('./envelope');
 
 const REGISTER_ROLES = ['secretariat', 'gestionnaire'];
+/** Rôles qui traitent le courrier d'un service (CDC section 4) : l'agent et le responsable de service. */
+const AGENT_ROLES = ['agent', 'chef_service'];
 
 const isAdmin = (user) => !!user && user.role === 'admin';
 
@@ -47,4 +49,4 @@ function assertTypeManager(user, entityId) {
   if (!isAdmin(user) && !hasEntityRole(user, entityId, ['gestionnaire'])) throw new AppError(403, 'FORBIDDEN');
 }
 
-module.exports = { REGISTER_ROLES, isAdmin, rolesOf, hasEntityRole, registerEntities, auditEntities, assertAdmin, assertRegister, assertContacts, assertTypeManager };
+module.exports = { REGISTER_ROLES, AGENT_ROLES, isAdmin, rolesOf, hasEntityRole, registerEntities, auditEntities, assertAdmin, assertRegister, assertContacts, assertTypeManager };
