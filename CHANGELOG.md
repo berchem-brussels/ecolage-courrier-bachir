@@ -1,18 +1,35 @@
 # Historique des versions
 
-Application courrier · version 0.4.1 · historique au 24/11/2026
+Application courrier · version 0.5.0 · historique au 24/11/2026
 
-## 0.4.1 du 24/11/2026, livrée, à installer et recetter sur NIXUS
+## 0.5.0 du 24/11/2026, livrée, à installer et recetter sur NIXUS
 
-Étape 4 bis : correction de l'écart E55 relevé à l'audit complet du cahier des charges. Remplace la 0.4.0, jamais installée. Aucune migration nouvelle (la migration 010 de la 0.4.0 s'applique toujours depuis la 0.3.1), aucune dépendance changée, construction sans `--no-cache`.
+Étape 5, première moitié : confidentialité (CR-001 à CR-005, CR-007, CR-008, CA-005) et E75. Migration 011, aucune dépendance changée, construction sans `--no-cache`. Détail du périmètre dans `docs/fonctionnel/confidentialite.md`.
+
+- **Trois niveaux** : normal (comportement habituel), restreint (registre et personnes désignées seulement, E76), confidentiel (pli remis fermé : registre et destinataire nommé seulement). Niveau et personnes désignées choisis à l'enregistrement ; un pli confidentiel n'a ni scan, ni objet (texte fixe « Pli confidentiel remis fermé »), ni service ; un courrier déjà enregistré ne devient pas confidentiel (E77).
+- **Remise du pli fermé** : qui remet, qui reçoit, quand ; une seule fois, sans notification (E78). Route `POST /api/mails/:id/handover`.
+- **Changement de niveau** : `PUT /api/mails/:id/confidentiality` (registre de l'entité, motif obligatoire), au journal d'audit sans objet ni nom et à l'historique, lisible du registre seulement. `GET /api/mails/designable-users` : agents et responsables actifs de l'entité, pour le registre.
+- **Mêmes droits partout (CR-008)** : le niveau est relu en base à chaque contrôle (`canSeeMail`) ; fiche, pièces, historique, commentaires, bannettes, compteurs, recherche et cloche n'affichent pas un courrier invisible ; les droits de traitement s'ajoutent à la désignation ; `take()` applique le niveau.
+- **Assistants (CA-005)** : un courrier confidentiel ne livre ni objet, ni note, ni destinataire écrit, ni référence, ni commentaire, ni pièce par l'API MCP ; trois outils : `set_mail_confidentiality`, `handover_mail`, `list_designable_users`.
+- **Interface** : choix du niveau et des personnes à l'enregistrement, carte « Confidentialité » sur la fiche, pastille cadenas dans le registre et les bannettes, historique avec changements de niveau et remise ; un fichier de la file ne s'enregistre pas comme pli confidentiel.
+- **E75** : le serveur refuse (409 `SELF_CHANGE`) que l'on change son propre rôle d'application ou désactive son propre compte ; l'écran verrouille le rôle de sa propre ligne et n'y propose plus « Désactiver ».
+- **Aide** : une procédure « Enregistrer un courrier restreint ou un pli confidentiel », une procédure « Changer le niveau de confidentialité » et une question, FR et NL ; 15 fiches.
+- **Documents et outils** : documents de l'archive corrigés (E73) ; scripts `recette.mjs` corrigé, `recette-e55.mjs`, `recette-parcours.mjs` et `recette-confidentialite.mjs` versés (E74).
+- **Tests** : serveur 196 tests, 0 échec ; écrans 177 réussis et 1 ignoré, 0 échec ; `help:check` 22 ; typage, accessibilité statique et construction à 0 erreur ; `npm audit --omit=dev` à 0 dans les deux dossiers ; `help:audit` réussi ; sur la démonstration : `recette.mjs` 38, `recette-faq.mjs` 5, `recette-agent.mjs` 69, `recette-e55.mjs` 36 et `recette-confidentialite.mjs` 37 contrôles conformes ; preuves d'échec : 19 contournements sur 19 détectés côté serveur, 13 sur 13 côté interface, 1 mutant équivalent (`docs/SECURITE.md`).
+
+## 0.4.1 du 24/11/2026, installée sur NIXUS, recettée par script et publiée sur GitHub le 24/11/2026
+
+Étape 4 bis : correction de l'écart E55 relevé à l'audit complet du cahier des charges. Remplace la 0.4.0, déjà installée sur NIXUS (migration 010 en base depuis le 17/11/2026). Aucune migration nouvelle, aucune dépendance changée, construction sans `--no-cache`.
 
 - **Prise en charge sans agent nommé** : un courrier attribué à un service sans agent nommé (CE-061) se prend en charge par tout agent ou responsable de ce service, qui devient l'agent nommé (nom sur la fiche, bannette « Moi », droit de clôture). Avec un agent nommé, lui seul le prend en charge, comme en 0.4.0. Un courrier non attribué, annulé, d'une autre entité ou d'un service dont on n'est pas membre reste refusé (403 ou 409).
 - **Droits annoncés** : `rights.take` est vrai pour tout membre du service quand personne n'est nommé ; l'interface n'affiche le bouton que dans ce cas.
 - **Textes** : message du bouton, fiche d'aide « Bannettes » (FR et NL) et `docs/fonctionnel/traitement.md` décrivent la nouvelle règle.
 - **Tests** : serveur 175 (un test remplacé par deux), interface inchangée à 160 réussis et 1 ignoré ; preuve d'échec : neutraliser la règle fait échouer deux tests, neutraliser le droit annoncé en fait échouer un ; scripts de recette sur la démonstration : `recette.mjs`, `recette-agent.mjs` et `recette-faq.mjs` conformes.
+- **Installation et recette sur NIXUS (24/11/2026)** : construction en 2 min 23 s, aucune migration appliquée (010 déjà en base). Recette par script sur NIXUS le 24/11/2026 : `recette.mjs` 38 contrôles conformes (après correction du script, qui ouvrait en tête du registre un courrier annulé laissé par une recette précédente : correction faite sur le PC, à verser en 0.5.0, E74) ; `recette-faq.mjs` 5 ; `recette-agent.mjs` 69 ; `recette-e55.mjs` (nouveau, à verser en 0.5.0) 37, dont la prise en charge sans agent nommé à l'écran, avec agent nommé, par le responsable, et le refus aux autres services ; aucune remarque de Chrome sur 13 écrans et fenêtres ; sept comptes de test désactivés et quatre courriers fictifs annulés par les scripts.
+- **Publication** : Publiée le 24/11/2026 : branche `version/v0.4.1`, demande de fusion n° 11 (commit `dd22620`), quatre contrôles verts (`tests` en 2 min 7 s, CodeQL sans alerte nouvelle), fusion `bb5e03c`, étiquette `v0.4.1`, publication avec l'archive installée ; empreinte SHA-256 `018c632e…02d8cf` identique sur le PC, sur NIXUS et sur GitHub. La 0.4.0 avait été publiée le 17/11/2026 (demande de fusion n° 10, fusion `4533ec5`, étiquette `v0.4.0`).
 - **Documents** : écarts E56 à E71 ouverts après l'audit, E55 et E72 clos, planning révisé, notes de livraison avec les trois questions RGPD.
 
-## 0.4.0 du 17/11/2026, jamais installée, remplacée par la 0.4.1
+## 0.4.0 du 17/11/2026, installée sur NIXUS le 17/11/2026 sans recette consignée, remplacée par la 0.4.1
 
 Étape 4 du planning : traitement (CE-070, CE-071, CE-073, CE-079). Migration 010, aucune dépendance changée, construction sans `--no-cache`.
 

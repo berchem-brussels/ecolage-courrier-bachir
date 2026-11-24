@@ -1,6 +1,6 @@
 # Écarts mesurés
 
-Application courrier · version 0.4.1 · écarts au 24/11/2026 (version livrée, non installée)
+Application courrier · version 0.5.0 · écarts au 24/11/2026 (version livrée, non installée)
 
 Écarts entre le code livré, le cahier des charges (CDC, version 0.10) et le standard v3.2. Numérotation continue d'une version à l'autre ; un écart clos reste dans la liste avec sa date.
 
@@ -10,7 +10,7 @@ Application courrier · version 0.4.1 · écarts au 24/11/2026 (version livrée,
 | --- | --- | --- | --- |
 | E1 | CE-044 | La date de réception ne se corrige pas après l'enregistrement | Correction avec motif, étape 6 |
 | E2 | CR-002, A12 | Visibilité limitée au secrétariat et au gestionnaire de l'entité : l'attribution n'existe pas encore | Étape 3 |
-| E3 | CE-002 | Choix de l'entité par des boutons dans l'écran (gardé dans l'adresse), pas encore dans l'en-tête | Étape 5 |
+| E3 | CE-002 | Choix de l'entité par des boutons dans l'écran (gardé dans l'adresse), pas encore dans l'en-tête | Étape 5 bis (0.5.1) |
 | E5 | CI-001 | Connexion Microsoft livrée en 0.2.5 (mode `local` par défaut) ; recette réelle en 7 points non jouée : inscription d'application Entra ID et lien dans Portal manquants | Recette dès que l'inscription existe ; clôture après |
 | E6 | CN-001 | `sql.js` au lieu de PostgreSQL 16 | Étape 8, avant toute donnée réelle |
 | E7 | Standard 7.4, CA-003 | MCP écrit à la main dans le processus de l'API, session ou jeton porteur, sans OAuth 2.1 ni SDK | Patron admis avec `sql.js` ; transport à revoir à l'étape 8, OAuth à l'étape 21 |
@@ -48,7 +48,7 @@ Application courrier · version 0.4.1 · écarts au 24/11/2026 (version livrée,
 | E57 | CE-130 | Une personne et son organisation ne sont reliées que par un champ texte libre « organisation » | Étape 15 |
 | E58 | CE-133 | La fiche d'un contact n'a pas l'historique de ses courriers (limité aux courriers visibles) ; l'étape 15 ne parlait que de fusion | Étape 15 |
 | E59 | CE-132 | Recherche par numéro BCE livrée ; contrôle de format du numéro non constaté dans le code | Étape 15, à vérifier |
-| E60 | CR-006 | Le destinataire d'un pli confidentiel ne peut pas demander l'enregistrement complet après ouverture | Étape 5 |
+| E60 | CR-006 | Le destinataire d'un pli confidentiel ne peut pas demander l'enregistrement complet après ouverture | Étape 5 bis (0.5.1) |
 | E61 | CE-066 | Liste des courriers à soumettre au Collège ou au Bureau permanent, imprimable et exportable : absente du planning | Étape 19 (avec BOS) |
 | E62 | CP-005 | Export et import de la configuration en un fichier : absents du planning | Étape 23 |
 | E63 | CL-007 | Statistique de la langue des courriers reçus et envoyés : absente du planning | Étape 20 |
@@ -60,6 +60,12 @@ Application courrier · version 0.4.1 · écarts au 24/11/2026 (version livrée,
 | E69 | CE-140 | Notification « mention dans un commentaire » : aucun mécanisme de mention | Étape 10 |
 | E70 | Standard 13.3, CL-001 | Le chatbot existe (`Chatbot.tsx`) mais n'a pas été audité : intentions FR et NL, droits par rôle, intentions des étapes 3 et 4 | Étape 6 |
 | E71 | Règle de travail 3 (fichiers du projet) | Les copies de ETAT.md, ECARTS-CDC.md, DECISIONS.md et CHANGELOG.md dans les fichiers du projet étaient restées en 0.3.1 alors que l'archive 0.4.0 portait les versions à jour | Remplacer par les cinq fichiers de la 0.4.1 (action 34) |
+| E76 | CR-003 | Un courrier restreint n'est lu que du registre et des personnes nommément désignées : le service traitant ne le lit pas par son seul rattachement, même si une de ses personnes est désignée (lecture stricte, fermée par défaut, CG-002) | À confirmer avec l'utilisatrice clé |
+| E77 | CR-001, CR-004 | Le niveau « confidentiel » se choisit à l'enregistrement seulement : un courrier déjà enregistré ne le devient pas (son objet est déjà écrit) ; un pli confidentiel peut redescendre ; il ne s'attribue pas à un service ; son objet est le texte fixe « Pli confidentiel remis fermé » | À confirmer avec l'utilisatrice clé |
+| E78 | CR-005 | La remise du pli fermé enregistre qui remet (la personne du registre qui clique), qui reçoit (le destinataire nommé), la date et l'heure ; elle se fait une fois, sans notification (la nature de notification « remis » n'existe pas) | À confirmer avec l'utilisatrice clé |
+| E79 | CR-023, CE-127 | Le registre imprimable et les exports (étape 6) ne sont pas livrés ; ils devront montrer un pli confidentiel sans objet et respecter la visibilité de chaque lecteur | Étape 6 |
+| E80 | CR-003, CR-004 | Un agent désigné peut lire un courrier restreint mais, hors de son service, ne le traite pas ; pour un pli confidentiel, le destinataire nommé lit sans agir (ni prise en charge, ni commentaire) | À confirmer avec l'utilisatrice clé |
+| E81 | Décision du 27/10/2026 (archive publique), GITHUB.md section 6 | Des noms complets de personnes figurent dans `ETAT.md` (table des comptes), `DECISIONS.md` et `ECARTS-CDC.md` de l'archive publique depuis des versions antérieures, alors que la décision du 27/10/2026 les remplaçait par des rôles (prénom de Renaud conservé) ; aucun nom n'est ajouté par la 0.5.0 | À décider avec le conducteur du projet : remplacer par des rôles en 0.5.1 |
 
 ## 2. Écarts clos
 
@@ -83,8 +89,11 @@ Application courrier · version 0.4.1 · écarts au 24/11/2026 (version livrée,
 | E39 | Standard 13.1 | Fiches sans repères numérotés ni captures annotées, script Playwright absent | 03/11/2026 : script `help-capture/capture.spec.ts`, instance de démonstration, 36 captures FR et NL sur données fictives, repères `[[n]]` reliés à la capture d'ensemble, contrôles bloquants (présence, JPEG, taille, repères, captures inutilisées) ; 6 contrôles contournés un à un, tous détectés |
 | E42 | Standard 13.1 (« une fiche par écran ») | La fiche « Entités et registres » (0.2.7 et 0.2.8) décrivait un bouton « Modifier » et une colonne « Numéros attribués » qui n'existent pas : un clic sur une ligne ouvre la fenêtre, et le nombre de numéros attribués est dans la fenêtre du registre. La capture de « Créer un compte » était aussi rattachée à la mauvaise procédure | 17/11/2026 : fiche réécrite d'après l'écran, capture remise sur la bonne procédure, audit « fiche contre écran réel » (`npm run help:audit`) et test de rattachement des captures ; l'audit signale l'erreur d'origine avant correction |
 | E23 | Standard 12, accessibilité | Remarques d'information de Chrome (Issues) : 20 sur la 0.2.6, puis titres de groupes de boutons, étiquette de « Nouveau service » et champs sans identifiant ni nom | 17/11/2026 : `GroupItem` (22 champs), `name` sur tous les champs de recherche et de motif, tests sur toutes les fenêtres ; script de recette lancé sur l'instance d'acceptance : aucune remarque de Chrome, aucune étiquette mal reliée, aucun champ sans nom sur 11 écrans et fenêtres |
-| E55 | CDC CE-070, CE-071, CE-061 | Seul l'agent nommé prenait en charge : un courrier attribué à un service sans agent nommé ne pouvait être ni pris en charge ni clos par personne (relevé à l'audit du 24/11/2026) | 24/11/2026, 0.4.1 : sans agent nommé, tout agent ou responsable du service traitant prend en charge et devient l'agent nommé ; avec un agent nommé, lui seul. Deux tests ajoutés, preuve d'échec jouée (deux contournements détectés). Le commentaire de service reste lu par le service traitant et le registre. À confirmer avec l'utilisatrice clé |
+| E55 | CDC CE-070, CE-071, CE-061 | Seul l'agent nommé prenait en charge : un courrier attribué à un service sans agent nommé ne pouvait être ni pris en charge ni clos par personne (relevé à l'audit du 24/11/2026) | 24/11/2026, 0.4.1 : sans agent nommé, tout agent ou responsable du service traitant prend en charge et devient l'agent nommé ; avec un agent nommé, lui seul. Deux tests ajoutés, preuve d'échec jouée (deux contournements détectés) ; jouée aussi sur NIXUS par `recette-e55.mjs` (37 contrôles conformes). Le commentaire de service reste lu par le service traitant et le registre. À confirmer avec l'utilisatrice clé |
 | E72 | CG-016, standard 9.3 | Les notes de livraison 0.3.0, 0.3.1 et 0.4.0 ne répondaient pas aux trois questions RGPD | 24/11/2026, 0.4.1 : les notes de la 0.4.1 y répondent pour les étapes 3, 4 et 4 bis ; mise à jour du registre et de l'AIPD à porter par le conducteur avec le DPO (action 35) |
+| E75 | Standard 8 (rôles), CE-001 | Un administrateur pouvait se retirer son propre rôle d'administrateur par un clic sur sa propre ligne (incident du 24/11/2026) | 24/11/2026, 0.5.0 : le serveur refuse (409 `SELF_CHANGE`) tout changement de son propre rôle d'application et toute désactivation de son propre compte ; l'écran verrouille le rôle de sa propre ligne et n'y propose plus « Désactiver » ; le garde-fou du dernier administrateur reste en défense en profondeur. Tests serveur et écran, preuves d'échec jouées |
+| E73 | Règle de travail 14, GITHUB.md section 4 | Notes de livraison et manifeste de l'archive 0.4.1 : la 0.4.0 disait « jamais installée », retour arrière vers la 0.3.1 | 24/11/2026, 0.5.0 : les documents de l'archive portent les faits (0.4.0 installée et publiée le 17/11/2026) |
+| E74 | GITHUB.md section 4 (archive publiée = archive installée) | `recette.mjs` corrigé et `recette-e55.mjs` absents de l'archive 0.4.1 | 24/11/2026, 0.5.0 : les deux scripts, plus `recette-parcours.mjs` et `recette-confidentialite.mjs`, sont dans l'archive |
 
 ## 3. Écarts du gabarit 1.1.0 corrigés
 

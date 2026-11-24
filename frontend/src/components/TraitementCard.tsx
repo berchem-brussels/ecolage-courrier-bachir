@@ -12,13 +12,14 @@ import { pick, RADIOGROUP } from '../labels';
 import GroupItem from './GroupItem';
 
 export interface TimelineItem {
-  type: 'enregistrement' | 'attribution' | 'prise_en_charge' | 'commentaire' | 'cloture' | 'reouverture' | 'consultation';
+  type: 'enregistrement' | 'attribution' | 'prise_en_charge' | 'commentaire' | 'cloture' | 'reouverture' | 'consultation' | 'confidentialite' | 'remise';
   id: number; at: string; author_first_name: string | null; author_last_name: string | null;
   kind?: 'attribution' | 'reattribution' | 'agent' | 'copies' | 'renvoi';
   service_name_fr?: string | null; service_name_nl?: string | null; from_service_name_fr?: string | null; from_service_name_nl?: string | null;
   agent_first_name?: string | null; agent_last_name?: string | null;
   reason?: string | null; note?: string | null; scope?: 'service' | 'entity'; body?: string;
   close_reason_label_fr?: string | null; close_reason_label_nl?: string | null;
+  from_level?: string; to_level?: string; to_first_name?: string | null; to_last_name?: string | null;
 }
 export interface MailTreatment {
   id: number; entity_id: number; status: 'enregistre' | 'en_traitement' | 'clos' | 'annule';
@@ -88,6 +89,8 @@ export default function TraitementCard<M extends MailTreatment>({ mail, onChange
       const from = svc({ service_name_fr: e.from_service_name_fr, service_name_nl: e.from_service_name_nl });
       return `${svc(e)}${e.kind === 'reattribution' && from ? ` (${t('attr.event.from')} ${from})` : ''}${agent ? ` · ${agent}` : ''}`;
     }
+    if (e.type === 'confidentialite') return `${t(`mail.level.${e.from_level}`)} → ${t(`mail.level.${e.to_level}`)}`;
+    if (e.type === 'remise') return fullName(e.to_first_name, e.to_last_name);
     if (e.type === 'cloture') return pick({ x_fr: e.close_reason_label_fr, x_nl: e.close_reason_label_nl || e.close_reason_label_fr }, 'x', lang);
     return '';
   };

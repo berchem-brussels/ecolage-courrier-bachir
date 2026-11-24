@@ -22,6 +22,7 @@ const { todayInInstance } = require('../instance');
 const pieces = require('./pieces');
 const consultations = require('./consultations');
 const processing = require('./processing');
+const conf = require('./confidentiality');
 
 const COLUMNS = `m.id, m.number, m.entity_id, e.code AS entity_code, m.register_id, m.year, m.seq, m.received_date, m.registered_at,
   m.channel, m.tracking_number, m.sender_contact_id, c.kind AS sender_kind, c.name AS sender_name, c.first_name AS sender_first_name,
@@ -33,11 +34,14 @@ const COLUMNS = `m.id, m.number, m.entity_id, e.code AS entity_code, m.register_
   m.processing, m.taken_by, tk.first_name AS taken_by_first_name, tk.last_name AS taken_by_last_name, m.taken_at,
   m.closed_by, cb.first_name AS closed_by_first_name, cb.last_name AS closed_by_last_name, m.closed_at, m.close_reason_id,
   cr.label_fr AS close_reason_label_fr, cr.label_nl AS close_reason_label_nl, m.close_note,
+  m.confidentiality, m.handed_by, hb.first_name AS handed_by_first_name, hb.last_name AS handed_by_last_name, m.handed_to,
+  ht.first_name AS handed_to_first_name, ht.last_name AS handed_to_last_name, m.handed_at,
   m.created_at, m.updated_at`;
 const FROM = `FROM mails m JOIN entities e ON e.id = m.entity_id JOIN contacts c ON c.id = m.sender_contact_id
   JOIN mail_types t ON t.id = m.type_id LEFT JOIN users u ON u.id = m.created_by
   LEFT JOIN org_services sv ON sv.id = m.service_id LEFT JOIN users ag ON ag.id = m.agent_id
-  LEFT JOIN users tk ON tk.id = m.taken_by LEFT JOIN users cb ON cb.id = m.closed_by LEFT JOIN close_reasons cr ON cr.id = m.close_reason_id`;
+  LEFT JOIN users tk ON tk.id = m.taken_by LEFT JOIN users cb ON cb.id = m.closed_by LEFT JOIN close_reasons cr ON cr.id = m.close_reason_id
+  LEFT JOIN users hb ON hb.id = m.handed_by LEFT JOIN users ht ON ht.id = m.handed_to`;
 
 function load(id) {
   const m = getDb().prepare(`SELECT ${COLUMNS} ${FROM} WHERE m.id = ?`).get(id);
@@ -91,7 +95,10 @@ function readable(user, id) {
 
 /** Courrier avec ses services en copie, son historique d'attribution et les actions permises à la personne. */
 function withAttribution(user, m) {
+  // Les personnes désignées ne se montrent qu'au registre ; le destinataire nommé sait seulement qu'il l'est (champ « designated »).
+  const register = access.isRegister(user, m.entity_id);
   return { ...m, copies: attribution.copiesOf(m.id), attributions: attribution.history(m.id), rights: access.mailRights(user, m),
+    designees: register ? conf.designeesOf(m.id) : [], designated: access.isDesignated(m.id, user.id),
     comments: processing.commentsOf(user, m), timeline: processing.timeline(user, m) };
 }
 
@@ -140,6 +147,11 @@ function create(user, data, channel = 'api') {
   checkType(data.type_id, data.entity_id);
   checkContact(data.sender_contact_id);
   const year = Number(received.slice(0, 4));
+  // Confidentialité (CR-001, CR-004) : le pli confidentiel s'enregistre sans scan et sans objet ; il nomme son destinataire.
+  const level = data.confidentiality || 'normal';
+  const designees = conf.checkDesignees(level, data.entity_id, data.designee_ids);
+  if (level === 'confidentiel' && data.piece_ids && data.piece_ids.length > 0) throw new AppError(409, 'CONFIDENTIAL_NO_SCAN');
+  const subject = level === 'confidentiel' ? conf.GENERIC_SUBJECT : data.subject;
 
   const done = db.transaction(() => {
     db.prepare('INSERT OR IGNORE INTO register_counters (register_id, year, last_number) VALUES (?, ?, 0)').run(reg.id, year);
@@ -148,16 +160,17 @@ function create(user, data, channel = 'api') {
     const number = `${reg.prefix}-${year}-${pad(seq, reg.digits)}`;
     const r = db.prepare(`INSERT INTO mails (register_id, entity_id, year, seq, number, received_date, channel, tracking_number,
       sender_contact_id, addressee_name, subject, type_id, lang, urgency, sender_reference, document_date, pieces_count, notes,
-      created_by, updated_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
+      confidentiality, created_by, updated_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
       reg.id, data.entity_id, year, seq, number, received, data.channel, data.tracking_number || null,
-      data.sender_contact_id, data.addressee_name || null, data.subject, data.type_id, data.lang || 'fr', data.urgency || 'normale',
-      data.sender_reference || null, data.document_date || null, data.pieces_count ?? null, data.notes || null, user.id, user.id,
+      data.sender_contact_id, data.addressee_name || null, subject, data.type_id, data.lang || 'fr', data.urgency || 'normale',
+      data.sender_reference || null, data.document_date || null, data.pieces_count ?? null, data.notes || null, level, user.id, user.id,
     );
+    conf.writeDesignees(db, r.lastInsertRowid, designees, user.id);
     const attached = pieces.attachInTransaction(db, user, r.lastInsertRowid, data.entity_id, data.piece_ids);
     return { mailId: r.lastInsertRowid, attached };
   })();
   const m = load(done.mailId);
-  logAudit(user.id, 'mail.register', 'mail', m.id, { number: m.number, entity_id: m.entity_id, piece_ids: done.attached }, channel);
+  logAudit(user.id, 'mail.register', 'mail', m.id, { number: m.number, entity_id: m.entity_id, piece_ids: done.attached, confidentiality: level, designees: designees.length }, channel);
   for (const pid of done.attached) logAudit(user.id, 'piece.attach', 'piece', pid, { mail_id: m.id, number: m.number }, channel);
   return { ...m, pieces: pieces.listForMail(m.id) };
 }

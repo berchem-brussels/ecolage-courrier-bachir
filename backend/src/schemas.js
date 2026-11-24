@@ -133,7 +133,12 @@ module.exports = {
     lang: T.en('fr', 'nl', 'autre'), urgency: T.en('normale', 'urgente'), sender_reference: T.str(100), document_date: T.nullDate(),
     pieces_count: { type: ['integer', 'null'], minimum: 0, maximum: 9999 }, notes: T.text(5000),
     piece_ids: { type: 'array', items: T.int(1), maxItems: 20, uniqueItems: true },
+    confidentiality: T.en('normal', 'restreint', 'confidentiel'), designee_ids: { type: 'array', items: T.int(1), maxItems: 50, uniqueItems: true },
   }, ['entity_id', 'channel', 'sender_contact_id', 'subject', 'type_id']),
+  mailConfidentiality: obj({
+    level: T.en('normal', 'restreint', 'confidentiel'), reason: T.reqStr(500), designee_ids: { type: 'array', items: T.int(1), maxItems: 50, uniqueItems: true },
+  }, ['level', 'reason']),
+  designableList: obj({ entity_id: T.int(1) }, ['entity_id']),
   mailUpdate: obj({
     channel: T.en('courrier', 'recommande', 'colis', 'guichet'), tracking_number: T.str(50), sender_contact_id: T.int(1),
     addressee_name: T.str(200), subject: T.reqStr(500), type_id: T.int(1), lang: T.en('fr', 'nl', 'autre'), urgency: T.en('normale', 'urgente'),

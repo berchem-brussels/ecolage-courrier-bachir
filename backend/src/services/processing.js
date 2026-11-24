@@ -39,7 +39,10 @@ const clean = (v) => (typeof v === 'string' ? v.trim() : '');
  */
 function take(user, mailId, channel = 'api') {
   const m = readableMail(user, mailId);
-  const eligible = !!m.service_id && access.isAgent(user, m.entity_id)
+  // Confidentialité (0.5.0) : un pli confidentiel ne se prend pas en charge ; un courrier restreint, seulement par une personne désignée.
+  const level = access.levelOf(m.id);
+  const allowedLevel = level === 'normal' || (level === 'restreint' && access.isDesignated(m.id, user.id));
+  const eligible = allowedLevel && !!m.service_id && access.isAgent(user, m.entity_id)
     && (m.agent_id ? m.agent_id === user.id : access.isMemberOf(user, m.entity_id, m.service_id));
   if (!eligible) throw new AppError(403, 'FORBIDDEN');
   if (m.status === 'annule') throw new AppError(409, 'CANCELLED');
@@ -132,7 +135,7 @@ function addComment(user, mailId, data, channel = 'api') {
   return db.prepare(`SELECT ${COLUMNS} ${FROM} WHERE c.id = ?`).get(id);
 }
 
-const ORDER = { enregistrement: 0, attribution: 1, prise_en_charge: 2, commentaire: 3, cloture: 4, reouverture: 5, consultation: 6 };
+const ORDER = { enregistrement: 0, confidentialite: 1, attribution: 1, remise: 2, prise_en_charge: 2, commentaire: 3, cloture: 4, reouverture: 5, consultation: 6 };
 
 /**
  * Historique complet de la fiche (CE-079), du plus récent au plus ancien : enregistrement, attributions, prise en charge,
@@ -158,7 +161,12 @@ function timeline(user, m) {
     items.push({ type: 'commentaire', id: c.id, at: c.created_at, scope: c.scope, service_name_fr: c.service_name_fr, service_name_nl: c.service_name_nl, body: c.body,
       author_id: c.author_id, author_first_name: c.author_first_name, author_last_name: c.author_last_name });
   }
+  // Confidentialité (0.5.0) : la remise du pli se lit de qui voit le courrier ; les changements de niveau et leurs motifs, du registre seulement.
+  if (m.handed_at) items.push({ type: 'remise', id: m.id, at: m.handed_at, author_id: m.handed_by, author_first_name: m.handed_by_first_name, author_last_name: m.handed_by_last_name,
+    to_first_name: m.handed_to_first_name, to_last_name: m.handed_to_last_name });
   if (access.isRegister(user, m.entity_id)) {
+    for (const c of require('./confidentiality').changesOf(m.id)) items.push({ type: 'confidentialite', id: c.id, at: c.created_at, from_level: c.from_level, to_level: c.to_level, reason: c.reason,
+      author_id: c.author_id, author_first_name: c.author_first_name, author_last_name: c.author_last_name });
     const rows = db.prepare(`SELECT k.id, k.created_at, k.channel, k.user_id, u.first_name, u.last_name FROM consultations k LEFT JOIN users u ON u.id = k.user_id
       WHERE k.mail_id = ? AND k.action = 'fiche' ORDER BY k.id DESC LIMIT 50`).all(m.id);
     for (const k of rows) items.push({ type: 'consultation', id: k.id, at: k.created_at, channel: k.channel, author_id: k.user_id, author_first_name: k.first_name, author_last_name: k.last_name });

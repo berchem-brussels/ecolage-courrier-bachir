@@ -7,8 +7,8 @@ Exigences : CE-010, CE-070, CE-071, CE-073, CE-079, CR-008 du cahier des charges
 | Rôle (dans l'entité) | Prend en charge | Clôt | Rouvre | Commente |
 | --- | --- | --- | --- | --- |
 | Agent nommé du courrier | Oui | Oui | Non | Oui |
-| Responsable du service traitant | Non, sauf s'il est nommé | Oui | Non | Oui |
-| Autre membre du service traitant | Non | Non | Non | Oui |
+| Responsable du service traitant | Oui si aucun agent n'est nommé, ou s'il est nommé | Oui | Non | Oui |
+| Autre membre du service traitant | Oui si aucun agent n'est nommé | Non | Non | Oui |
 | Service en copie | Non | Non | Non | Non (il lit les commentaires « entité ») |
 | Secrétariat, gestionnaire du registre | Non | Non | Oui, avec un motif | Oui |
 | Auditeur, administrateur | Non | Non | Non | Non |

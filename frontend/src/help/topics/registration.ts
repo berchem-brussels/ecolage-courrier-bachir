@@ -38,6 +38,21 @@ const topic: HelpTopic = {
       result: { fr: "Le courrier est enregistré avec son numéro de recommandé, que le registre affiche dans la fiche.", nl: "De brief is ingeschreven met zijn nummer van de aangetekende zending, dat het register in de fiche toont." },
     },
     {
+      title: { fr: "Enregistrer un courrier restreint ou un pli confidentiel", nl: "Een beperkte brief of een vertrouwelijke omslag inschrijven" },
+      when: { fr: "Quand le courrier ne doit être lu que par des personnes précises : un dossier du personnel, ou un pli personnel remis fermé à son destinataire.", nl: "Wanneer de brief enkel door bepaalde personen gelezen mag worden: een personeelsdossier, of een persoonlijke omslag die gesloten aan de bestemmeling wordt overhandigd." },
+      steps: [
+        { fr: "Remplissez le formulaire comme d'habitude, puis choisissez le niveau dans {{mail.confidentiality}} : {{mail.level.restreint}} ou {{mail.level.confidentiel}}.", nl: "Vul het formulier zoals gewoonlijk in en kies daarna het niveau in {{mail.confidentiality}}: {{mail.level.restreint}} of {{mail.level.confidentiel}}." },
+        { fr: "Pour un courrier restreint, choisissez dans {{mail.designees}} les agents ou responsables qui doivent pouvoir le lire : eux seuls et le secrétariat le verront.", nl: "Kies voor een beperkte brief in {{mail.designees}} de bedienden of verantwoordelijken die hem moeten kunnen lezen: enkel zij en het secretariaat zien hem." },
+        { fr: "Pour un pli confidentiel, choisissez dans {{mail.designee}} la personne dont le nom est sur l'enveloppe. L'objet n'est pas demandé et aucun fichier ne peut être joint : le pli reste fermé.", nl: "Kies voor een vertrouwelijke omslag in {{mail.designee}} de persoon van wie de naam op de envelop staat. Het onderwerp wordt niet gevraagd en er kan geen bestand worden toegevoegd: de omslag blijft gesloten." },
+        { fr: "Cliquez sur {{common.save}}. Quand le pli est remis à son destinataire, ouvrez sa fiche et utilisez {{conf.handover}} : qui remet, qui reçoit, la date et l'heure sont gardés.", nl: "Klik op {{common.save}}. Wanneer de omslag aan de bestemmeling wordt overhandigd, opent u zijn dossier en gebruikt u {{conf.handover}}: wie overhandigt, wie ontvangt, datum en uur worden bewaard." },
+      ],
+      result: { fr: "Le courrier reçoit son numéro et porte un cadenas dans les listes. Les agents qui ne sont pas désignés, l'auditeur, l'administrateur et l'autre entité ne le voient pas, ni dans les listes, ni dans les compteurs, ni dans la recherche.", nl: "De brief krijgt zijn nummer en draagt een hangslot in de lijsten. Niet-aangeduide bedienden, de auditor, de beheerder en de andere entiteit zien hem niet, noch in de lijsten, noch in de tellers, noch in het zoeken." },
+      errors: [
+        { problem: { fr: "L'option {{mail.level.confidentiel}} est grisée.", nl: "De optie {{mail.level.confidentiel}} is grijs." }, solution: { fr: "Vous enregistrez un fichier de la file « À enregistrer » : un pli confidentiel s'enregistre sans scan. Choisissez {{mail.level.restreint}}, ou enregistrez le pli sans fichier.", nl: "U registreert een bestand uit de wachtrij: een vertrouwelijke omslag wordt zonder scan geregistreerd. Kies {{mail.level.restreint}} of registreer de omslag zonder bestand." } },
+        { problem: { fr: "La liste des personnes à désigner est vide.", nl: "De lijst met aan te duiden personen is leeg." }, solution: { fr: "Seuls les agents et responsables de service actifs de l'entité peuvent être désignés : vérifiez leurs rôles dans l'administration des utilisateurs.", nl: "Enkel actieve bedienden en dienstverantwoordelijken van de entiteit kunnen worden aangeduid: controleer hun rollen in het gebruikersbeheer." } },
+      ],
+    },
+    {
       title: { fr: "Créer l'expéditeur sans quitter le formulaire", nl: "De afzender aanmaken zonder het formulier te verlaten" },
       when: { fr: "Quand l'expéditeur n'existe pas encore dans la liste des contacts.", nl: "Wanneer de afzender nog niet in de lijst van contacten staat." },
       steps: [
@@ -52,6 +67,7 @@ const topic: HelpTopic = {
     },
   ],
   faq: [
+    { q: { fr: "Pourquoi un collègue ne voit-il pas un courrier du service ?", nl: "Waarom ziet een collega een brief van de dienst niet?" }, a: { fr: "Le courrier est probablement {{mail.level.restreint}} ou {{mail.level.confidentiel}} : seules les personnes désignées le lisent, avec le secrétariat. Le niveau se vérifie et se change dans la fiche du courrier.", nl: "De brief is waarschijnlijk {{mail.level.restreint}} of {{mail.level.confidentiel}}: enkel de aangeduide personen lezen hem, samen met het secretariaat. Het niveau wordt in het dossier van de brief gecontroleerd en gewijzigd." } },
     { q: { fr: "Pourquoi la date de réception n'est-elle pas celle d'aujourd'hui ?", nl: "Waarom is de ontvangstdatum niet die van vandaag?" }, a: { fr: "Après un enregistrement, le formulaire reprend la date et le mode d'arrivée du courrier précédent pour accélérer la saisie d'un lot. Corrigez la date si ce courrier est arrivé un autre jour.", nl: "Na een inschrijving neemt het formulier de datum en de wijze van aankomst van de vorige brief over om een reeks sneller in te voeren. Corrigeer de datum als deze brief op een andere dag is aangekomen." } },
     { q: { fr: "Puis-je choisir le numéro ?", nl: "Kan ik het nummer kiezen?" }, a: { fr: "Non. L'application attribue toujours le numéro suivant, pour que le registre n'ait ni trou ni doublon.", nl: "Nee. De toepassing kent altijd het volgende nummer toe, zodat het register geen gaten of dubbels heeft." } },
   ],

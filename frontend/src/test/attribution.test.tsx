@@ -365,4 +365,19 @@ describe('utilisateurs : services d’un agent ou d’un responsable', () => {
     await waitFor(() => expect(put('/users/8')).toBeTruthy());
     expect(put('/users/8')!.body).toEqual({ entity_roles: [{ entity_id: 1, role: 'secretariat' }] });
   });
+
+  it('E75 : sur sa propre ligne le rôle d’application est verrouillé et « Désactiver » absent ; sur les autres lignes ils restent proposés', async () => {
+    setUser([], {}, true);
+    usersList = [{ ...account, id: 5, email: 'x@exemple.test', first_name: 'Test', last_name: 'Fictif', user_role: 'admin' }, account];
+    render(wrap(<UsersPage />));
+    await screen.findAllByRole('button', { name: 'Désactiver' });
+    expect(screen.getAllByRole('button', { name: 'Désactiver' })).toHaveLength(1);
+    const groups = document.querySelectorAll('.ant-table-row .ant-radio-group');
+    const own = [...document.querySelectorAll('.ant-table-row')].find((r) => r.textContent?.includes('x@exemple.test'))!;
+    const other = [...document.querySelectorAll('.ant-table-row')].find((r) => r.textContent?.includes('ag@exemple.test'))!;
+    expect(groups.length).toBeGreaterThan(1);
+    expect(own.querySelectorAll('.ant-radio-button-wrapper-disabled').length).toBeGreaterThan(0);
+    expect(other.querySelectorAll('.ant-radio-button-wrapper-disabled').length).toBe(0);
+    expect(own.querySelector('span[title]')?.getAttribute('title')).toMatch(/propre rôle/);
+  });
 });

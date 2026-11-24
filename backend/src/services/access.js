@@ -5,7 +5,9 @@
  *   nommés ; un rôle à l'AC ne donne rien au CPAS et inversement (un rôle vaut pour une entité).
  * - Administrateur, auditeur : aucun accès au contenu sans rôle de registre ou de service.
  * Ce module ne dépend ni des courriers ni des pièces : les deux l'appellent, sans cycle.
- * La confidentialité à trois niveaux (restreint, confidentiel) viendra à l'étape 5 et se greffera ici.
+ * Confidentialité (0.5.0, CR-001 à CR-005) : « normal » suit les règles ci-dessus ; « restreint » n'est lu que du registre de l'entité et des
+ * personnes nommément désignées ; « confidentiel » que du registre et du destinataire nommé. Le niveau est relu en base à chaque contrôle :
+ * aucun appelant ne peut l'oublier (CR-008).
  */
 const { getDb } = require('../database');
 const { REGISTER_ROLES, AGENT_ROLES, hasEntityRole } = require('../rights');
@@ -32,10 +34,33 @@ function isMemberOf(user, entityId, serviceId) {
   return !!serviceId && isAgent(user, entityId) && serviceIdsOf(user.id, entityId).includes(serviceId);
 }
 
+/** Niveau de confidentialité d'un courrier, relu en base. */
+function levelOf(mailId) {
+  const r = getDb().prepare('SELECT confidentiality FROM mails WHERE id = ?').get(mailId);
+  return r ? r.confidentiality : 'normal';
+}
+
+const isDesignated = (mailId, userId) => !!getDb().prepare('SELECT 1 FROM mail_designees WHERE mail_id = ? AND user_id = ?').get(mailId, userId);
+
+/**
+ * Condition SQL de visibilité (alias « m ») pour les entités données : le registre voit tout ; un agent ou un responsable ne voit
+ * un courrier restreint ou confidentiel que s'il y est désigné.
+ */
+function visibilitySql(user, entityIds) {
+  const parts = [];
+  const params = [];
+  for (const e of entityIds) {
+    if (isRegister(user, e)) { parts.push('m.entity_id = ?'); params.push(e); }
+    else { parts.push("(m.entity_id = ? AND (m.confidentiality = 'normal' OR m.id IN (SELECT mail_id FROM mail_designees WHERE user_id = ?)))"); params.push(e, user.id); }
+  }
+  return { sql: parts.length ? `(${parts.join(' OR ')})` : '0 = 1', params };
+}
+
 /** Vrai si la personne peut lire la fiche et les pièces de ce courrier (m : id, entity_id, service_id, agent_id). */
 function canSeeMail(user, m) {
   if (isRegister(user, m.entity_id)) return true;
   if (!isAgent(user, m.entity_id)) return false;
+  if (levelOf(m.id) !== 'normal') return isDesignated(m.id, user.id);
   if (m.agent_id === user.id) return true;
   const mine = serviceIdsOf(user.id, m.entity_id);
   if (mine.length === 0) return false;
@@ -45,7 +70,7 @@ function canSeeMail(user, m) {
 
 /** Courrier (colonnes utiles aux droits) par identifiant ; undefined s'il n'existe pas. */
 function mailForAccess(mailId) {
-  return getDb().prepare(`SELECT m.id, m.entity_id, ${STATUS_SQL} AS status, m.service_id, m.agent_id FROM mails m WHERE m.id = ?`).get(mailId);
+  return getDb().prepare(`SELECT m.id, m.entity_id, ${STATUS_SQL} AS status, m.service_id, m.agent_id, m.handed_at FROM mails m WHERE m.id = ?`).get(mailId);
 }
 
 /**
@@ -58,13 +83,18 @@ function mailRights(user, m) {
   const open = m.status !== 'annule';
   const closed = m.status === 'clos';
   const register = isRegister(user, m.entity_id);
-  const member = isMemberOf(user, m.entity_id, m.service_id);
+  const level = levelOf(m.id);
+  // Restreint : les droits de traitement s'ajoutent à la désignation ; confidentiel : seul le registre agit, le destinataire nommé lit.
+  const eligible = level === 'normal' || (level === 'restreint' && isDesignated(m.id, user.id));
+  const member = eligible && isMemberOf(user, m.entity_id, m.service_id);
   const manager = member && hasEntityRole(user, m.entity_id, ['chef_service']);
-  const named = isAgent(user, m.entity_id) && !!m.agent_id && m.agent_id === user.id;
+  const named = eligible && isAgent(user, m.entity_id) && !!m.agent_id && m.agent_id === user.id;
   return {
     edit: register && open,
     cancel: register && open,
-    attribute: register && open && !closed,
+    change_level: register && open,
+    handover: register && open && level === 'confidentiel' && !m.handed_at,
+    attribute: register && open && !closed && level !== 'confidentiel',
     set_agent: open && !closed && !!m.service_id && (register || manager),
     return_to_secretariat: open && !closed && !!m.service_id && member,
     take: !!m.service_id && m.status === 'enregistre' && (m.agent_id ? named : member),
@@ -81,4 +111,4 @@ function canSeeComment(user, m, c) {
   return isRegister(user, m.entity_id) || isMemberOf(user, m.entity_id, c.service_id);
 }
 
-module.exports = { STATUS_SQL, effectiveStatus, serviceIdsOf, isRegister, isAgent, isMemberOf, canSeeMail, mailForAccess, mailRights, canSeeComment };
+module.exports = { STATUS_SQL, effectiveStatus, serviceIdsOf, isRegister, isAgent, isMemberOf, canSeeMail, mailForAccess, mailRights, canSeeComment, levelOf, isDesignated, visibilitySql };
