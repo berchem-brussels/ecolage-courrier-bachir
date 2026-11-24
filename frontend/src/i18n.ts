@@ -515,7 +515,7 @@ export const translations: Record<string, Record<Lang, string>> = {
   "treat.close_note": { fr: "Note de clôture", nl: "Nota bij de afsluiting" },
   "treat.not_taken": { fr: "Pas encore pris en charge.", nl: "Nog niet in behandeling genomen." },
   "treat.take": { fr: "Prendre en charge", nl: "In behandeling nemen" },
-  "treat.take.help": { fr: "Vous êtes la personne nommée pour ce courrier : prenez-le en charge pour que votre nom apparaisse sur la fiche et dans les listes.", nl: "U bent de aangeduide persoon voor deze brief: neem hem in behandeling zodat uw naam op het dossier en in de lijsten verschijnt." },
+  "treat.take.help": { fr: "Prenez ce courrier en charge pour que votre nom apparaisse sur la fiche et dans les listes (vous en devenez l'agent nommé).", nl: "Neem deze brief in behandeling zodat uw naam op het dossier en in de lijsten verschijnt (u wordt de aangeduide bediende)." },
   "treat.taken": { fr: "Courrier pris en charge.", nl: "Brief in behandeling genomen." },
   "treat.close": { fr: "Clore le courrier", nl: "Brief afsluiten" },
   "treat.close.help": { fr: "Choisissez pourquoi le traitement est terminé. Le secrétariat en est informé. Seul le secrétariat peut rouvrir un courrier clos.", nl: "Kies waarom de behandeling is afgerond. Het secretariaat wordt verwittigd. Enkel het secretariaat kan een afgesloten brief heropenen." },

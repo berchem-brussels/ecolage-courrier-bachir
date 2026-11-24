@@ -1,6 +1,6 @@
 # Après déploiement
 
-Application courrier · version 0.4.0 · journal des déploiements au 17/11/2026 (0.4.0 livrée, non installée)
+Application courrier · version 0.4.1 · journal des déploiements au 24/11/2026 (0.4.1 livrée, non installée)
 
 Ce fichier reprend en tête les procédures sur NIXUS, puis un bloc par version déployée, la plus récente d'abord. Les commandes se donnent une à une dans la conversation, avec leur résultat attendu, et la suivante n'arrive qu'après le résultat de la précédente. Chaque commande dit sur quelle machine elle s'exécute.
 
@@ -46,18 +46,18 @@ Retour arrière : rejouer les étapes 3 à 11 avec l'archive précédente, rest�
 
 Faite le 13/10/2026 (bloc 0.1.0). La procédure complète est dans `NOTES_LIVRAISON_v0.1.0.md` de l'archive. Elle ne se rejoue pas : le dossier, le `.env`, les volumes et la tâche de sauvegarde existent.
 
-## 2. Version 0.4.0, livrée le 17/11/2026, à installer
+## 2. Version 0.4.1, livrée le 24/11/2026, à installer (remplace la 0.4.0, jamais installée)
 
 Cette version n'est pas encore déployée : le tableau donne ce qui est attendu ; il sera remplacé par les résultats relevés après l'installation.
 
 | Étape | Résultat attendu |
 | --- | --- |
-| Archive | `courrier-v0_4_0.tar.gz`, taille et SHA-256 donnés dans la conversation et dans les notes de livraison ; même empreinte sur le PC et sur NIXUS (`sha256sum`) |
+| Archive | `courrier-v0_4_1.tar.gz`, taille et SHA-256 donnés dans la conversation et dans les notes de livraison ; même empreinte sur le PC et sur NIXUS (`sha256sum`) |
 | Sauvegarde avant mise à jour | `sauvegarde terminée, N sauvegardes conservées.` (la migration 010 modifie la base : sauvegarde obligatoire) |
-| Extraction | Archive testée (`tar tzf`) avant la suppression de l'ancien code ; versions 0.4.0 dans les deux `package.json` |
+| Extraction | Archive testée (`tar tzf`) avant la suppression de l'ancien code ; versions 0.4.1 dans les deux `package.json` |
 | Construction | `docker compose build` sans `--no-cache` (aucune dépendance changée) ; aucune ligne `ERROR` |
-| Démarrage | `[DB] Migration 010_traitement appliquée` puis `[APP] API 0.4.0 sur le port 3001` ; `courrier-api Healthy`, `courrier-web Started` |
-| Version | `{"data":{"version":"0.4.0"},"meta":{"envelope":1,"version":"0.4.0"}}` |
+| Démarrage | `[DB] Migration 010_traitement appliquée` puis `[APP] API 0.4.1 sur le port 3001` ; `courrier-api Healthy`, `courrier-web Started` |
+| Version | `{"data":{"version":"0.4.1"},"meta":{"envelope":1,"version":"0.4.1"}}` |
 | Scripts de recette (PC) | `recette.mjs` 38 contrôles ; `recette-faq.mjs` 5 ; `recette-agent.mjs` 69 (sur la démonstration) ; les comptes de test se désactivent et le courrier fictif s'annule à la fin |
 | Retour arrière | Archive 0.3.1, avec restauration de la base de la sauvegarde (la migration 010 a changé le schéma) : sans restauration, la 0.3.1 verrait comme « enregistrés » les courriers déjà pris en charge ou clos |
 

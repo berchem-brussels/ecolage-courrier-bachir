@@ -1,6 +1,6 @@
 # Décisions et actions
 
-Application courrier · version 0.4.0 · journal au 17/11/2026 (version livrée, non installée)
+Application courrier · version 0.4.1 · journal au 24/11/2026 (version livrée, non installée)
 
 Ce fichier réunit les décisions prises pendant le développement, les règles de travail convenues avec le conducteur du projet et les actions à faire. Les décisions de périmètre du 13/10/2026 (A1 à A12) sont dans le cahier des charges, section 2.
 
@@ -101,6 +101,10 @@ Ce fichier réunit les décisions prises pendant le développement, les règles 
 | 17/11/2026 | Contrôle SQL statique | Tolère la constante `STATUS_SQL` ; rien d'autre n'est assoupli (E53) | Claude |
 | 17/11/2026 | Preuves d'échec de la 0.4.0 | Serveur 24 sur 24 détectés, interface 15 sur 15 ; un contournement d'interface (motif de réouverture) n'était d'abord pas détecté : test ajouté (motif fait d'espaces) | Claude |
 | 17/11/2026 | Scripts de recette | `recette-agent.mjs` étendu au traitement (69 contrôles sur la démonstration) ; deux contrôles faux corrigés : seul un membre du service peut désormais commenter, et un motif de renvoi contient légitimement le mot « recette » | Claude |
+| 24/11/2026 | Audit complet du cahier des charges | Audit de la 0.4.0 contre les 160 exigences (116 M, 35 S, 9 C) : 0.4.0 = étape 4 sur 23, produit non encore utilisable pour remplacer iCourrier ; écarts nouveaux E56 à E71 ; aucun écart n'est une renonciation, tout est replanifié | Conducteur du projet (« oui tu fais tout »), Claude |
+| 24/11/2026 | E55 : prise en charge sans agent nommé | Sans agent nommé, tout agent ou responsable du service traitant prend en charge et devient l'agent nommé ; avec un agent nommé, lui seul. Remplace la réponse du 17/11/2026 qui bloquait le flux par défaut (CE-061) | Conducteur du projet (« oui tu fais tout »), recommandation de Claude |
+| 24/11/2026 | Version 0.4.1 | Remplace la 0.4.0, jamais installée (précédents : 0.2.3 et 0.2.4, 0.3.0 et 0.3.1) ; aucune migration nouvelle, aucune dépendance | Claude, selon les précédents |
+| 24/11/2026 | Replanification | CE-121 et chatbot à l'étape 6 ; CR-006 à l'étape 5 ; tâches et mentions à l'étape 10 ; CE-130, CE-132 et CE-133 à l'étape 15 ; CE-103 à l'étape 16 ; CE-066 à l'étape 19 ; CL-007 à l'étape 20 ; CN-005 à l'étape 8 ; CP-005 à l'étape 23 | Conducteur du projet (« oui tu fais tout »), proposition de Claude |
 
 ## 2. Règles de travail convenues
 
@@ -163,4 +167,7 @@ Elles s'ajoutent aux règles du standard (section 2).
 | 30 | Examiner l'alerte Dependabot n° 30 (1 modérée, branche principale) et la nouvelle branche `dependabot/npm_and_yarn/frontend/multi-…` : ne rien fusionner sans l'accord de Renaud (E34, E38) | Conducteur du projet, Renaud | Avec les actions 21 et 26 |
 | 31 | Confirmer avec l'utilisatrice clé le circuit de traitement : motifs de clôture réels (quatre par défaut), portée des commentaires, prise en charge par l'agent nommé seulement, bannette « Clos », retour à « attribué » après un changement d'agent (E51, E52, E54, E55) | Conducteur du projet, utilisatrice clé de l'AC | À la recette de l'étape 4 |
 | 32 | Informer Renaud de l'étape 4 : les agents et responsables écrivent maintenant (commentaires, prise en charge, clôture) ; écarts E50 à E55 dont le contrôle SQL statique assoupli (E53) | Conducteur du projet | Avec l'action 23 |
-| 33 | Installer la 0.4.0 sur NIXUS (la migration 010 s'applique au démarrage), puis lancer `recette.mjs`, `recette-agent.mjs` et `recette-faq.mjs` sur le PC | Conducteur du projet | Après la livraison |
+| 33 | Installer la 0.4.1 sur NIXUS (la migration 010 s'applique au démarrage), puis lancer `recette.mjs`, `recette-agent.mjs` et `recette-faq.mjs` sur le PC | Conducteur du projet | Après la livraison |
+| 34 | Remplacer dans les fichiers du projet ETAT.md, ECARTS-CDC.md, DECISIONS.md, CHANGELOG.md et APRES-DEPLOIEMENT.md par ceux de la 0.4.1 (E71) | Conducteur du projet | À la livraison de la 0.4.1 |
+| 35 | Mettre à jour le registre des traitements et l'AIPD avec le DPO pour les attributions, les commentaires et les événements des étapes 3 et 4 (réponses de `NOTES_LIVRAISON_v0.4.1.md`) | Conducteur du projet, DPO | Avant toute donnée réelle |
+| 36 | Confirmer avec l'utilisatrice clé la prise en charge sans agent nommé (E55) | Conducteur du projet, Julie Schmitz | À la recette de l'étape 4 |

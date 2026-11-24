@@ -1,6 +1,6 @@
 # Écarts mesurés
 
-Application courrier · version 0.4.0 · écarts au 17/11/2026 (version livrée, non installée)
+Application courrier · version 0.4.1 · écarts au 24/11/2026 (version livrée, non installée)
 
 Écarts entre le code livré, le cahier des charges (CDC, version 0.10) et le standard v3.2. Numérotation continue d'une version à l'autre ; un écart clos reste dans la liste avec sa date.
 
@@ -44,7 +44,22 @@ Application courrier · version 0.4.0 · écarts au 17/11/2026 (version livrée,
 | E52 | CDC 6.1 (En traitement → Attribué) | Le retour à « attribué » n'a pas d'action propre : il vient d'un renvoi, d'une réattribution ou d'un changement d'agent, qui effacent la prise en charge | À confirmer à la recette |
 | E53 | Standard 8, tests statiques | Le contrôle de la requête SQL sans interpolation de valeur tolère désormais `STATUS_SQL` (expression constante du statut effectif, sans valeur venue de l'extérieur) ; les autres interpolations restent limitées à la liste blanche | À signaler à Renaud avec l'action 32 |
 | E54 | CDC CE-120 | Bannette « Clos » ajoutée pour les agents et responsables : sans elle un courrier clos n'est plus retrouvable que par le registre. Non prévue par CE-120 | À confirmer avec l'utilisatrice clé |
-| E55 | CDC CE-070, CE-071 | Seul l'agent nommé prend en charge (réponse du conducteur du 17/11/2026) : sans agent nommé, personne ne le fait ; un commentaire de service est lu par le service traitant et par le registre de l'entité | À confirmer avec l'utilisatrice clé |
+| E56 | CE-121 | La liste des courriers ne filtre que par statut, année, canal, bannette et texte (numéro, objet, référence, expéditeur) et n'a aucun tri : ni période, ni type, ni service, ni expéditeur, ni urgence, ni retard. Constaté dans `schemas.js` (`mailList`) lors de l'audit du 24/11/2026 ; ni planifié ni consigné avant | Étape 6 (avec la recherche globale) ; filtre « retard » à l'étape 9 |
+| E57 | CE-130 | Une personne et son organisation ne sont reliées que par un champ texte libre « organisation » | Étape 15 |
+| E58 | CE-133 | La fiche d'un contact n'a pas l'historique de ses courriers (limité aux courriers visibles) ; l'étape 15 ne parlait que de fusion | Étape 15 |
+| E59 | CE-132 | Recherche par numéro BCE livrée ; contrôle de format du numéro non constaté dans le code | Étape 15, à vérifier |
+| E60 | CR-006 | Le destinataire d'un pli confidentiel ne peut pas demander l'enregistrement complet après ouverture | Étape 5 |
+| E61 | CE-066 | Liste des courriers à soumettre au Collège ou au Bureau permanent, imprimable et exportable : absente du planning | Étape 19 (avec BOS) |
+| E62 | CP-005 | Export et import de la configuration en un fichier : absents du planning | Étape 23 |
+| E63 | CL-007 | Statistique de la langue des courriers reçus et envoyés : absente du planning | Étape 20 |
+| E64 | CN-005 | Aucune mesure de performance (bannette sous 1 s, pièce sous 2 s, 100 000 courriers) : non planifiée | Étape 8, mesurée sur NIXUS avec PostgreSQL |
+| E65 | CE-150 | Le temps d'enregistrement (moins de 30 secondes) n'a pas été mesuré avec Julie Schmitz | Recette après l'étape 6 (raccourcis clavier) |
+| E66 | CE-103 | Dépôt d'un document final produit hors de l'application sur un courrier sortant : nommé dans aucune étape | Étape 16 |
+| E67 | CE-051, CE-142, CI-005, CI-004 | Étiquette avec code-barres, notifications Teams, complément Outlook : sans étape ni décision (D-03, D-12 ouvertes) | À décider avec Renaud ; sinon lot L5 |
+| E68 | CE-072, CE-120, CE-140 | Les tâches liées étaient prévues à l'étape 15, alors que l'onglet « Mes tâches » et les notifications de tâche en dépendent | Replanifiées à l'étape 10 (décision du 24/11/2026) |
+| E69 | CE-140 | Notification « mention dans un commentaire » : aucun mécanisme de mention | Étape 10 |
+| E70 | Standard 13.3, CL-001 | Le chatbot existe (`Chatbot.tsx`) mais n'a pas été audité : intentions FR et NL, droits par rôle, intentions des étapes 3 et 4 | Étape 6 |
+| E71 | Règle de travail 3 (fichiers du projet) | Les copies de ETAT.md, ECARTS-CDC.md, DECISIONS.md et CHANGELOG.md dans les fichiers du projet étaient restées en 0.3.1 alors que l'archive 0.4.0 portait les versions à jour | Remplacer par les cinq fichiers de la 0.4.1 (action 34) |
 
 ## 2. Écarts clos
 
@@ -68,6 +83,8 @@ Application courrier · version 0.4.0 · écarts au 17/11/2026 (version livrée,
 | E39 | Standard 13.1 | Fiches sans repères numérotés ni captures annotées, script Playwright absent | 03/11/2026 : script `help-capture/capture.spec.ts`, instance de démonstration, 36 captures FR et NL sur données fictives, repères `[[n]]` reliés à la capture d'ensemble, contrôles bloquants (présence, JPEG, taille, repères, captures inutilisées) ; 6 contrôles contournés un à un, tous détectés |
 | E42 | Standard 13.1 (« une fiche par écran ») | La fiche « Entités et registres » (0.2.7 et 0.2.8) décrivait un bouton « Modifier » et une colonne « Numéros attribués » qui n'existent pas : un clic sur une ligne ouvre la fenêtre, et le nombre de numéros attribués est dans la fenêtre du registre. La capture de « Créer un compte » était aussi rattachée à la mauvaise procédure | 17/11/2026 : fiche réécrite d'après l'écran, capture remise sur la bonne procédure, audit « fiche contre écran réel » (`npm run help:audit`) et test de rattachement des captures ; l'audit signale l'erreur d'origine avant correction |
 | E23 | Standard 12, accessibilité | Remarques d'information de Chrome (Issues) : 20 sur la 0.2.6, puis titres de groupes de boutons, étiquette de « Nouveau service » et champs sans identifiant ni nom | 17/11/2026 : `GroupItem` (22 champs), `name` sur tous les champs de recherche et de motif, tests sur toutes les fenêtres ; script de recette lancé sur l'instance d'acceptance : aucune remarque de Chrome, aucune étiquette mal reliée, aucun champ sans nom sur 11 écrans et fenêtres |
+| E55 | CDC CE-070, CE-071, CE-061 | Seul l'agent nommé prenait en charge : un courrier attribué à un service sans agent nommé ne pouvait être ni pris en charge ni clos par personne (relevé à l'audit du 24/11/2026) | 24/11/2026, 0.4.1 : sans agent nommé, tout agent ou responsable du service traitant prend en charge et devient l'agent nommé ; avec un agent nommé, lui seul. Deux tests ajoutés, preuve d'échec jouée (deux contournements détectés). Le commentaire de service reste lu par le service traitant et le registre. À confirmer avec l'utilisatrice clé |
+| E72 | CG-016, standard 9.3 | Les notes de livraison 0.3.0, 0.3.1 et 0.4.0 ne répondaient pas aux trois questions RGPD | 24/11/2026, 0.4.1 : les notes de la 0.4.1 y répondent pour les étapes 3, 4 et 4 bis ; mise à jour du registre et de l'AIPD à porter par le conducteur avec le DPO (action 35) |
 
 ## 3. Écarts du gabarit 1.1.0 corrigés
 
