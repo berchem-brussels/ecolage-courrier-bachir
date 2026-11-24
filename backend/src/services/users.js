@@ -106,6 +106,8 @@ function activeAdminCount() {
 function update(user, id, data, channel = 'api') {
   const target = load(id);
   if (data.is_admin_local === 1 && (data.user_role || target.user_role) !== 'admin') throw new AppError(400, 'VALIDATION', ['is_admin_local: réservé à un administrateur']);
+  // E75 : personne ne change son propre rôle d'application ni l'état de son propre compte (incident du 24/11/2026).
+  if (Number(id) === user.id && ((data.user_role && data.user_role !== target.user_role) || data.is_active === 0)) throw new AppError(409, 'SELF_CHANGE');
   const losesAdmin = target.user_role === 'admin' && target.is_active === 1
     && ((data.user_role && data.user_role !== 'admin') || data.is_active === 0);
   if (losesAdmin && activeAdminCount() <= 1) throw new AppError(409, 'LAST_ADMIN');

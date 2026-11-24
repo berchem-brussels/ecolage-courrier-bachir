@@ -301,3 +301,48 @@ Interface (`traitement.test.tsx`) : 15 contournements sur 15 détectés.
 | Texte de la cloche absent pour « clos » | 1 |
 | Texte néerlandais de la prise en charge manquant | 1 |
 | Note de clôture non envoyée | 1 |
+
+## Version 0.5.0 : confidentialité
+
+Serveur (`confidentialite.test.js`, `api.test.js`) : 19 contournements sur 19 détectés, jouée sur le code réel, un contrôle à la fois, le fichier modifié étant restauré après chaque essai.
+
+| Contournement | Tests en échec |
+| --- | --- |
+| Courrier restreint ou confidentiel lu sans désignation (`canSeeMail`) | 9 |
+| Bannettes et compteurs sans la condition de visibilité | 1 (deux contournements : condition retirée, niveau ignoré) |
+| Droits de traitement donnés sans désignation | 1 (après ajout du test d'un état forcé en base) |
+| Droit de remise annoncé sur tout courrier | 1 (après ajout de l'assertion sur un courrier normal) |
+| Personne désignée : n'importe quel compte accepté | 2 |
+| Courrier enregistré devenu confidentiel | 1 |
+| Remise du pli répétable | 1 |
+| Remise enregistrée sur un courrier non confidentiel | 1 |
+| Changement de niveau sans effet accepté | 1 |
+| Pli confidentiel : objet écrit gardé | 2 |
+| Pli confidentiel : dépôt d'un fichier | 1 |
+| Pli confidentiel : rattachement d'un fichier de la file, les deux contrôles neutralisés ensemble | 1 |
+| Pli confidentiel attribué à un service | 1 |
+| Protection de l'assistant retirée (CA-005) | 1 |
+| Lecture d'une pièce d'un pli confidentiel par un assistant (garde-fou) | 1 (après ajout du test d'un état forcé en base) |
+| Motifs de changement de niveau lisibles de tout lecteur de l'historique | 2 |
+| Prise en charge sans contrôle du niveau | 1 (test d'un état forcé en base : il a révélé un écart réel, corrigé avant la livraison) |
+| E75 : changer son propre rôle ou désactiver son compte | 1 |
+
+Double contrôle voulu : neutraliser seul le contrôle de `mails.js` sur le rattachement d'un fichier de la file ne casse aucun test, car celui de `pieces.js` retient ; les deux ensemble sont détectés.
+
+Interface (`confidentialite.test.tsx`, `attribution.test.tsx`) : 13 contournements sur 13 détectés ; 1 mutant équivalent (les personnes désignées envoyées pour le niveau « Normal » : le champ est démonté, il n'est jamais envoyé).
+
+| Contournement | Résultat |
+| --- | --- |
+| Pastille de niveau jamais affichée | Détecté |
+| Objet d'un pli confidentiel : texte du serveur affiché | Détecté |
+| « Confidentiel » proposé pour un courrier déjà enregistré | Détecté |
+| Formulaire de changement de niveau sans droit de registre | Détecté |
+| Bouton de remise sans droit de remise | Détecté |
+| Motif du changement non obligatoire | Détecté (après ajout du test avec les personnes choisies) |
+| « Confidentiel » possible avec un fichier de la file | Détecté |
+| Objet demandé pour un pli confidentiel | Détecté |
+| Personnes désignées jamais demandées | Détecté |
+| Destinataire de la remise absent de l'historique | Détecté (après ajout de l'assertion) |
+| Changement de niveau absent de l'historique | Détecté |
+| E75 : rôle de sa propre ligne modifiable | Détecté |
+| E75 : « Désactiver » proposé sur sa propre ligne | Détecté |

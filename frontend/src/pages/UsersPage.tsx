@@ -121,7 +121,7 @@ export default function UsersPage() {
               </Space>
             ) },
             { title: t('users.app_role'), key: 'role', render: (_, u) => (
-              <Radio.Group size="small" optionType="button" value={u.user_role} options={roleOptions} disabled={!u.is_active} onChange={(e) => setRole(u, e.target.value)} />
+              <span title={u.id === me?.id ? t('users.self_locked') : undefined}><Radio.Group size="small" optionType="button" value={u.user_role} options={roleOptions} disabled={!u.is_active || u.id === me?.id} onChange={(e) => setRole(u, e.target.value)} /></span>
             ) },
             { title: t('users.admin_local'), key: 'local', render: (_, u) => (
               <Space size={4} wrap>
@@ -130,7 +130,7 @@ export default function UsersPage() {
               </Space>
             ) },
             { title: t('users.field.active'), key: 'active', render: (_, u) => (u.is_active ? <Tag color="green">{t('yes')}</Tag> : <Tag>{t('no')}</Tag>) },
-            { title: t('common.actions'), key: 'actions', render: (_, u) => (u.is_active ? (
+            { title: t('common.actions'), key: 'actions', render: (_, u) => (u.is_active && u.id !== me?.id ? (
               <Popconfirm title={t('users.deactivate.confirm')} okText={t('yes')} cancelText={t('no')} onConfirm={() => deactivate(u)}>
                 <Button size="small" danger>{t('users.deactivate')}</Button>
               </Popconfirm>

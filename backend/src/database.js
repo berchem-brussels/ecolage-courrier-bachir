@@ -527,6 +527,33 @@ const MIGRATIONS = [
     ALTER TABLE notifications_new RENAME TO notifications;
     CREATE INDEX idx_notifications_user ON notifications(user_id, read_at)
   `],
+  // Version 0.5.0 : confidentialité à trois niveaux (CDC CR-001 à CR-005). `confidentiality` : normal, restreint ou confidentiel ;
+  // `mail_designees` : personnes nommément désignées (restreint) ou destinataire nommé du pli (confidentiel) ; remise du pli fermé :
+  // qui remet (handed_by), qui reçoit (handed_to), quand (handed_at) ; `mail_confidentiality_changes` : historique des changements de niveau.
+  ['011_confidentialite', `
+    ALTER TABLE mails ADD COLUMN confidentiality TEXT NOT NULL DEFAULT 'normal' CHECK (confidentiality IN ('normal', 'restreint', 'confidentiel'));
+    ALTER TABLE mails ADD COLUMN handed_by INTEGER REFERENCES users(id) ON DELETE SET NULL;
+    ALTER TABLE mails ADD COLUMN handed_to INTEGER REFERENCES users(id) ON DELETE SET NULL;
+    ALTER TABLE mails ADD COLUMN handed_at TEXT;
+    CREATE TABLE mail_designees (
+      mail_id INTEGER NOT NULL REFERENCES mails(id) ON DELETE RESTRICT,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      added_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      PRIMARY KEY (mail_id, user_id)
+    );
+    CREATE INDEX idx_mail_designees_user ON mail_designees(user_id);
+    CREATE TABLE mail_confidentiality_changes (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      mail_id INTEGER NOT NULL REFERENCES mails(id) ON DELETE RESTRICT,
+      from_level TEXT NOT NULL,
+      to_level TEXT NOT NULL,
+      reason TEXT,
+      author_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+    CREATE INDEX idx_confidentiality_changes_mail ON mail_confidentiality_changes(mail_id)
+  `],
 ];
 
 function migrate() {

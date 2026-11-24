@@ -85,12 +85,22 @@ test('comptes : un agent ne liste pas, ne crée pas, ne modifie pas', async () =
   assert.equal((await agentA.put('/api/users/1', { user_role: 'agent' })).status, 403);
 });
 
-test('le dernier administrateur ne peut être ni rétrogradé ni désactivé', async () => {
+test('E75 : personne ne change son propre rôle d’application ni l’état de son propre compte', async () => {
   const me = (await admin.get('/api/auth/me')).body.data;
   const r1 = await admin.put(`/api/users/${me.id}`, { user_role: 'agent' });
   assert.equal(r1.status, 409);
-  assert.equal(r1.body.code, 'LAST_ADMIN');
-  assert.equal((await admin.del(`/api/users/${me.id}`)).status, 409);
+  assert.equal(r1.body.code, 'SELF_CHANGE');
+  const r2 = await admin.del(`/api/users/${me.id}`);
+  assert.equal(r2.status, 409);
+  assert.equal(r2.body.code, 'SELF_CHANGE');
+  assert.equal((await admin.get(`/api/users/${me.id}`)).body.data.user_role, 'admin', 'le rôle n’a pas bougé');
+});
+
+test('le dernier administrateur ne peut être ni rétrogradé ni désactivé, même par une main extérieure (garde-fou conservé)', async () => {
+  const me = (await admin.get('/api/auth/me')).body.data;
+  const users = require('../src/services/users');
+  assert.throws(() => users.update({ id: -1 }, me.id, { user_role: 'agent' }), (e) => e.code === 'LAST_ADMIN');
+  assert.throws(() => users.update({ id: -1 }, me.id, { is_active: 0 }), (e) => e.code === 'LAST_ADMIN');
 });
 
 test('désactiver un compte ferme ses sessions', async () => {

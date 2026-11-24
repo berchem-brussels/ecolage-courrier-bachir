@@ -113,6 +113,11 @@ function readable(user, id) {
   return p;
 }
 
+/** Un pli confidentiel s'enregistre sans scan (CR-004) : aucun fichier ne s'y joint. */
+function assertScannable(mailId) {
+  if (mailId && access.levelOf(mailId) === 'confidentiel') throw new AppError(409, 'CONFIDENTIAL_NO_SCAN');
+}
+
 function mailOf(mailId) {
   const m = getDb().prepare('SELECT id, entity_id, status, number FROM mails WHERE id = ?').get(mailId);
   if (!m) throw new AppError(404, 'NOT_FOUND');
@@ -169,6 +174,7 @@ function storeFromTemp(user, { entity_id, mail_id }, tmpPath, originalName, chan
       mail = mailOf(mail_id);
       assertRegister(user, mail.entity_id);
       if (mail.status === 'annule') throw new AppError(409, 'CANCELLED');
+      assertScannable(mail.id);
       if (entity_id && Number(entity_id) !== mail.entity_id) throw new AppError(409, 'REFERENCE_INVALID');
       entityId = mail.entity_id;
     } else {
@@ -279,6 +285,8 @@ function content(user, id, channel = 'api') {
 /** Lecture par MCP : contenu en base64, plafonné par le paramètre pieces.mcp_read_max_mb. */
 function contentBase64(user, id) {
   const p = readable(user, id);
+  // CA-005 : jamais de pièce d'un pli confidentiel à un assistant (il n'en porte aucune ; garde-fou si cela changeait).
+  if (p.mail_id && access.levelOf(p.mail_id) === 'confidentiel') throw new AppError(403, 'FORBIDDEN');
   if (p.size_bytes > limits().mcpReadBytes) throw new AppError(413, 'PIECE_TOO_LARGE_MCP');
   const c = content(user, id, 'mcp');
   return { id: p.id, mail_number: p.mail_number, original_name: c.original_name, mime: c.mime, size_bytes: c.size_bytes, content_base64: fs.readFileSync(c.file).toString('base64') };
@@ -290,6 +298,7 @@ function contentBase64(user, id) {
  */
 function attachInTransaction(db, user, mailId, entityId, pieceIds) {
   const ids = [...new Set(pieceIds || [])];
+  if (ids.length > 0) assertScannable(mailId);
   ids.forEach((pid, i) => {
     const r = db.prepare(`UPDATE pieces SET status = 'rattachee', mail_id = ?, position = ?, updated_by = ?, updated_at = datetime('now')
       WHERE id = ? AND entity_id = ? AND status = 'a_enregistrer'`).run(mailId, i + 1, user.id, pid, entityId);

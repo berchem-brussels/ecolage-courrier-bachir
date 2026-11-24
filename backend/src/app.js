@@ -39,6 +39,7 @@ function buildApp() {
   app.use('/api', require('./routes/sso'));
   app.use('/api/auth', require('./routes/auth'));
   // Attribution et bannettes avant les routes génériques des courriers (« /api/mails/counts » n'est pas un identifiant).
+  app.use('/api/mails', require('./routes/mail-confidentiality'));
   app.use('/api/mails', require('./routes/mail-attribution'));
   app.use('/api/mails', require('./routes/mail-processing'));
   app.use('/api/services', require('./routes/service-members'));

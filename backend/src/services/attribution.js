@@ -13,7 +13,7 @@ const { getDb } = require('../database');
 const { AppError } = require('../envelope');
 const { logAudit } = require('../audit');
 const { REGISTER_ROLES, AGENT_ROLES, assertRegister, registerEntities, rolesOf } = require('../rights');
-const { STATUS_SQL, serviceIdsOf, isRegister, isMemberOf, mailRights } = require('./access');
+const { STATUS_SQL, serviceIdsOf, isRegister, isMemberOf, mailRights, visibilitySql, levelOf } = require('./access');
 const { notify } = require('./notifications');
 
 const BOXES = ['a_attribuer', 'mon_service', 'moi', 'en_copie', 'clos'];
@@ -87,6 +87,7 @@ function attribute(user, mailId, data, channel = 'api') {
   assertRegister(user, m.entity_id);
   if (m.status === 'annule') throw new AppError(409, 'CANCELLED');
   if (m.status === 'clos') throw new AppError(409, 'CLOSED');
+  if (levelOf(m.id) === 'confidentiel') throw new AppError(409, 'CONFIDENTIAL_ATTRIBUTED');
   checkService(data.service_id, m.entity_id);
   const db = getDb();
   const currentCopies = copiesOf(m.id).map((c) => c.service_id);
@@ -181,7 +182,7 @@ const marks = (list) => list.map(() => '?').join(', ');
  * Les courriers annulés n'y figurent pas. Aucune entité applicable : condition toujours fausse.
  * entity_id absent : toutes les entités où la bannette a un sens pour la personne.
  */
-function boxCondition(user, box, entityId) {
+function boxConditionRaw(user, box, entityId) {
   const allowed = boxEntities(user, box);
   if (entityId && !allowed.includes(Number(entityId))) throw new AppError(403, 'FORBIDDEN');
   const ents = entityId ? [Number(entityId)] : allowed;
@@ -190,7 +191,8 @@ function boxCondition(user, box, entityId) {
     return { sql: `(m.entity_id IN (${marks(ents)}) AND m.service_id IS NULL AND m.status = 'enregistre')`, params: [...ents] };
   }
   if (box === 'moi') {
-    return { sql: `(m.agent_id = ? AND m.entity_id IN (${marks(ents)}) AND m.status = 'enregistre' AND m.processing <> 'clos')`, params: [user.id, ...ents] };
+    // « Moi » : courriers dont je suis l'agent nommé, et courriers restreints ou confidentiels où je suis désigné (0.5.0).
+    return { sql: `((m.agent_id = ? OR m.id IN (SELECT mail_id FROM mail_designees WHERE user_id = ?)) AND m.entity_id IN (${marks(ents)}) AND m.status = 'enregistre' AND m.processing <> 'clos')`, params: [user.id, user.id, ...ents] };
   }
   if (box === 'clos') {
     // Courriers clos de mes services (traitant ou copie) ou dont je suis l'agent nommé : ils quittent les autres bannettes.
@@ -198,8 +200,8 @@ function boxCondition(user, box, entityId) {
     const closedParams = [];
     for (const e of ents) {
       const services = serviceIdsOf(user.id, e);
-      let cond = 'm.agent_id = ?';
-      closedParams.push(e, user.id);
+      let cond = 'm.agent_id = ? OR m.id IN (SELECT mail_id FROM mail_designees WHERE user_id = ?)';
+      closedParams.push(e, user.id, user.id);
       if (services.length > 0) {
         cond += ` OR m.service_id IN (${marks(services)}) OR m.id IN (SELECT mail_id FROM mail_copies WHERE service_id IN (${marks(services)}))`;
         closedParams.push(...services, ...services);
@@ -219,6 +221,18 @@ function boxCondition(user, box, entityId) {
   }
   if (groups.length === 0) return { sql: '0 = 1', params: [] };
   return { sql: `((${groups.join(' OR ')}) AND m.status = 'enregistre' AND m.processing <> 'clos')`, params };
+}
+
+/**
+ * Condition SQL d'une bannette pour la personne (CE-120), avec la visibilité de la confidentialité (0.5.0, CR-008) : mêmes droits que la fiche.
+ * Les courriers restreints ou confidentiels n'apparaissent à un agent que s'il y est désigné.
+ */
+function boxCondition(user, box, entityId) {
+  const raw = boxConditionRaw(user, box, entityId);
+  if (raw.sql === '0 = 1') return raw;
+  const ents = entityId ? [Number(entityId)] : boxEntities(user, box);
+  const vis = visibilitySql(user, ents);
+  return { sql: `(${raw.sql} AND ${vis.sql})`, params: [...raw.params, ...vis.params] };
 }
 
 /** Compteurs des onglets de bannettes pour la personne (CE-120) : « À enregistrer » compte la file de dépôt. */

@@ -15,6 +15,7 @@ import { useI18n } from '../contexts/I18nContext';
 import { useEntities } from '../hooks';
 import { contactLabel, pick } from '../labels';
 import EntityChoice, { useEntityParam } from '../components/EntityChoice';
+import LevelTag, { displaySubject } from '../components/LevelTag';
 import MailDrawer, { type Mail } from '../components/MailDrawer';
 
 type Box = 'a_enregistrer' | 'a_attribuer' | 'mon_service' | 'moi' | 'en_copie' | 'clos';
@@ -89,13 +90,13 @@ export default function BannettesPage() {
   const columns = [
     { title: t('mail.number'), dataIndex: 'number', key: 'number', render: (n: string, m: Mail) => (
       <span style={{ whiteSpace: 'nowrap' }}>
-        <span style={{ fontWeight: 600 }}>{n}</span>
+        <span style={{ fontWeight: 600 }}>{n}</span><LevelTag level={m.confidentiality} />
         {m.files_count ? <span style={{ marginLeft: 6 }}><PaperClipOutlined aria-label={`${t('piece.files')} : ${m.files_count}`} /> {m.files_count}</span> : null}
       </span>
     ) },
     { title: t('mail.received_date'), dataIndex: 'received_date', key: 'received_date', render: (d: string) => dayjs(d).format('L') },
     { title: t('mail.sender'), key: 'sender', render: (_: unknown, m: Mail) => contactLabel({ kind: m.sender_kind, name: m.sender_name, first_name: m.sender_first_name, organisation: m.sender_organisation }) },
-    { title: t('mail.subject'), dataIndex: 'subject', key: 'subject', ellipsis: true },
+    { title: t('mail.subject'), dataIndex: 'subject', key: 'subject', ellipsis: true, render: (_: string, m: Mail) => displaySubject(m, t) },
     { title: t('mail.type'), key: 'type', render: (_: unknown, m: Mail) => pick(m, 'type_label', lang) },
     { title: t('mail.urgency'), dataIndex: 'urgency', key: 'urgency', render: (u: Mail['urgency']) => (u === 'urgente' ? <Tag color="red">{t('mail.urgency.urgente')}</Tag> : null) },
     ...(box === 'a_attribuer' ? [

@@ -16,6 +16,8 @@ import PieceUpload from './PieceUpload';
 import PieceViewer, { type Piece } from './PieceViewer';
 import AttributionCard, { type MailAttribution } from './AttributionCard';
 import TraitementCard, { type MailTreatment, type TimelineItem } from './TraitementCard';
+import ConfidentialityCard, { type MailConfidentiality, type Designee } from './ConfidentialityCard';
+import LevelTag, { displaySubject, type Level } from './LevelTag';
 
 export interface Mail {
   id: number; number: string; entity_id: number; entity_code: string; year: number; seq: number; received_date: string; registered_at: string;
@@ -31,6 +33,8 @@ export interface Mail {
   closed_by_first_name?: string | null; closed_by_last_name?: string | null; closed_at?: string | null;
   close_reason_label_fr?: string | null; close_reason_label_nl?: string | null; close_note?: string | null; timeline?: TimelineItem[];
   copies?: MailAttribution['copies']; attributions?: MailAttribution['attributions']; rights?: MailAttribution['rights'];
+  confidentiality?: Level; designees?: Designee[]; designated?: boolean; handed_at?: string | null; handed_by_first_name?: string | null; handed_by_last_name?: string | null;
+  handed_to_first_name?: string | null; handed_to_last_name?: string | null;
 }
 interface MailType { id: number; label_fr: string; label_nl: string | null }
 const CHANNELS = ['courrier', 'recommande', 'colis', 'guichet'] as const;
@@ -115,7 +119,7 @@ export default function MailDrawer({ mail: row, onClose, onChanged, onReturned }
         <Col xs={24} lg={wide ? 11 : 24}>
           <Typography.Title level={2} style={{ fontSize: 24, marginTop: 0 }}>{mail.number}</Typography.Title>
           <Descriptions column={1} size="small" style={{ marginBottom: 16 }}>
-            <Descriptions.Item label={t('common.status')}><Tag color={STATUS_COLOR[mail.status]}>{t(`mail.status.${mail.status}`)}</Tag></Descriptions.Item>
+            <Descriptions.Item label={t('common.status')}><Tag color={STATUS_COLOR[mail.status]}>{t(`mail.status.${mail.status}`)}</Tag><LevelTag level={mail.confidentiality} /></Descriptions.Item>
             <Descriptions.Item label={t('mail.received_date')}>{dayjs(mail.received_date).format('L')}</Descriptions.Item>
             <Descriptions.Item label={t('mail.registered_at')}>{dayjs.utc(mail.registered_at).local().format('L LT')}</Descriptions.Item>
             <Descriptions.Item label={t('mail.registered_by')}>{mail.created_by_first_name} {mail.created_by_last_name}</Descriptions.Item>
@@ -124,13 +128,14 @@ export default function MailDrawer({ mail: row, onClose, onChanged, onReturned }
             {mail.cancel_reason && <Descriptions.Item label={t('mail.cancel_reason')}>{mail.cancel_reason}</Descriptions.Item>}
           </Descriptions>
           {!wide && files}
-          <AttributionCard mail={mail as Mail & MailAttribution} onChanged={(m) => changed(m as Mail)} onReturned={returned} />
+          {full && mail.id === full.id && <ConfidentialityCard mail={mail as Mail & MailConfidentiality} onChanged={(m) => changed(m as Mail)} />}
+          {mail.confidentiality !== 'confidentiel' && <AttributionCard mail={mail as Mail & MailAttribution} onChanged={(m) => changed(m as Mail)} onReturned={returned} />}
           {full && mail.id === full.id && <TraitementCard mail={mail as Mail & MailTreatment} onChanged={(m) => changed(m as Mail)} />}
           {mail.status !== 'annule' && full && !canEdit && (
             <>
               <Alert type="info" showIcon style={{ marginBottom: 12 }} message={t('mail.readonly')} />
               <Descriptions column={1} size="small" style={{ marginBottom: 16 }}>
-                <Descriptions.Item label={t('mail.subject')}>{mail.subject}</Descriptions.Item>
+                <Descriptions.Item label={t('mail.subject')}>{displaySubject(mail, t)}</Descriptions.Item>
                 <Descriptions.Item label={t('mail.channel')}>{t(`mail.channel.${mail.channel}`)}</Descriptions.Item>
                 <Descriptions.Item label={t('mail.lang')}>{t(`mail.lang.${mail.lang}`)}</Descriptions.Item>
                 <Descriptions.Item label={t('mail.urgency')}>{t(`mail.urgency.${mail.urgency}`)}</Descriptions.Item>
@@ -147,7 +152,7 @@ export default function MailDrawer({ mail: row, onClose, onChanged, onReturned }
                 <GroupItem name="channel" tooltip={hint('mail.channel')} label={t('mail.channel')}><Radio.Group aria-label={t('mail.channel')} {...RADIOGROUP} optionType="button" options={CHANNELS.map((c) => ({ value: c, label: t(`mail.channel.${c}`) }))} /></GroupItem>
                 {channel === 'recommande' && <Form.Item name="tracking_number" tooltip={hint('mail.tracking_number')} label={t('mail.tracking_number')} rules={[{ max: 50 }]}><Input autoComplete="off" /></Form.Item>}
                 <Form.Item name="sender_contact_id" tooltip={hint('mail.sender')} label={t('mail.sender')} rules={[{ required: true }]}><ContactPicker initial={sender} /></Form.Item>
-                <Form.Item name="subject" tooltip={hint('mail.subject')} label={t('mail.subject')} rules={[{ required: true, max: 500 }]}><Input.TextArea autoComplete="off" autoSize={{ minRows: 2, maxRows: 5 }} /></Form.Item>
+                {mail.confidentiality !== 'confidentiel' && <Form.Item name="subject" tooltip={hint('mail.subject')} label={t('mail.subject')} rules={[{ required: true, max: 500 }]}><Input.TextArea autoComplete="off" autoSize={{ minRows: 2, maxRows: 5 }} /></Form.Item>}
                 <GroupItem name="type_id" tooltip={hint('mail.type')} label={t('mail.type')} rules={[{ required: true }]}>
                   <Radio.Group aria-label={t('mail.type')} {...RADIOGROUP} optionType="button" style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }} options={types.map((ty) => ({ value: ty.id, label: pick(ty, 'label', lang) }))} />
                 </GroupItem>

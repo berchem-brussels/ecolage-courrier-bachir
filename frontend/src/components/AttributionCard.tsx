@@ -24,7 +24,7 @@ export interface MailAttribution {
   return_reason: string | null; returned_at: string | null;
   copies?: { service_id: number; name_fr: string; name_nl: string | null }[];
   attributions?: Attribution[];
-  rights?: { edit: boolean; cancel: boolean; attribute: boolean; set_agent: boolean; return_to_secretariat: boolean; take?: boolean; close?: boolean; reopen?: boolean; comment?: boolean };
+  rights?: { edit: boolean; cancel: boolean; change_level?: boolean; handover?: boolean; attribute: boolean; set_agent: boolean; return_to_secretariat: boolean; take?: boolean; close?: boolean; reopen?: boolean; comment?: boolean };
 }
 interface Service { id: number; name_fr: string; name_nl: string | null }
 interface Member { id: number; first_name: string; last_name: string; role: string }

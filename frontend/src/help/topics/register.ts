@@ -12,6 +12,20 @@ const topic: HelpTopic = {
   overviewShot: "register-overview",
   procedures: [
     {
+      title: { fr: "Changer le niveau de confidentialité d'un courrier", nl: "Het vertrouwelijkheidsniveau van een brief wijzigen" },
+      when: { fr: "Quand un courrier enregistré doit devenir restreint, ou redevenir normal.", nl: "Wanneer een geregistreerde brief beperkt moet worden of weer normaal moet worden." },
+      steps: [
+        { fr: "Ouvrez la fiche du courrier, puis le cadre {{conf.title}}.", nl: "Open het dossier van de brief en daarna het kader {{conf.title}}." },
+        { fr: "Dans {{conf.new_level}}, choisissez {{mail.level.normal}} ou {{mail.level.restreint}}. Un courrier déjà enregistré ne devient pas confidentiel : le pli confidentiel se choisit à l'enregistrement.", nl: "Kies in {{conf.new_level}} {{mail.level.normal}} of {{mail.level.restreint}}. Een reeds geregistreerde brief wordt niet vertrouwelijk: de vertrouwelijke omslag wordt bij de registratie gekozen." },
+        { fr: "Pour {{mail.level.restreint}}, choisissez les personnes dans {{mail.designees}}.", nl: "Kies voor {{mail.level.restreint}} de personen in {{mail.designees}}." },
+        { fr: "Écrivez le {{conf.reason}} puis cliquez sur {{conf.change}}.", nl: "Schrijf de {{conf.reason}} en klik op {{conf.change}}." },
+      ],
+      result: { fr: "Le message {{conf.changed}} s'affiche. Le changement est gardé au journal et à l'historique de la fiche, motif compris, lisible du registre seulement ; les personnes qui ne sont plus autorisées ne voient plus le courrier.", nl: "Het bericht {{conf.changed}} verschijnt. De wijziging wordt bewaard in het logboek en de geschiedenis van het dossier, met de reden, enkel leesbaar voor het register; personen die niet meer gemachtigd zijn, zien de brief niet meer." },
+      errors: [
+        { problem: { fr: "Le bouton {{conf.change}} ne fait rien.", nl: "De knop {{conf.change}} doet niets." }, solution: { fr: "Le motif est vide, ou, pour {{mail.level.restreint}}, aucune personne n'est choisie : le champ manquant est signalé en rouge.", nl: "De reden is leeg of, voor {{mail.level.restreint}}, er is niemand gekozen: het ontbrekende veld wordt rood aangeduid." } },
+      ],
+    },
+    {
       title: { fr: "Retrouver un courrier", nl: "Een brief terugvinden" },
       when: { fr: "Quand vous cherchez un courrier déjà enregistré.", nl: "Wanneer u een reeds ingeschreven brief zoekt." },
       steps: [
