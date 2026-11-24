@@ -149,15 +149,30 @@ test('prise en charge : l’agent nommé seulement ; ni un collègue du service,
   assert.equal(r.body.data.rights.close, true);
 });
 
-test('prise en charge : un courrier sans agent nommé ne se prend en charge par personne ; une seconde prise en charge répond 409', async () => {
+test('prise en charge : un courrier sans agent nommé se prend en charge par un membre du service, qui devient l’agent nommé (E55 levé) ; une seconde prise en charge répond 409', async () => {
   const id = await newMail();
   await secAC.put(`/api/mails/${id}/attribution`, { service_id: svcA });
-  for (const c of [agentA1, agentA2, chefA]) assert.equal((await c.post(`/api/mails/${id}/take`, {})).status, 403);
-  const t = await taken();
-  const again = await agentA1.post(`/api/mails/${t}/take`, {});
+  for (const c of [secAC, gestAC, aud, admin, agentB, agentCPAS]) assert.equal((await c.post(`/api/mails/${id}/take`, {})).status, 403, 'hors du service');
+  const seen = await agentA2.get(`/api/mails/${id}`);
+  assert.equal(seen.body.data.rights.take, true, 'le droit est annoncé à tout membre du service');
+  const r = await agentA2.post(`/api/mails/${id}/take`, {});
+  assert.equal(r.status, 200, JSON.stringify(r.body));
+  assert.equal(r.body.data.status, 'en_traitement');
+  assert.equal(r.body.data.agent_id, agentA2.userId, 'le preneur devient l’agent nommé');
+  assert.equal(r.body.data.taken_by, agentA2.userId);
+  assert.equal(r.body.data.rights.close, true, 'il peut clore');
+  assert.equal((await agentA1.post(`/api/mails/${id}/take`, {})).status, 403, 'un collègue n’est plus l’agent nommé');
+  const again = await agentA2.post(`/api/mails/${id}/take`, {});
   assert.equal(again.status, 409);
   assert.equal(again.body.code, 'TRANSITION');
   assert.match(again.body.message, /statut/);
+});
+
+test('prise en charge : le responsable du service prend aussi en charge un courrier sans agent nommé, puis clôt', async () => {
+  const id = await newMail();
+  await secAC.put(`/api/mails/${id}/attribution`, { service_id: svcA });
+  assert.equal((await chefA.post(`/api/mails/${id}/take`, {})).status, 200);
+  assert.equal((await chefA.post(`/api/mails/${id}/close`, { close_reason_id: reasonAC() })).status, 200);
 });
 
 test('prise en charge : un courrier non attribué, annulé ou d’une autre entité est refusé', async () => {

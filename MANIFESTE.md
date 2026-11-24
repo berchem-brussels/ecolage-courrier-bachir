@@ -1,10 +1,10 @@
-# Manifeste, version 0.4.0 du 17/11/2026
+# Manifeste, version 0.4.1 du 24/11/2026
 
-Archive `courrier-v0_4_0.tar.gz`, un seul dossier `courrier/`. La 0.4.0 est l'étape 4 du planning (traitement) et reprend tout le contenu de la 0.3.1, **dernière version publiée sur GitHub** : la demande de fusion de la 0.4.0 porte donc seulement les changements listés ci-dessous.
+Archive `courrier-v0_4_1.tar.gz`, un seul dossier `courrier/`. La 0.4.1 est l'étape 4 du planning (traitement, avec la correction E55) et remplace la 0.4.0, jamais installée ; elle reprend tout le contenu de la 0.3.1, **dernière version publiée sur GitHub** : la demande de fusion de la 0.4.1 porte donc seulement les changements listés ci-dessous.
 
 ## Dépendances
 
-Aucune dépendance ajoutée ni changée. Les numéros de version passent à 0.4.0 dans les deux `package.json` et leurs verrous (seule ligne modifiée ; `npm ci` relit les verrous sans erreur).
+Aucune dépendance ajoutée ni changée. Les numéros de version passent à 0.4.1 dans les deux `package.json` et leurs verrous (seule ligne modifiée ; `npm ci` relit les verrous sans erreur).
 
 ## Suites jouées le 17/11/2026 (Node 22.23.4, bac à sable, npm 10.9.9)
 
@@ -25,7 +25,8 @@ Les captures de l'aide ne changent pas depuis la 0.3.0 : 20 par langue.
 
 ## Fichiers nouveaux depuis la 0.3.1 (9)
 
-- `NOTES_LIVRAISON_v0.4.0.md`
+- `NOTES_LIVRAISON_v0.4.0.md` (conservée : décrit le traitement)
+- `NOTES_LIVRAISON_v0.4.1.md`
 - `backend/src/routes/mail-processing.js`
 - `backend/src/services/close-reasons.js`
 - `backend/src/services/processing.js`

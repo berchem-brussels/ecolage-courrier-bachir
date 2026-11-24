@@ -1,8 +1,18 @@
 # Historique des versions
 
-Application courrier · version 0.4.0 · historique au 17/11/2026
+Application courrier · version 0.4.1 · historique au 24/11/2026
 
-## 0.4.0 du 17/11/2026, livrée, à installer et recetter sur NIXUS
+## 0.4.1 du 24/11/2026, livrée, à installer et recetter sur NIXUS
+
+Étape 4 bis : correction de l'écart E55 relevé à l'audit complet du cahier des charges. Remplace la 0.4.0, jamais installée. Aucune migration nouvelle (la migration 010 de la 0.4.0 s'applique toujours depuis la 0.3.1), aucune dépendance changée, construction sans `--no-cache`.
+
+- **Prise en charge sans agent nommé** : un courrier attribué à un service sans agent nommé (CE-061) se prend en charge par tout agent ou responsable de ce service, qui devient l'agent nommé (nom sur la fiche, bannette « Moi », droit de clôture). Avec un agent nommé, lui seul le prend en charge, comme en 0.4.0. Un courrier non attribué, annulé, d'une autre entité ou d'un service dont on n'est pas membre reste refusé (403 ou 409).
+- **Droits annoncés** : `rights.take` est vrai pour tout membre du service quand personne n'est nommé ; l'interface n'affiche le bouton que dans ce cas.
+- **Textes** : message du bouton, fiche d'aide « Bannettes » (FR et NL) et `docs/fonctionnel/traitement.md` décrivent la nouvelle règle.
+- **Tests** : serveur 175 (un test remplacé par deux), interface inchangée à 160 réussis et 1 ignoré ; preuve d'échec : neutraliser la règle fait échouer deux tests, neutraliser le droit annoncé en fait échouer un ; scripts de recette sur la démonstration : `recette.mjs`, `recette-agent.mjs` et `recette-faq.mjs` conformes.
+- **Documents** : écarts E56 à E71 ouverts après l'audit, E55 et E72 clos, planning révisé, notes de livraison avec les trois questions RGPD.
+
+## 0.4.0 du 17/11/2026, jamais installée, remplacée par la 0.4.1
 
 Étape 4 du planning : traitement (CE-070, CE-071, CE-073, CE-079). Migration 010, aucune dépendance changée, construction sans `--no-cache`.
 

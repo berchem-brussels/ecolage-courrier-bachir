@@ -1,6 +1,6 @@
 /**
  * Traitement du courrier entrant (version 0.4.0, CDC CE-070, CE-071, CE-073, CE-079).
- * - Prise en charge en un clic : seul l'agent nommé du courrier la fait ; elle écrit son nom sur la fiche et dans les listes.
+ * - Prise en charge en un clic : l'agent nommé du courrier la fait, ou un membre du service traitant si personne n'est nommé ; elle écrit son nom sur la fiche et dans les listes.
  * - Commentaires : visibles du service traitant ou de toute l'entité, au choix à chaque commentaire ; ils ne se modifient
  *   pas et ne se suppriment pas, ils se complètent.
  * - Clôture avec un motif de la liste de l'entité (service close-reasons) et une note facultative : l'agent nommé et le
@@ -33,17 +33,21 @@ function readableMail(user, id) {
 
 const clean = (v) => (typeof v === 'string' ? v.trim() : '');
 
-/** Prise en charge en un clic (CE-070) : courrier attribué, agent nommé seulement. */
+/**
+ * Prise en charge en un clic (CE-070) : courrier attribué. Avec un agent nommé, lui seul ; sans agent nommé (CE-061, le courrier
+ * est dans la bannette du service), tout agent ou responsable du service traitant, qui devient alors l'agent nommé (écart E55 levé en 0.4.1).
+ */
 function take(user, mailId, channel = 'api') {
   const m = readableMail(user, mailId);
-  const named = access.isAgent(user, m.entity_id) && !!m.agent_id && m.agent_id === user.id;
-  if (!named) throw new AppError(403, 'FORBIDDEN');
+  const eligible = !!m.service_id && access.isAgent(user, m.entity_id)
+    && (m.agent_id ? m.agent_id === user.id : access.isMemberOf(user, m.entity_id, m.service_id));
+  if (!eligible) throw new AppError(403, 'FORBIDDEN');
   if (m.status === 'annule') throw new AppError(409, 'CANCELLED');
   if (m.status !== 'enregistre' || !m.service_id) throw new AppError(409, 'TRANSITION');
   const db = getDb();
   db.transaction(() => {
-    db.prepare(`UPDATE mails SET processing = 'en_traitement', taken_by = ?, taken_at = datetime('now'),
-      updated_by = ?, updated_at = datetime('now') WHERE id = ?`).run(user.id, user.id, m.id);
+    db.prepare(`UPDATE mails SET processing = 'en_traitement', agent_id = ?, taken_by = ?, taken_at = datetime('now'),
+      updated_by = ?, updated_at = datetime('now') WHERE id = ?`).run(user.id, user.id, user.id, m.id);
     db.prepare("INSERT INTO mail_events (mail_id, kind, author_id) VALUES (?, 'prise_en_charge', ?)").run(m.id, user.id);
   })();
   logAudit(user.id, 'mail.take', 'mail', m.id, { number: m.number }, channel);

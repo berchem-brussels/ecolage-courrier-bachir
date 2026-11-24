@@ -51,7 +51,7 @@ function mailForAccess(mailId) {
 /**
  * Actions permises à la personne sur ce courrier : l'interface n'affiche que ce que le serveur accepte.
  * m : id, entity_id, service_id, agent_id et status effectif (enregistre, en_traitement, clos, annule).
- * Traitement (0.4.0) : seul l'agent nommé prend en charge ; l'agent nommé et le responsable du service closent ;
+ * Traitement : l'agent nommé prend en charge, ou tout membre du service traitant quand aucun agent n'est nommé (0.4.1) ; l'agent nommé et le responsable du service closent ;
  * le secrétariat et le gestionnaire rouvrent et commentent ; les membres du service traitant commentent.
  */
 function mailRights(user, m) {
@@ -67,7 +67,7 @@ function mailRights(user, m) {
     attribute: register && open && !closed,
     set_agent: open && !closed && !!m.service_id && (register || manager),
     return_to_secretariat: open && !closed && !!m.service_id && member,
-    take: !!m.service_id && m.status === 'enregistre' && named,
+    take: !!m.service_id && m.status === 'enregistre' && (m.agent_id ? named : member),
     close: m.status === 'en_traitement' && (named || manager),
     reopen: closed && register,
     comment: open && (register || member || named),
